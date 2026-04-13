@@ -17,7 +17,7 @@ export default function InAppLayout({
   }
 
   return (
-    <div className="min-h-screen bg-dark text-white relative">
+    <div className="min-h-screen bg-dark text-white relative font-sans">
       <Header />
       <div className="grid grid-cols-[290px_auto]">
         <div className="sticky top-0 h-[calc(100vh-3.5rem)] px-4 md:px-10 md:pr-4 py-4 md:py-6 border-r border-white/10">
@@ -25,7 +25,7 @@ export default function InAppLayout({
         </div>
         <div className="fixed top-0 left-6 bg-white/10 w-px h-screen"></div>
         <div className="fixed top-0 right-6 bg-white/10 w-px h-screen"></div>
-        <main className="px-4 md:px-6 py-4 md:py-8">{children}</main>
+        <main className="px-4 md:px-6 py-4 md:py-8 md:pr-12">{children}</main>
       </div>
     </div>
   )

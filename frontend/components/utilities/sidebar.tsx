@@ -4,17 +4,13 @@ import { usePathname } from "next/navigation"
 import Link from "next/link"
 import {
   BookOpen,
-  Code,
   CreditCard,
   FolderKanban,
   Globe,
-  HomeIcon,
-  Package,
+  LayoutDashboard,
   Plug,
-  ReceiptText,
   Rocket,
   Settings,
-  Store,
 } from "lucide-react"
 
 type navItem = {
@@ -33,7 +29,7 @@ const navItems: navItem[] = [
       {
         label: "Dashboard",
         href: "/dashboard",
-        icon: <HomeIcon size={20} className="text-white/60" />,
+        icon: <LayoutDashboard size={20} className="text-white/60" />,
       },
     ],
   },
