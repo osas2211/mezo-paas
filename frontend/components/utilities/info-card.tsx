@@ -1,7 +1,7 @@
 "use client"
 import React from "react"
 
-export const DashboardInfoCard = (props: {
+export const InfoCard = (props: {
   title: string
   subtitle?: string
   icon: React.ReactNode

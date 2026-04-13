@@ -2,7 +2,7 @@
 import Link from "next/link"
 import React from "react"
 
-export const DashboardListCard = (props: {
+export const ListCard = (props: {
   title: string
   link: string
   children: React.ReactNode

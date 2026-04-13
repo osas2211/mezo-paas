@@ -1,6 +1,6 @@
 "use client"
-import { DashboardInfoCard } from "@/components/dashboard/dashboard-info-card"
-import { DashboardListCard } from "@/components/dashboard/dashboard-list-card"
+import { InfoCard } from "@/components/utilities/info-card"
+import { ListCard } from "@/components/utilities/list-card"
 import {
   Activity,
   CheckCircle,
@@ -25,20 +25,20 @@ const DashboardPage = () => {
       </div>
 
       <div className="grid md:grid-cols-3 gap-4">
-        <DashboardInfoCard
+        <InfoCard
           title="Projects"
           icon={<FolderKanban className="text-primary" size={20} />}
           value={0}
         />
 
-        <DashboardInfoCard
+        <InfoCard
           title="Services"
           subtitle="0 healthy"
           icon={<Server className="text-primary" size={20} />}
           value={0}
         />
 
-        <DashboardInfoCard
+        <InfoCard
           title="Deployments"
           subtitle="100% success rate"
           icon={<Rocket className="text-primary" size={20} />}
@@ -47,26 +47,26 @@ const DashboardPage = () => {
       </div>
 
       <div className="grid md:grid-cols-4 gap-4">
-        <DashboardInfoCard
+        <InfoCard
           title="Healthy services"
           icon={<CheckCircle className="text-primary" size={20} />}
           value={0}
         />
 
-        <DashboardInfoCard
+        <InfoCard
           title="Unhealthy services"
           icon={<XCircle className="text-primary" size={20} />}
           value={0}
         />
 
-        <DashboardInfoCard
+        <InfoCard
           title="Active addons"
           subtitle="Postgres & Redis"
           icon={<Database className="text-primary" size={20} />}
           value={0}
         />
 
-        <DashboardInfoCard
+        <InfoCard
           title="Credits"
           subtitle="$0.00/mo"
           icon={<CreditCard className="text-primary" size={20} />}
@@ -75,7 +75,7 @@ const DashboardPage = () => {
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
-        <DashboardListCard title="Projects" link="/projects">
+        <ListCard title="Projects" link="/projects">
           <div className="flex flex-col gap-1.5 justify-center items-center font-normal md:pt-4 h-40">
             <FolderKanban className="text-white/40" size={30} />
             <p className="text-sm text-white/60">No projects yet</p>
@@ -83,8 +83,8 @@ const DashboardPage = () => {
               Create a new project
             </Link>
           </div>
-        </DashboardListCard>
-        <DashboardListCard title="Recent Activitys" link="/deployments">
+        </ListCard>
+        <ListCard title="Recent Activitys" link="/deployments">
           <div className="flex flex-col gap-1.5 justify-center items-center font-normal md:pt-4 h-40">
             <Activity className="text-white/40" size={30} />
             <p className="text-sm text-white/70">No recent deployments</p>
@@ -92,7 +92,7 @@ const DashboardPage = () => {
               Deploy a service to get started
             </Link>
           </div>
-        </DashboardListCard>
+        </ListCard>
       </div>
     </div>
   )

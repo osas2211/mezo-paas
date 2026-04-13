@@ -9,7 +9,8 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-primary: #b3ec11;
-  --color-dark: #1b1b1c;
+  --color-dark: #000000;
+  --color-dark-alt: #1b1b1c;
   --color-text-tertiary: #a0a0a0;
   --font-sans: var(--font-suisse-intl);
 }
