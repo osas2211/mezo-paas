@@ -1,6 +1,7 @@
 "use client"
 import { InfoCard } from "@/components/utilities/info-card"
 import { ListCard } from "@/components/utilities/list-card"
+import { PageHeader } from "@/components/utilities/page-header"
 import {
   Activity,
   CheckCircle,
@@ -17,12 +18,10 @@ import React from "react"
 const DashboardPage = () => {
   return (
     <div className="space-y-5 md:space-y-10">
-      <div className="">
-        <h2 className="text-xl md:text-2xl font-medium">Dashboard</h2>
-        <p className="text-white/60 text-sm mt-1">
-          Overview of your infrastructure
-        </p>
-      </div>
+      <PageHeader
+        title="Dashboard"
+        subtitle="Overview of your infrastructure"
+      />
 
       <div className="grid md:grid-cols-3 gap-4">
         <InfoCard
@@ -76,7 +75,7 @@ const DashboardPage = () => {
 
       <div className="grid md:grid-cols-2 gap-4">
         <ListCard title="Projects" link="/projects">
-          <div className="flex flex-col gap-1.5 justify-center items-center font-normal md:pt-4 h-40">
+          <div className="flex flex-col gap-1.5 justify-center items-center font-normal md:pt-4 md:h-40">
             <FolderKanban className="text-white/40" size={30} />
             <p className="text-sm text-white/60">No projects yet</p>
             <Link href={"/projects"} className="text-sm text-primary">
@@ -85,7 +84,7 @@ const DashboardPage = () => {
           </div>
         </ListCard>
         <ListCard title="Recent Activitys" link="/deployments">
-          <div className="flex flex-col gap-1.5 justify-center items-center font-normal md:pt-4 h-40">
+          <div className="flex flex-col gap-1.5 justify-center items-center font-normal md:pt-4 md:h-40">
             <Activity className="text-white/40" size={30} />
             <p className="text-sm text-white/70">No recent deployments</p>
             <Link href={"/projects"} className="text-xs text-white/60">
