@@ -58,7 +58,7 @@ const navItems: navItem[] = [
     items: [
       {
         label: "Integrations",
-        href: "",
+        href: "/integrations",
         icon: <Plug size={20} className="text-white/60" />,
       },
     ],
@@ -69,13 +69,13 @@ const navItems: navItem[] = [
     items: [
       {
         label: "Billing",
-        href: "",
+        href: "/billing",
         icon: <CreditCard size={20} className="text-white/60" />,
       },
 
       {
         label: "Settings",
-        href: "",
+        href: "/settings",
         icon: <Settings size={20} className="text-white/60" />,
       },
     ],
