@@ -1,7 +1,6 @@
 "use client"
 import { PageHeader } from "@/components/utilities/page-header"
 import { ExternalLink, Trash2 } from "lucide-react"
-import Image from "next/image"
 import React from "react"
 import { FiGithub } from "react-icons/fi"
 
