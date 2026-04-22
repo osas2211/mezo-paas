@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "frontend": "cd frontend && pnpm dev"
+    "frontend": "cd frontend && pnpm dev",
+    "backend": "cd backend && pnpm run start:dev"
   },
   "keywords": [],
   "author": "",
