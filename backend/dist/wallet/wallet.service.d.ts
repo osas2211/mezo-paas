@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
 export declare class WalletService {
-    private provider;
+    private readonly provider;
     constructor();
     generateWallet(): {
         address: string;

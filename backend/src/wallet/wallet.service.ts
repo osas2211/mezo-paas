@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { ethers } from 'ethers';
-import { env_config } from 'src/lib/config';
+import { env_config } from '../lib/config';
 
 @Injectable()
 export class WalletService {
-  private provider: ethers.JsonRpcProvider;
+  private readonly provider: ethers.JsonRpcProvider;
 
   constructor() {
     this.provider = new ethers.JsonRpcProvider(env_config.mezoRpcUrl);

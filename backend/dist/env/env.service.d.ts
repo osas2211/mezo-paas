@@ -1,4 +1,4 @@
-export declare const env_config: {
+export declare class EnvService {
     readonly port: string;
     readonly mezoRpcUrl: string;
     readonly mezoWssRpcUrl: string;
@@ -6,4 +6,4 @@ export declare const env_config: {
     readonly mezoDecimal: string;
     readonly mezoExplorer: string;
     readonly encryption_secret: string;
-};
+}
