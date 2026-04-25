@@ -12,15 +12,17 @@ const protectedRoutes = [
   "/projects",
 ]
 
-const authRoutes = ["/login", "/signup"]
+const authRoutes = ["/login", "/sign-up"]
 
-export function proxy(request: NextRequest) {
+export default function middleware(request: NextRequest) {
   // Retrieve the access token from cookies
   const token = request.cookies.get("access_token")?.value
   const { pathname } = request.nextUrl
 
-  // Check if it's an auth route (e.g. /login, /signup)
-  const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route))
+  // Check if it's an auth route (e.g. /login, /sign-up)
+  const isAuthRoute = authRoutes.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`),
+  )
 
   // Redirect to dashboard if logged in and trying to access login/signup
   if (isAuthRoute && token) {
@@ -37,7 +39,17 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/login", request.url))
   }
 
-  return NextResponse.next()
+  const response = NextResponse.next()
+
+  // Prevent caching for protected routes to ensure middleware runs on back button
+  if (isProtectedRoute) {
+    response.headers.set(
+      "Cache-Control",
+      "no-store, max-age=0, must-revalidate",
+    )
+  }
+
+  return response
 }
 
 export const config = {

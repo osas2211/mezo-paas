@@ -21,6 +21,7 @@ export const Signup = () => {
             src={"/assets/signup.jpg"}
             objectFit="cover"
             alt=""
+            loading="eager"
           />
         </div>
 

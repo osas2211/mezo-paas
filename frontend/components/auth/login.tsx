@@ -47,6 +47,7 @@ export const UserLogin = () => {
             className="w-full h-full object-cover opacity-40"
             src={"/assets/login.jpg"}
             alt=""
+            loading="eager"
           />
         </div>
 

@@ -62,7 +62,7 @@ export const LoginForm = () => {
 
           <Button
             htmlType="submit"
-            className="h-10! w-full  "
+            className="h-10! w-full  text-dark!"
             type="primary"
             disabled={isPending}
           >
