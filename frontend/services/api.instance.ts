@@ -15,7 +15,7 @@ const getCookie = (name: string) => {
   return null
 }
 
-const removeCookie = (name: string) => {
+export const removeCookie = (name: string) => {
   if (typeof document !== 'undefined') {
     document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
   }

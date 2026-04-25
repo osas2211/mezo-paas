@@ -9,12 +9,18 @@ import { useRouter } from "next/navigation"
 import { LoadingOutlined } from "@ant-design/icons"
 import Link from "next/link"
 import { User } from "lucide-react"
+import { useSignup } from "@/hooks/use-auth"
 
 export const SignupForm = () => {
   const [form] = useForm<{ password: string; email: string; name: string }>()
-  const router = useRouter()
-  const isLoading = false
-  const loginUser = async () => {}
+  const { mutate: signup, isPending } = useSignup()
+  const handleSubmit = async (data: {
+    password: string
+    email: string
+    name: string
+  }) => {
+    signup(data)
+  }
   return (
     <div className="md:max-w-[474px] mx-auto bg-dark-alt/40 shadow-2x; shadow-primary/5 md:rounded-[12px] rounded-[8px] md:p-[3rem] p-[1.5rem]">
       <p className="md:text-[24px] text-lg font-medium ">Sign Up</p>
@@ -26,8 +32,8 @@ export const SignupForm = () => {
         <Form
           layout="vertical"
           form={form}
-          onFinish={loginUser}
-          disabled={isLoading}
+          onFinish={handleSubmit}
+          disabled={isPending}
           autoComplete="off"
         >
           <Form.Item
@@ -71,9 +77,9 @@ export const SignupForm = () => {
             htmlType="submit"
             className="h-10! w-full  "
             type="primary"
-            disabled={isLoading}
+            disabled={isPending}
           >
-            {isLoading ? <LoadingOutlined /> : "Sign In"}
+            {isPending ? <LoadingOutlined /> : "Sign In"}
           </Button>
           <p className="text-white/60 text-xs font-normal  mt-4">
             By clicking “Sign Up, you agree to our Terms of Use and Privacy

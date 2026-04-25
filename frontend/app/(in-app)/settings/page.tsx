@@ -2,8 +2,11 @@
 import { PageHeader } from "@/components/utilities/page-header"
 import { Shield, User } from "lucide-react"
 import React from "react"
+import { useLogout } from "@/hooks/use-auth"
+import { LoadingOutlined } from "@ant-design/icons"
 
 const SettingsPage = () => {
+  const { mutate: logout, isPending } = useLogout()
   return (
     <div className="space-y-5 md:space-y-10">
       <PageHeader title="Settings" subtitle="Manage your account" />
@@ -55,8 +58,11 @@ const SettingsPage = () => {
                 <p className="text-xs text-white/60 mt-1">
                   Clear your session and return to the login page.
                 </p>
-                <button className="inline-flex items-center justify-center gap-1.5 font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed py-1.5 px-3 text-sm bg-red-600 hover:bg-red-700 text-white mt-3">
-                  Sign Out
+                <button
+                  onClick={() => logout()}
+                  className="inline-flex items-center justify-center gap-1.5 font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed py-1.5 px-3 text-sm bg-red-600 hover:bg-red-700 text-white mt-3"
+                >
+                  {isPending ? <LoadingOutlined /> : "Sign Out"}
                 </button>
               </div>
             </div>
