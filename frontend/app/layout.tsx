@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import "./globals.css"
 import localFont from "next/font/local"
+import { AntProvider } from "@/components/utilities/ant-provider"
 
 const suiFont = localFont({
   src: [
@@ -35,7 +36,9 @@ export default function RootLayout({
       lang="en"
       className={`${suiFont.variable} ${suiFont.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <AntProvider>{children}</AntProvider>
+      </body>
     </html>
   )
 }
