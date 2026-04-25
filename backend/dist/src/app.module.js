@@ -17,6 +17,7 @@ const encryption_service_1 = require("./encryption/encryption.service");
 const wallet_module_1 = require("./wallet/wallet.module");
 const encryption_module_1 = require("./encryption/encryption.module");
 const prisma_service_1 = require("./prisma/prisma.service");
+const auth_service_1 = require("./auth/auth.service");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -33,7 +34,13 @@ exports.AppModule = AppModule = __decorate([
             wallet_module_1.WalletModule,
         ],
         controllers: [app_controller_1.AppController],
-        providers: [app_service_1.AppService, wallet_service_1.WalletService, encryption_service_1.EncryptionService, prisma_service_1.PrismaService],
+        providers: [
+            app_service_1.AppService,
+            wallet_service_1.WalletService,
+            encryption_service_1.EncryptionService,
+            prisma_service_1.PrismaService,
+            auth_service_1.AuthService,
+        ],
     })
 ], AppModule);
 //# sourceMappingURL=app.module.js.map
