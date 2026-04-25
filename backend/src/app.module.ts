@@ -10,6 +10,8 @@ import { WalletModule } from './wallet/wallet.module';
 import { EncryptionModule } from './encryption/encryption.module';
 import { PrismaService } from './prisma/prisma.service';
 import { AuthService } from './auth/auth.service';
+import { UserModule } from './user/user.module';
+import { UserService } from './user/user.service';
 
 @Module({
   imports: [
@@ -21,6 +23,7 @@ import { AuthService } from './auth/auth.service';
     AuthModule,
     EncryptionModule,
     WalletModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [
@@ -29,6 +32,7 @@ import { AuthService } from './auth/auth.service';
     EncryptionService,
     PrismaService,
     AuthService,
+    UserService,
   ],
 })
 export class AppModule {}
