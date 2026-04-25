@@ -2,6 +2,9 @@ import type { Metadata } from "next"
 import "./globals.css"
 import localFont from "next/font/local"
 import { AntProvider } from "@/components/utilities/ant-provider"
+import { ToastContainer } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
+import { TanstackProvider } from "@/components/utilities/tanstack-provider"
 
 const suiFont = localFont({
   src: [
@@ -37,7 +40,10 @@ export default function RootLayout({
       className={`${suiFont.variable} ${suiFont.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <AntProvider>{children}</AntProvider>
+        <TanstackProvider>
+          <AntProvider>{children}</AntProvider>
+          <ToastContainer />
+        </TanstackProvider>
       </body>
     </html>
   )
