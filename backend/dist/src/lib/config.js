@@ -26,5 +26,8 @@ exports.env_config = {
     get jwt_secret() {
         return process.env.JWT_SECRET;
     },
+    get mezoTestnetMUSDTokenAddress() {
+        return process.env.MEZO_TESTNET_MUSD_TOKEN_ADDRESS;
+    },
 };
 //# sourceMappingURL=config.js.map

@@ -12,10 +12,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
+const wallet_service_1 = require("../wallet/wallet.service");
 let UserService = class UserService {
     prisma;
-    constructor(prisma) {
+    walletService;
+    constructor(prisma, walletService) {
         this.prisma = prisma;
+        this.walletService = walletService;
     }
     async getUserProfile(userId) {
         const user = await this.prisma.user.findUnique({
@@ -31,8 +34,15 @@ let UserService = class UserService {
             },
         });
         if (user) {
+            const balance = await this.walletService.getMUSDTokenBalance(user?.wallet?.address);
             return {
-                user,
+                user: {
+                    ...user,
+                    wallet: {
+                        ...user.wallet,
+                        balance: balance
+                    }
+                },
                 message: 'User info retrieved successfully',
             };
         }
@@ -43,6 +53,6 @@ let UserService = class UserService {
 exports.UserService = UserService;
 exports.UserService = UserService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService, wallet_service_1.WalletService])
 ], UserService);
 //# sourceMappingURL=user.service.js.map

@@ -3,6 +3,8 @@
 import Header from "@/components/utilities/header"
 import Sidebar from "@/components/utilities/sidebar"
 import { usePathname } from "next/navigation"
+import { useUser } from "@/hooks/use-user"
+import { PageLoading } from "@/components/utilities/page-loading"
 
 export default function InAppLayout({
   children,
@@ -10,10 +12,20 @@ export default function InAppLayout({
   children: React.ReactNode
 }) {
   const pathname = usePathname()
-  const isAuthPage = pathname === "/login" || pathname === "/register"
+  const { isLoading } = useUser()
+  const isAuthPage =
+    pathname === "/login" || pathname === "/register" || pathname === "/sign-up"
 
   if (isAuthPage) {
     return <>{children}</>
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-dark flex items-center justify-center">
+        <PageLoading />
+      </div>
+    )
   }
 
   return (

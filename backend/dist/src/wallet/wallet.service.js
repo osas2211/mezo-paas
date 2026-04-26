@@ -13,6 +13,7 @@ exports.WalletService = void 0;
 const common_1 = require("@nestjs/common");
 const ethers_1 = require("ethers");
 const config_1 = require("../lib/config");
+const viem_1 = require("viem");
 let WalletService = class WalletService {
     provider;
     constructor() {
@@ -43,6 +44,15 @@ let WalletService = class WalletService {
         const contract = new ethers_1.ethers.Contract(contractAddress, abi, wallet);
         const tx = await contract[method](...args);
         return tx.hash;
+    }
+    async getBalance(address) {
+        const balance = await this.provider.getBalance(address);
+        return ethers_1.ethers.formatEther(balance);
+    }
+    async getMUSDTokenBalance(address) {
+        const token = new ethers_1.ethers.Contract(config_1.env_config.mezoTestnetMUSDTokenAddress, viem_1.erc20Abi, this.provider);
+        const balance = await token.balanceOf(address);
+        return ethers_1.ethers.formatEther(balance);
     }
 };
 exports.WalletService = WalletService;

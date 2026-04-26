@@ -2,11 +2,13 @@
 import { EmptyComponent } from "@/components/utilities/empty-component"
 import { InfoCard } from "@/components/utilities/info-card"
 import { PageHeader } from "@/components/utilities/page-header"
+import { useUser } from "@/hooks/use-user"
 import { ArrowDownRight, Clock, CreditCard, Package } from "lucide-react"
 import Link from "next/link"
 import React from "react"
 
 const BillingPage = () => {
+  const { data } = useUser()
   return (
     <div className="space-y-5 md:space-y-10">
       <PageHeader
@@ -19,7 +21,7 @@ const BillingPage = () => {
           title="Credit Balance"
           subtitle="$0.25 per service/month"
           icon={<CreditCard className="text-primary" size={20} />}
-          value={"$1.00"}
+          value={`$${data?.user?.wallet?.balance}`}
         />
 
         <InfoCard
@@ -45,16 +47,28 @@ const BillingPage = () => {
                 <div className="space-y-5">
                   <h3>Add Credits</h3>
                   <div className="space-y-3">
-                    <ol className="list-decimal pl-4">
+                    <ol className="list-decimal pl-4 space-y-2">
                       <li>
                         <p>
-                          Fund your wallet with MUSD at{" "}
+                          Fund your wallet with BTC at{" "}
                           <Link
                             href={"https://faucet.test.mezo.org/"}
                             target="_blank"
                             className="text-primary"
                           >
                             https://faucet.test.mezo.org/
+                          </Link>
+                        </p>
+                      </li>
+                      <li>
+                        <p>
+                          Borrow MUSD against your BTC at{" "}
+                          <Link
+                            href={"https://testnet.mezo.org/borrow"}
+                            target="_blank"
+                            className="text-primary"
+                          >
+                            https://testnet.mezo.org/borrow
                           </Link>
                         </p>
                       </li>

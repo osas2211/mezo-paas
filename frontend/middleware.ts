@@ -14,9 +14,23 @@ const protectedRoutes = [
 
 const authRoutes = ["/login", "/sign-up"]
 
+function isTokenExpired(token: string) {
+  try {
+    const payloadBase64 = token.split(".")[1]
+    const decodedPayload = JSON.parse(atob(payloadBase64))
+    const exp = decodedPayload.exp
+    if (!exp) return false
+    const now = Math.floor(Date.now() / 1000)
+    return now >= exp
+  } catch (error) {
+    return true
+  }
+}
+
 export default function middleware(request: NextRequest) {
   // Retrieve the access token from cookies
   const token = request.cookies.get("access_token")?.value
+  const isExpired = token ? isTokenExpired(token) : true
   const { pathname } = request.nextUrl
 
   // Check if it's an auth route (e.g. /login, /sign-up)
@@ -24,8 +38,8 @@ export default function middleware(request: NextRequest) {
     (route) => pathname === route || pathname.startsWith(`${route}/`),
   )
 
-  // Redirect to dashboard if logged in and trying to access login/signup
-  if (isAuthRoute && token) {
+  // Redirect to dashboard if logged in and token is valid
+  if (isAuthRoute && token && !isExpired) {
     return NextResponse.redirect(new URL("/dashboard", request.url))
   }
 
@@ -34,9 +48,13 @@ export default function middleware(request: NextRequest) {
     (route) => pathname === route || pathname.startsWith(`${route}/`),
   )
 
-  // Redirect to login if accessing a protected route without a token
-  if (isProtectedRoute && !token) {
-    return NextResponse.redirect(new URL("/login", request.url))
+  // Redirect to login if accessing a protected route without a token or if expired
+  if (isProtectedRoute && (isExpired || !token)) {
+    const response = NextResponse.redirect(new URL("/login", request.url))
+    if (token) {
+      response.cookies.delete("access_token")
+    }
+    return response
   }
 
   const response = NextResponse.next()

@@ -2,7 +2,6 @@ import { api } from "./api.instance"
 
 export const loginService = async (data: { email: string; password: string }) => {
   const res = await api.post<{ access_token: string }>('/auth/login', data)
-  console.log(res.data)
   if (typeof window !== 'undefined') {
     document.cookie = `access_token=${res.data.access_token}; path=/; max-age=${60 * 60 * 24 * 7}`
   }

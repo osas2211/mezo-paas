@@ -3,10 +3,13 @@ import { PageHeader } from "@/components/utilities/page-header"
 import { Shield, User } from "lucide-react"
 import React from "react"
 import { useLogout } from "@/hooks/use-auth"
+import { useUser } from "@/hooks/use-user"
 import { LoadingOutlined } from "@ant-design/icons"
 
 const SettingsPage = () => {
   const { mutate: logout, isPending } = useLogout()
+  const { data } = useUser()
+
   return (
     <div className="space-y-5 md:space-y-10">
       <PageHeader title="Settings" subtitle="Manage your account" />
@@ -24,18 +27,24 @@ const SettingsPage = () => {
                   <h3 className="font-medium">Account</h3>
                   <dl className="mt-3 space-y-2 text-sm">
                     <div className="flex gap-2">
-                      <dt className="text-white/60 w-24">Email</dt>
-                      <dd className="text-white/90">user@mezo-org.com</dd>
+                      <dt className="text-white/60 w-30">Email</dt>
+                      <dd className="text-white/90">{data?.user?.email}</dd>
                     </div>
                     <div className="flex gap-2">
-                      <dt className="text-white/60 w-24">User ID</dt>
+                      <dt className="text-white/60 w-30">User ID</dt>
                       <dd className="text-white/90 font-mono text-xs">
-                        73dgate-524b-092l-fs83-3828ba527fde89
+                        {data?.user?.id}
                       </dd>
                     </div>
                     <div className="flex gap-2">
-                      <dt className="text-white/60 w-24">Name</dt>
-                      <dd className="text-white/90">Mezo User</dd>
+                      <dt className="text-white/60 w-30">Wallet Address</dt>
+                      <dd className="text-white/90 font-mono text-xs">
+                        {data?.user?.wallet?.address}
+                      </dd>
+                    </div>
+                    <div className="flex gap-2">
+                      <dt className="text-white/60 w-30">Name</dt>
+                      <dd className="text-white/90">{data?.user?.name}</dd>
                     </div>
                   </dl>
                 </div>

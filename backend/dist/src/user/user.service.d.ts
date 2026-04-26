@@ -1,24 +1,26 @@
 import { PrismaService } from "../prisma/prisma.service";
+import { WalletService } from "../wallet/wallet.service";
 export declare class UserService {
     private readonly prisma;
-    constructor(prisma: PrismaService);
+    private readonly walletService;
+    constructor(prisma: PrismaService, walletService: WalletService);
     getUserProfile(userId: string): Promise<{
         user: {
+            wallet: {
+                balance: string;
+                id?: string | undefined;
+                createdAt?: Date | undefined;
+                updatedAt?: Date | undefined;
+                encryptedPK?: string | undefined;
+                address?: string | undefined;
+                encryptedMnemonic?: string | undefined;
+                userId?: string | undefined;
+            };
             id: string;
             email: string;
             name: string;
             createdAt: Date;
             updatedAt: Date;
-            wallet: {
-                id: string;
-                createdAt: Date;
-                updatedAt: Date;
-                encryptedPK: string;
-                address: string;
-                encryptedMnemonic: string;
-                userId: string;
-                balance: string;
-            } | null;
         };
         message: string;
     }>;

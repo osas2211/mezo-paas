@@ -7,4 +7,5 @@ export declare const env_config: {
     readonly mezoExplorer: string;
     readonly encryption_secret: string;
     readonly jwt_secret: string;
+    readonly mezoTestnetMUSDTokenAddress: string;
 };
