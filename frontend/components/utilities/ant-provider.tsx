@@ -33,6 +33,11 @@ export const AntProvider: React.FC<ContentWrapperI> = ({
             Button: {
               colorText: "#000",
             },
+            Modal: {
+              contentBg: "#0a0a0a",
+              headerBg: "#0a0a0a",
+              titleColor: "#fff",
+            },
           },
           algorithm: theme.darkAlgorithm,
         }}

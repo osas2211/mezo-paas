@@ -6,6 +6,7 @@ import { useUser } from "@/hooks/use-user"
 import { ArrowDownRight, Clock, CreditCard, Package } from "lucide-react"
 import Link from "next/link"
 import React from "react"
+import { FundWalletButton } from "@/components/billing/fund-wallet"
 
 const BillingPage = () => {
   const { data } = useUser()
@@ -82,9 +83,7 @@ const BillingPage = () => {
                 </div>
 
                 <div className="">
-                  <button className="text-dark bg-primary px-6 py-2 text-[16px] cursor-pointer">
-                    Fund wallet
-                  </button>
+                  <FundWalletButton />
                 </div>
               </div>
             </div>
