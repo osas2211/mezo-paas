@@ -19,8 +19,8 @@ export declare class UserController {
                 userId?: string | undefined;
             };
             id: string;
-            email: string;
             name: string;
+            email: string;
             createdAt: Date;
             updatedAt: Date;
         };

@@ -29,6 +29,9 @@ export declare const UserScalarFieldEnum: {
     readonly password: "password";
     readonly createdAt: "createdAt";
     readonly updatedAt: "updatedAt";
+    readonly githubAccessToken: "githubAccessToken";
+    readonly githubInstallationId: "githubInstallationId";
+    readonly githubUsername: "githubUsername";
 };
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum];
 export declare const WalletScalarFieldEnum: {
@@ -52,3 +55,8 @@ export declare const QueryMode: {
     readonly insensitive: "insensitive";
 };
 export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode];
+export declare const NullsOrder: {
+    readonly first: "first";
+    readonly last: "last";
+};
+export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder];

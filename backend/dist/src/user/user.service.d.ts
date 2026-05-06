@@ -17,8 +17,8 @@ export declare class UserService {
                 userId?: string | undefined;
             };
             id: string;
-            email: string;
             name: string;
+            email: string;
             createdAt: Date;
             updatedAt: Date;
         };

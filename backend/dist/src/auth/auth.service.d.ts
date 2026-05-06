@@ -12,32 +12,38 @@ export declare class AuthService {
     signup(body: SignUpDto): Promise<{
         message: string;
         user: {
-            name: string;
-            password: string;
-            email: string;
             id: string;
+            name: string;
+            email: string;
+            password: string;
             createdAt: Date;
             updatedAt: Date;
+            githubAccessToken: string | null;
+            githubInstallationId: string | null;
+            githubUsername: string | null;
         };
     }>;
     login(body: LoginDto): Promise<{
         message: string;
         user: {
             wallet: {
-                address: string;
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
                 encryptedPK: string;
+                address: string;
                 encryptedMnemonic: string;
-                balance: string;
                 userId: string;
+                balance: string;
             } | null;
+            id: string;
             name: string;
             email: string;
-            id: string;
             createdAt: Date;
             updatedAt: Date;
+            githubAccessToken: string | null;
+            githubInstallationId: string | null;
+            githubUsername: string | null;
         };
         access_token: string;
     }>;

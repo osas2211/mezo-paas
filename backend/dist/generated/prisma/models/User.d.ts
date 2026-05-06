@@ -13,6 +13,9 @@ export type UserMinAggregateOutputType = {
     password: string | null;
     createdAt: Date | null;
     updatedAt: Date | null;
+    githubAccessToken: string | null;
+    githubInstallationId: string | null;
+    githubUsername: string | null;
 };
 export type UserMaxAggregateOutputType = {
     id: string | null;
@@ -21,6 +24,9 @@ export type UserMaxAggregateOutputType = {
     password: string | null;
     createdAt: Date | null;
     updatedAt: Date | null;
+    githubAccessToken: string | null;
+    githubInstallationId: string | null;
+    githubUsername: string | null;
 };
 export type UserCountAggregateOutputType = {
     id: number;
@@ -29,6 +35,9 @@ export type UserCountAggregateOutputType = {
     password: number;
     createdAt: number;
     updatedAt: number;
+    githubAccessToken: number;
+    githubInstallationId: number;
+    githubUsername: number;
     _all: number;
 };
 export type UserMinAggregateInputType = {
@@ -38,6 +47,9 @@ export type UserMinAggregateInputType = {
     password?: true;
     createdAt?: true;
     updatedAt?: true;
+    githubAccessToken?: true;
+    githubInstallationId?: true;
+    githubUsername?: true;
 };
 export type UserMaxAggregateInputType = {
     id?: true;
@@ -46,6 +58,9 @@ export type UserMaxAggregateInputType = {
     password?: true;
     createdAt?: true;
     updatedAt?: true;
+    githubAccessToken?: true;
+    githubInstallationId?: true;
+    githubUsername?: true;
 };
 export type UserCountAggregateInputType = {
     id?: true;
@@ -54,6 +69,9 @@ export type UserCountAggregateInputType = {
     password?: true;
     createdAt?: true;
     updatedAt?: true;
+    githubAccessToken?: true;
+    githubInstallationId?: true;
+    githubUsername?: true;
     _all?: true;
 };
 export type UserAggregateArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -87,6 +105,9 @@ export type UserGroupByOutputType = {
     password: string;
     createdAt: Date;
     updatedAt: Date;
+    githubAccessToken: string | null;
+    githubInstallationId: string | null;
+    githubUsername: string | null;
     _count: UserCountAggregateOutputType | null;
     _min: UserMinAggregateOutputType | null;
     _max: UserMaxAggregateOutputType | null;
@@ -104,6 +125,9 @@ export type UserWhereInput = {
     password?: Prisma.StringFilter<"User"> | string;
     createdAt?: Prisma.DateTimeFilter<"User"> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string;
+    githubAccessToken?: Prisma.StringNullableFilter<"User"> | string | null;
+    githubInstallationId?: Prisma.StringNullableFilter<"User"> | string | null;
+    githubUsername?: Prisma.StringNullableFilter<"User"> | string | null;
     wallet?: Prisma.XOR<Prisma.WalletNullableScalarRelationFilter, Prisma.WalletWhereInput> | null;
 };
 export type UserOrderByWithRelationInput = {
@@ -113,11 +137,15 @@ export type UserOrderByWithRelationInput = {
     password?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
     updatedAt?: Prisma.SortOrder;
+    githubAccessToken?: Prisma.SortOrderInput | Prisma.SortOrder;
+    githubInstallationId?: Prisma.SortOrderInput | Prisma.SortOrder;
+    githubUsername?: Prisma.SortOrderInput | Prisma.SortOrder;
     wallet?: Prisma.WalletOrderByWithRelationInput;
 };
 export type UserWhereUniqueInput = Prisma.AtLeast<{
     id?: string;
     email?: string;
+    githubUsername?: string;
     AND?: Prisma.UserWhereInput | Prisma.UserWhereInput[];
     OR?: Prisma.UserWhereInput[];
     NOT?: Prisma.UserWhereInput | Prisma.UserWhereInput[];
@@ -125,8 +153,10 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
     password?: Prisma.StringFilter<"User"> | string;
     createdAt?: Prisma.DateTimeFilter<"User"> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string;
+    githubAccessToken?: Prisma.StringNullableFilter<"User"> | string | null;
+    githubInstallationId?: Prisma.StringNullableFilter<"User"> | string | null;
     wallet?: Prisma.XOR<Prisma.WalletNullableScalarRelationFilter, Prisma.WalletWhereInput> | null;
-}, "id" | "email">;
+}, "id" | "email" | "githubUsername">;
 export type UserOrderByWithAggregationInput = {
     id?: Prisma.SortOrder;
     name?: Prisma.SortOrder;
@@ -134,6 +164,9 @@ export type UserOrderByWithAggregationInput = {
     password?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
     updatedAt?: Prisma.SortOrder;
+    githubAccessToken?: Prisma.SortOrderInput | Prisma.SortOrder;
+    githubInstallationId?: Prisma.SortOrderInput | Prisma.SortOrder;
+    githubUsername?: Prisma.SortOrderInput | Prisma.SortOrder;
     _count?: Prisma.UserCountOrderByAggregateInput;
     _max?: Prisma.UserMaxOrderByAggregateInput;
     _min?: Prisma.UserMinOrderByAggregateInput;
@@ -148,6 +181,9 @@ export type UserScalarWhereWithAggregatesInput = {
     password?: Prisma.StringWithAggregatesFilter<"User"> | string;
     createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string;
     updatedAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string;
+    githubAccessToken?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null;
+    githubInstallationId?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null;
+    githubUsername?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null;
 };
 export type UserCreateInput = {
     id?: string;
@@ -156,6 +192,9 @@ export type UserCreateInput = {
     password: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
+    githubAccessToken?: string | null;
+    githubInstallationId?: string | null;
+    githubUsername?: string | null;
     wallet?: Prisma.WalletCreateNestedOneWithoutUserInput;
 };
 export type UserUncheckedCreateInput = {
@@ -165,6 +204,9 @@ export type UserUncheckedCreateInput = {
     password: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
+    githubAccessToken?: string | null;
+    githubInstallationId?: string | null;
+    githubUsername?: string | null;
     wallet?: Prisma.WalletUncheckedCreateNestedOneWithoutUserInput;
 };
 export type UserUpdateInput = {
@@ -174,6 +216,9 @@ export type UserUpdateInput = {
     password?: Prisma.StringFieldUpdateOperationsInput | string;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    githubAccessToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    githubInstallationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    githubUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     wallet?: Prisma.WalletUpdateOneWithoutUserNestedInput;
 };
 export type UserUncheckedUpdateInput = {
@@ -183,6 +228,9 @@ export type UserUncheckedUpdateInput = {
     password?: Prisma.StringFieldUpdateOperationsInput | string;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    githubAccessToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    githubInstallationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    githubUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     wallet?: Prisma.WalletUncheckedUpdateOneWithoutUserNestedInput;
 };
 export type UserCreateManyInput = {
@@ -192,6 +240,9 @@ export type UserCreateManyInput = {
     password: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
+    githubAccessToken?: string | null;
+    githubInstallationId?: string | null;
+    githubUsername?: string | null;
 };
 export type UserUpdateManyMutationInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -200,6 +251,9 @@ export type UserUpdateManyMutationInput = {
     password?: Prisma.StringFieldUpdateOperationsInput | string;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    githubAccessToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    githubInstallationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    githubUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 };
 export type UserUncheckedUpdateManyInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -208,6 +262,9 @@ export type UserUncheckedUpdateManyInput = {
     password?: Prisma.StringFieldUpdateOperationsInput | string;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    githubAccessToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    githubInstallationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    githubUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 };
 export type UserCountOrderByAggregateInput = {
     id?: Prisma.SortOrder;
@@ -216,6 +273,9 @@ export type UserCountOrderByAggregateInput = {
     password?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
     updatedAt?: Prisma.SortOrder;
+    githubAccessToken?: Prisma.SortOrder;
+    githubInstallationId?: Prisma.SortOrder;
+    githubUsername?: Prisma.SortOrder;
 };
 export type UserMaxOrderByAggregateInput = {
     id?: Prisma.SortOrder;
@@ -224,6 +284,9 @@ export type UserMaxOrderByAggregateInput = {
     password?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
     updatedAt?: Prisma.SortOrder;
+    githubAccessToken?: Prisma.SortOrder;
+    githubInstallationId?: Prisma.SortOrder;
+    githubUsername?: Prisma.SortOrder;
 };
 export type UserMinOrderByAggregateInput = {
     id?: Prisma.SortOrder;
@@ -232,6 +295,9 @@ export type UserMinOrderByAggregateInput = {
     password?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
     updatedAt?: Prisma.SortOrder;
+    githubAccessToken?: Prisma.SortOrder;
+    githubInstallationId?: Prisma.SortOrder;
+    githubUsername?: Prisma.SortOrder;
 };
 export type UserScalarRelationFilter = {
     is?: Prisma.UserWhereInput;
@@ -242,6 +308,9 @@ export type StringFieldUpdateOperationsInput = {
 };
 export type DateTimeFieldUpdateOperationsInput = {
     set?: Date | string;
+};
+export type NullableStringFieldUpdateOperationsInput = {
+    set?: string | null;
 };
 export type UserCreateNestedOneWithoutWalletInput = {
     create?: Prisma.XOR<Prisma.UserCreateWithoutWalletInput, Prisma.UserUncheckedCreateWithoutWalletInput>;
@@ -262,6 +331,9 @@ export type UserCreateWithoutWalletInput = {
     password: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
+    githubAccessToken?: string | null;
+    githubInstallationId?: string | null;
+    githubUsername?: string | null;
 };
 export type UserUncheckedCreateWithoutWalletInput = {
     id?: string;
@@ -270,6 +342,9 @@ export type UserUncheckedCreateWithoutWalletInput = {
     password: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
+    githubAccessToken?: string | null;
+    githubInstallationId?: string | null;
+    githubUsername?: string | null;
 };
 export type UserCreateOrConnectWithoutWalletInput = {
     where: Prisma.UserWhereUniqueInput;
@@ -291,6 +366,9 @@ export type UserUpdateWithoutWalletInput = {
     password?: Prisma.StringFieldUpdateOperationsInput | string;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    githubAccessToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    githubInstallationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    githubUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 };
 export type UserUncheckedUpdateWithoutWalletInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -299,6 +377,9 @@ export type UserUncheckedUpdateWithoutWalletInput = {
     password?: Prisma.StringFieldUpdateOperationsInput | string;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    githubAccessToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    githubInstallationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    githubUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 };
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
     id?: boolean;
@@ -307,6 +388,9 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
     password?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
+    githubAccessToken?: boolean;
+    githubInstallationId?: boolean;
+    githubUsername?: boolean;
     wallet?: boolean | Prisma.User$walletArgs<ExtArgs>;
 }, ExtArgs["result"]["user"]>;
 export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -316,6 +400,9 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
     password?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
+    githubAccessToken?: boolean;
+    githubInstallationId?: boolean;
+    githubUsername?: boolean;
 }, ExtArgs["result"]["user"]>;
 export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
     id?: boolean;
@@ -324,6 +411,9 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
     password?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
+    githubAccessToken?: boolean;
+    githubInstallationId?: boolean;
+    githubUsername?: boolean;
 }, ExtArgs["result"]["user"]>;
 export type UserSelectScalar = {
     id?: boolean;
@@ -332,8 +422,11 @@ export type UserSelectScalar = {
     password?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
+    githubAccessToken?: boolean;
+    githubInstallationId?: boolean;
+    githubUsername?: boolean;
 };
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "password" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>;
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "password" | "createdAt" | "updatedAt" | "githubAccessToken" | "githubInstallationId" | "githubUsername", ExtArgs["result"]["user"]>;
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     wallet?: boolean | Prisma.User$walletArgs<ExtArgs>;
 };
@@ -351,6 +444,9 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
         password: string;
         createdAt: Date;
         updatedAt: Date;
+        githubAccessToken: string | null;
+        githubInstallationId: string | null;
+        githubUsername: string | null;
     }, ExtArgs["result"]["user"]>;
     composites: {};
 };
@@ -415,6 +511,9 @@ export interface UserFieldRefs {
     readonly password: Prisma.FieldRef<"User", 'String'>;
     readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>;
     readonly updatedAt: Prisma.FieldRef<"User", 'DateTime'>;
+    readonly githubAccessToken: Prisma.FieldRef<"User", 'String'>;
+    readonly githubInstallationId: Prisma.FieldRef<"User", 'String'>;
+    readonly githubUsername: Prisma.FieldRef<"User", 'String'>;
 }
 export type UserFindUniqueArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     select?: Prisma.UserSelect<ExtArgs> | null;
