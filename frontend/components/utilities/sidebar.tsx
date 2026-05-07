@@ -100,7 +100,8 @@ export default function Sidebar() {
             </h2>
             <ul className="space-y-1">
               {navItem.items.map((item, index) => {
-                const isActive = pathname === item.href
+                const isActive =
+                  pathname === item.href || pathname.startsWith(item.href + "/")
                 return (
                   <li key={index}>
                     <Link

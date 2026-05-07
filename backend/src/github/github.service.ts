@@ -22,7 +22,7 @@ export class GithubService {
       // 2. Fetch the repositories the user granted access to
       const reposResponse = await firstValueFrom(
         this.httpService.get(
-          `https://api.github.com/user/installations/${installationId}/repositories?per_page=${100}`,
+          `https://api.github.com/user/installations/${installationId}/repositories?per_page=${100}&page=2`,
           {
             headers: {
               Authorization: `token ${access_Token}`,
@@ -32,7 +32,7 @@ export class GithubService {
         ),
       )
 
-      let repos: GithubRepoDto[] = reposResponse.data.repositories
+      let repos: GithubRepoDto[] = reposResponse.data.repositories.reverse()
 
       if (search) {
         const lowerSearch = search.toLowerCase()

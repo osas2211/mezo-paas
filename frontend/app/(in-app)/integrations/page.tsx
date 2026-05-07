@@ -3,8 +3,20 @@ import { PageHeader } from "@/components/utilities/page-header"
 import { ExternalLink, Trash2 } from "lucide-react"
 import React from "react"
 import { FiGithub } from "react-icons/fi"
+import {
+  useInstallGithubApp,
+  useGetGithubUser,
+  useUninstallGithubApp,
+} from "@/hooks/use-github"
+import { LoadingOutlined } from "@ant-design/icons"
 
 const IntegrationsPage = () => {
+  const { mutateAsync: installGithubApp, isPending: isInstalling } =
+    useInstallGithubApp()
+  const { data: githubUser, isLoading: isLoadingGithubUser } =
+    useGetGithubUser()
+  const { mutateAsync: uninstallGithubApp, isPending: isUninstalling } =
+    useUninstallGithubApp()
   return (
     <div className="space-y-5 md:space-y-10 font-sans">
       <PageHeader
@@ -26,33 +38,59 @@ const IntegrationsPage = () => {
                   <p className="text-white/60 text-xs">
                     Connect your GitHub account to deploy private repositories.
                   </p>
-                  <div className="p-2">
-                    <div className="py-6 flex items-center justify-between gap-2">
-                      <div className="inline-flex items-center gap-2.5">
-                        <img
-                          src={
-                            "https://img.freepik.com/free-photo/african-american-man-wearing-round-glasses_273609-10062.jpg"
-                          }
-                          alt="User Github profile"
-                          className="rounded-full bg-white object-cover h-8 w-8"
-                        />
-                        <p className="text-sm">Osas2211</p>
-                        <p className="text-white/60 text-xs">User</p>
+
+                  {isLoadingGithubUser ? (
+                    <p className="mt-4">Loading...</p>
+                  ) : !githubUser ? (
+                    <button
+                      onClick={() => installGithubApp()}
+                      disabled={isInstalling}
+                      className="mt-6 cursor-pointer bg-primary/20 border border-primary text-primary px-4 py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isInstalling ? "Installing..." : "Connect Github"}
+                    </button>
+                  ) : (
+                    <div className="p-2">
+                      <div className="py-6 flex items-center justify-between gap-2">
+                        <div className="inline-flex items-center gap-2.5">
+                          <img
+                            src={githubUser?.avatar_url}
+                            alt="User Github profile"
+                            className="rounded-full bg-white object-cover h-8 w-8"
+                          />
+                          <p className="text-sm">{githubUser?.login}</p>
+                          <p className="text-white/60 text-xs">User</p>
+                        </div>
+
+                        <button
+                          onClick={() => uninstallGithubApp()}
+                          disabled={isUninstalling}
+                          className="cursor-pointer"
+                        >
+                          {isUninstalling ? (
+                            <LoadingOutlined />
+                          ) : (
+                            <Trash2
+                              size={16}
+                              className="text-white/40 cursor-pointer"
+                            />
+                          )}
+                        </button>
                       </div>
-                      <Trash2
-                        size={16}
-                        className="text-white/40 cursor-pointer"
-                      />
+                      <div className="">
+                        <button
+                          onClick={() => installGithubApp()}
+                          disabled={isInstalling}
+                          className="flex gap-2 items-center cursor-pointer"
+                        >
+                          <ExternalLink size={16} className="text-white/70" />
+                          <span className="text-sm text-white/70 font-medium">
+                            Update github account
+                          </span>
+                        </button>
+                      </div>
                     </div>
-                    <div className="">
-                      <button className="flex gap-2 items-center cursor-pointer">
-                        <ExternalLink size={16} className="text-white/70" />
-                        <span className="text-sm text-white/70 font-medium">
-                          Add another account
-                        </span>
-                      </button>
-                    </div>
-                  </div>
+                  )}
                 </div>
               </div>
             </div>

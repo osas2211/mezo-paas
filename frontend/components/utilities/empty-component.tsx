@@ -7,6 +7,7 @@ export const EmptyComponent = (props: {
   caption?: string
   icon?: React.ReactNode
   title?: string
+  action?: React.ReactNode
 }) => {
   return (
     <div>
@@ -16,7 +17,11 @@ export const EmptyComponent = (props: {
             <h3 className="text-[16px] font-medium">{props.title}</h3>
             {props.children || (
               <>
-                <div className="flex flex-col gap-1.5 justify-center items-center font-normal md:h-50">
+                <div
+                  className={`flex flex-col gap-1.5 justify-center items-center font-normal ${
+                    props.action ? "md:h-35" : "md:h-50"
+                  }`}
+                >
                   <div className="pb-4">{props?.icon}</div>
                   <div className="text-sm text-white font-medium">
                     {props?.description}
@@ -26,6 +31,11 @@ export const EmptyComponent = (props: {
               </>
             )}
           </div>
+          {props.action && (
+            <div className="flex justify-center items-center">
+              {props.action}
+            </div>
+          )}
         </div>
       </div>
     </div>

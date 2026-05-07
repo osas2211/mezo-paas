@@ -25,13 +25,13 @@ let GithubService = GithubService_1 = class GithubService {
     }
     async fetchInstallationRepos(installationId, access_Token, search, limit) {
         try {
-            const reposResponse = await (0, rxjs_1.firstValueFrom)(this.httpService.get(`https://api.github.com/user/installations/${installationId}/repositories?per_page=${100}`, {
+            const reposResponse = await (0, rxjs_1.firstValueFrom)(this.httpService.get(`https://api.github.com/user/installations/${installationId}/repositories?per_page=${100}&page=2`, {
                 headers: {
                     Authorization: `token ${access_Token}`,
                     Accept: 'application/vnd.github.v3+json',
                 },
             }));
-            let repos = reposResponse.data.repositories;
+            let repos = reposResponse.data.repositories.reverse();
             if (search) {
                 const lowerSearch = search.toLowerCase();
                 repos = repos.filter(repo => repo.name.toLowerCase().includes(lowerSearch));
