@@ -13,6 +13,7 @@ import { AuthService } from './auth/auth.service'
 import { UserModule } from './user/user.module'
 import { UserService } from './user/user.service'
 import { GithubModule } from './github/github.module'
+import { UploadModule } from './upload/upload.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { GithubModule } from './github/github.module'
     WalletModule,
     UserModule,
     GithubModule,
+    UploadModule,
   ],
   controllers: [AppController],
   providers: [

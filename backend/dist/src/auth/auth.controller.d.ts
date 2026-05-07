@@ -6,10 +6,10 @@ export declare class AuthController {
     createUser(body: SignUpDto): Promise<{
         message: string;
         user: {
-            id: string;
             name: string;
-            email: string;
             password: string;
+            email: string;
+            id: string;
             createdAt: Date;
             updatedAt: Date;
             githubAccessToken: string | null;
@@ -21,18 +21,18 @@ export declare class AuthController {
         message: string;
         user: {
             wallet: {
+                address: string;
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
                 encryptedPK: string;
-                address: string;
                 encryptedMnemonic: string;
-                userId: string;
                 balance: string;
+                userId: string;
             } | null;
-            id: string;
             name: string;
             email: string;
+            id: string;
             createdAt: Date;
             updatedAt: Date;
             githubAccessToken: string | null;
