@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Post, Query, Req, Res, UnauthorizedException, UseGuards } from '@nestjs/common'
+import { Body, Controller, Delete, Get, NotFoundException, Post, Query, Req, Res, UnauthorizedException, UseGuards } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { GithubService } from './github.service'
 import express from 'express'
@@ -134,12 +134,16 @@ export class GithubController {
     @Req() req: express.Request,
     @Body("repoName") repoName: string,
   ) {
-    const user = await this.prismaService.user.findUnique({ where: { id: req["user"]?.userId }, select: { githubAccessToken: true, githubInstallationId: true } })
+    const user = await this.prismaService.user.findUnique({ where: { id: req["user"]?.userId }, select: { githubAccessToken: true, githubInstallationId: true, githubUsername: true } })
     const installationId = user?.githubInstallationId
     const access_token = user?.githubAccessToken
-    if (!installationId || !access_token) {
+    if (!installationId || !access_token || !user?.githubUsername) {
       throw new UnauthorizedException('You are not authorized to perform this action')
     }
-    return this.githubService.importRepo(req["user"]?.userId as string, repoName)
+    const repo = await this.githubService.fetchSingleRepoDatails(req["user"]?.userId as string, repoName)
+    if (!repo) {
+      throw new NotFoundException('Repository not found')
+    }
+    return this.githubService.importRepo(repoName, repo.default_branch, access_token, user?.githubUsername as string)
   }
 }

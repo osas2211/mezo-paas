@@ -8,3 +8,5 @@ export type PrismaClient<LogOpts extends Prisma.LogLevel = never, OmitOpts exten
 export { Prisma };
 export type User = Prisma.UserModel;
 export type Wallet = Prisma.WalletModel;
+export type Project = Prisma.ProjectModel;
+export type Deployment = Prisma.DeploymentModel;

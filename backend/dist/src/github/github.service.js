@@ -126,21 +126,9 @@ let GithubService = GithubService_1 = class GithubService {
             throw new common_1.UnauthorizedException('Could not connect to GitHub');
         }
     }
-    async importRepo(userId, repoName, branch = 'main') {
-        const userData = await this.prismaService.user.findUnique({
-            where: {
-                id: userId,
-            },
-        });
-        if (!userData?.githubAccessToken || !userData?.githubInstallationId || !userData?.githubUsername) {
-            throw new common_1.UnauthorizedException('You are not authorized to perform this action');
-        }
-        const cloneUrl = `https://x-access-token:${userData?.githubAccessToken}@github.com/${userData?.githubUsername}/${repoName}.git`;
-        const repo = await this.fetchSingleRepoDatails(userId, repoName);
-        if (!repo) {
-            throw new common_1.NotFoundException('Repository not found');
-        }
-        return await this.uploadService.uploadRepo(cloneUrl, repo.default_branch);
+    async importRepo(repoName, branch, accessToken, githubUsername) {
+        const cloneUrl = `https://x-access-token:${accessToken}@github.com/${githubUsername}/${repoName}.git`;
+        return await this.uploadService.uploadRepo(cloneUrl, branch);
     }
 };
 exports.GithubService = GithubService;

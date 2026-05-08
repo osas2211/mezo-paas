@@ -36,5 +36,11 @@ export interface PrismaClient<in LogOpts extends Prisma.LogLevel = never, in out
     get wallet(): Prisma.WalletDelegate<ExtArgs, {
         omit: OmitOpts;
     }>;
+    get project(): Prisma.ProjectDelegate<ExtArgs, {
+        omit: OmitOpts;
+    }>;
+    get deployment(): Prisma.DeploymentDelegate<ExtArgs, {
+        omit: OmitOpts;
+    }>;
 }
 export declare function getPrismaClientClass(): PrismaClientConstructor;

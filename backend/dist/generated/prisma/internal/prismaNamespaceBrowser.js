@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.NullsOrder = exports.QueryMode = exports.SortOrder = exports.WalletScalarFieldEnum = exports.UserScalarFieldEnum = exports.TransactionIsolationLevel = exports.ModelName = exports.AnyNull = exports.JsonNull = exports.DbNull = exports.NullTypes = exports.Decimal = void 0;
+exports.NullsOrder = exports.QueryMode = exports.SortOrder = exports.DeploymentScalarFieldEnum = exports.ProjectScalarFieldEnum = exports.WalletScalarFieldEnum = exports.UserScalarFieldEnum = exports.TransactionIsolationLevel = exports.ModelName = exports.AnyNull = exports.JsonNull = exports.DbNull = exports.NullTypes = exports.Decimal = void 0;
 const runtime = __importStar(require("@prisma/client/runtime/index-browser"));
 exports.Decimal = runtime.Decimal;
 exports.NullTypes = {
@@ -46,7 +46,9 @@ exports.JsonNull = runtime.JsonNull;
 exports.AnyNull = runtime.AnyNull;
 exports.ModelName = {
     User: 'User',
-    Wallet: 'Wallet'
+    Wallet: 'Wallet',
+    Project: 'Project',
+    Deployment: 'Deployment'
 };
 exports.TransactionIsolationLevel = runtime.makeStrictEnum({
     ReadUncommitted: 'ReadUncommitted',
@@ -74,6 +76,32 @@ exports.WalletScalarFieldEnum = {
     updatedAt: 'updatedAt',
     userId: 'userId',
     balance: 'balance'
+};
+exports.ProjectScalarFieldEnum = {
+    id: 'id',
+    name: 'name',
+    description: 'description',
+    framework: 'framework',
+    nodeVersion: 'nodeVersion',
+    buildCommand: 'buildCommand',
+    installCommand: 'installCommand',
+    outputDirectory: 'outputDirectory',
+    devCommand: 'devCommand',
+    gitRepositoryName: 'gitRepositoryName',
+    gitRepositoryOwner: 'gitRepositoryOwner',
+    gitRepositoryType: 'gitRepositoryType',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    userId: 'userId'
+};
+exports.DeploymentScalarFieldEnum = {
+    id: 'id',
+    projectId: 'projectId',
+    status: 'status',
+    url: 'url',
+    name: 'name',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
 };
 exports.SortOrder = {
     asc: 'asc',

@@ -26,6 +26,7 @@ import {
   useImportRepo,
 } from "@/hooks/use-github"
 import { useDebounce } from "@/hooks/use-debounce"
+import { useCreateProject } from "@/hooks/use-project"
 
 const LANGUAGE_COLORS: Record<string, string> = {
   TypeScript: "#3178c6",
@@ -66,11 +67,12 @@ const CreateProjectPage = () => {
   } = useGetGithubRepos(debouncedSearch, 7)
 
   const filteredRepos = repos || []
-  const { mutateAsync: importRepo, isPending: isImporting } = useImportRepo()
+  const { mutateAsync: createproject, isPending: isImporting } =
+    useCreateProject()
 
-  const handleImport = async (repo: GithubRepoI) => {
+  const handleCreateProject = async (repo: GithubRepoI) => {
     setImportingId(repo.id)
-    await importRepo({ repoName: repo.name })
+    await createproject({ repoName: repo.name })
     setImportingId(null)
   }
 
@@ -288,7 +290,7 @@ const CreateProjectPage = () => {
 
                           {/* Import Button */}
                           <button
-                            onClick={() => handleImport(repo)}
+                            onClick={() => handleCreateProject(repo)}
                             disabled={importingId === repo.id && isImporting}
                             className="shrink-0 ml-4 px-4 py-1.5 text-xs font-medium border border-white/20 text-white/80 hover:bg-white hover:text-black hover:border-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
                           >

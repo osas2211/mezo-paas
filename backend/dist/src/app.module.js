@@ -22,6 +22,7 @@ const user_module_1 = require("./user/user.module");
 const user_service_1 = require("./user/user.service");
 const github_module_1 = require("./github/github.module");
 const upload_module_1 = require("./upload/upload.module");
+const project_module_1 = require("./project/project.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -39,6 +40,7 @@ exports.AppModule = AppModule = __decorate([
             user_module_1.UserModule,
             github_module_1.GithubModule,
             upload_module_1.UploadModule,
+            project_module_1.ProjectModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [

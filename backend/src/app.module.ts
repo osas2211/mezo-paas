@@ -13,7 +13,9 @@ import { AuthService } from './auth/auth.service'
 import { UserModule } from './user/user.module'
 import { UserService } from './user/user.service'
 import { GithubModule } from './github/github.module'
-import { UploadModule } from './upload/upload.module';
+import { UploadModule } from './upload/upload.module'
+import { ProjectModule } from './project/project.module'
+
 
 @Module({
   imports: [
@@ -28,6 +30,7 @@ import { UploadModule } from './upload/upload.module';
     UserModule,
     GithubModule,
     UploadModule,
+    ProjectModule,
   ],
   controllers: [AppController],
   providers: [
@@ -37,6 +40,7 @@ import { UploadModule } from './upload/upload.module';
     PrismaService,
     AuthService,
     UserService,
+
   ],
 })
 export class AppModule { }

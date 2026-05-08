@@ -81,6 +81,13 @@ enum Framework {
   bun
   html
   reactjs
+  nuxtjs
+  sveltejs
+  remix
+  angular
+  gatsby
+  sveltekit
+  node
 }
 
 enum GitProvider {

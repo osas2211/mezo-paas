@@ -141,22 +141,8 @@ export class GithubService {
     }
   }
 
-  async importRepo(userId: string, repoName: string, branch: string = 'main') {
-    const userData = await this.prismaService.user.findUnique({
-      where: {
-        id: userId,
-      },
-    })
-    if (!userData?.githubAccessToken || !userData?.githubInstallationId || !userData?.githubUsername) {
-      throw new UnauthorizedException('You are not authorized to perform this action')
-    }
-
-    // const octokit = await this.githubApp.getInstallationOctokit(Number(userData?.githubInstallationId))
-    const cloneUrl = `https://x-access-token:${userData?.githubAccessToken}@github.com/${userData?.githubUsername}/${repoName}.git`
-    const repo = await this.fetchSingleRepoDatails(userId, repoName)
-    if (!repo) {
-      throw new NotFoundException('Repository not found')
-    }
-    return await this.uploadService.uploadRepo(cloneUrl, repo.default_branch)
+  async importRepo(repoName: string, branch: string, accessToken: string, githubUsername: string) {
+    const cloneUrl = `https://x-access-token:${accessToken}@github.com/${githubUsername}/${repoName}.git`
+    return await this.uploadService.uploadRepo(cloneUrl, branch)
   }
 }

@@ -18,9 +18,9 @@ export declare class UserController {
                 encryptedMnemonic?: string | undefined;
                 userId?: string | undefined;
             };
-            id: string;
-            name: string;
             email: string;
+            name: string;
+            id: string;
             createdAt: Date;
             updatedAt: Date;
         };

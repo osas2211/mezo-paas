@@ -99,13 +99,17 @@ let GithubController = class GithubController {
         return this.githubService.uninstallGithubApp(req["user"]?.userId);
     }
     async importRepo(req, repoName) {
-        const user = await this.prismaService.user.findUnique({ where: { id: req["user"]?.userId }, select: { githubAccessToken: true, githubInstallationId: true } });
+        const user = await this.prismaService.user.findUnique({ where: { id: req["user"]?.userId }, select: { githubAccessToken: true, githubInstallationId: true, githubUsername: true } });
         const installationId = user?.githubInstallationId;
         const access_token = user?.githubAccessToken;
-        if (!installationId || !access_token) {
+        if (!installationId || !access_token || !user?.githubUsername) {
             throw new common_1.UnauthorizedException('You are not authorized to perform this action');
         }
-        return this.githubService.importRepo(req["user"]?.userId, repoName);
+        const repo = await this.githubService.fetchSingleRepoDatails(req["user"]?.userId, repoName);
+        if (!repo) {
+            throw new common_1.NotFoundException('Repository not found');
+        }
+        return this.githubService.importRepo(repoName, repo.default_branch, access_token, user?.githubUsername);
     }
 };
 exports.GithubController = GithubController;

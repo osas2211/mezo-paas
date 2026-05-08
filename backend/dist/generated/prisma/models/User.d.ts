@@ -129,6 +129,7 @@ export type UserWhereInput = {
     githubInstallationId?: Prisma.StringNullableFilter<"User"> | string | null;
     githubUsername?: Prisma.StringNullableFilter<"User"> | string | null;
     wallet?: Prisma.XOR<Prisma.WalletNullableScalarRelationFilter, Prisma.WalletWhereInput> | null;
+    projects?: Prisma.ProjectListRelationFilter;
 };
 export type UserOrderByWithRelationInput = {
     id?: Prisma.SortOrder;
@@ -141,6 +142,7 @@ export type UserOrderByWithRelationInput = {
     githubInstallationId?: Prisma.SortOrderInput | Prisma.SortOrder;
     githubUsername?: Prisma.SortOrderInput | Prisma.SortOrder;
     wallet?: Prisma.WalletOrderByWithRelationInput;
+    projects?: Prisma.ProjectOrderByRelationAggregateInput;
 };
 export type UserWhereUniqueInput = Prisma.AtLeast<{
     id?: string;
@@ -156,6 +158,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
     githubAccessToken?: Prisma.StringNullableFilter<"User"> | string | null;
     githubInstallationId?: Prisma.StringNullableFilter<"User"> | string | null;
     wallet?: Prisma.XOR<Prisma.WalletNullableScalarRelationFilter, Prisma.WalletWhereInput> | null;
+    projects?: Prisma.ProjectListRelationFilter;
 }, "id" | "email" | "githubUsername">;
 export type UserOrderByWithAggregationInput = {
     id?: Prisma.SortOrder;
@@ -196,6 +199,7 @@ export type UserCreateInput = {
     githubInstallationId?: string | null;
     githubUsername?: string | null;
     wallet?: Prisma.WalletCreateNestedOneWithoutUserInput;
+    projects?: Prisma.ProjectCreateNestedManyWithoutUserInput;
 };
 export type UserUncheckedCreateInput = {
     id?: string;
@@ -208,6 +212,7 @@ export type UserUncheckedCreateInput = {
     githubInstallationId?: string | null;
     githubUsername?: string | null;
     wallet?: Prisma.WalletUncheckedCreateNestedOneWithoutUserInput;
+    projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutUserInput;
 };
 export type UserUpdateInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -220,6 +225,7 @@ export type UserUpdateInput = {
     githubInstallationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     githubUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     wallet?: Prisma.WalletUpdateOneWithoutUserNestedInput;
+    projects?: Prisma.ProjectUpdateManyWithoutUserNestedInput;
 };
 export type UserUncheckedUpdateInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -232,6 +238,7 @@ export type UserUncheckedUpdateInput = {
     githubInstallationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     githubUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     wallet?: Prisma.WalletUncheckedUpdateOneWithoutUserNestedInput;
+    projects?: Prisma.ProjectUncheckedUpdateManyWithoutUserNestedInput;
 };
 export type UserCreateManyInput = {
     id?: string;
@@ -324,6 +331,18 @@ export type UserUpdateOneRequiredWithoutWalletNestedInput = {
     connect?: Prisma.UserWhereUniqueInput;
     update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutWalletInput, Prisma.UserUpdateWithoutWalletInput>, Prisma.UserUncheckedUpdateWithoutWalletInput>;
 };
+export type UserCreateNestedOneWithoutProjectsInput = {
+    create?: Prisma.XOR<Prisma.UserCreateWithoutProjectsInput, Prisma.UserUncheckedCreateWithoutProjectsInput>;
+    connectOrCreate?: Prisma.UserCreateOrConnectWithoutProjectsInput;
+    connect?: Prisma.UserWhereUniqueInput;
+};
+export type UserUpdateOneRequiredWithoutProjectsNestedInput = {
+    create?: Prisma.XOR<Prisma.UserCreateWithoutProjectsInput, Prisma.UserUncheckedCreateWithoutProjectsInput>;
+    connectOrCreate?: Prisma.UserCreateOrConnectWithoutProjectsInput;
+    upsert?: Prisma.UserUpsertWithoutProjectsInput;
+    connect?: Prisma.UserWhereUniqueInput;
+    update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutProjectsInput, Prisma.UserUpdateWithoutProjectsInput>, Prisma.UserUncheckedUpdateWithoutProjectsInput>;
+};
 export type UserCreateWithoutWalletInput = {
     id?: string;
     name: string;
@@ -334,6 +353,7 @@ export type UserCreateWithoutWalletInput = {
     githubAccessToken?: string | null;
     githubInstallationId?: string | null;
     githubUsername?: string | null;
+    projects?: Prisma.ProjectCreateNestedManyWithoutUserInput;
 };
 export type UserUncheckedCreateWithoutWalletInput = {
     id?: string;
@@ -345,6 +365,7 @@ export type UserUncheckedCreateWithoutWalletInput = {
     githubAccessToken?: string | null;
     githubInstallationId?: string | null;
     githubUsername?: string | null;
+    projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutUserInput;
 };
 export type UserCreateOrConnectWithoutWalletInput = {
     where: Prisma.UserWhereUniqueInput;
@@ -369,6 +390,7 @@ export type UserUpdateWithoutWalletInput = {
     githubAccessToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     githubInstallationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     githubUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    projects?: Prisma.ProjectUpdateManyWithoutUserNestedInput;
 };
 export type UserUncheckedUpdateWithoutWalletInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -380,6 +402,80 @@ export type UserUncheckedUpdateWithoutWalletInput = {
     githubAccessToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     githubInstallationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     githubUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    projects?: Prisma.ProjectUncheckedUpdateManyWithoutUserNestedInput;
+};
+export type UserCreateWithoutProjectsInput = {
+    id?: string;
+    name: string;
+    email: string;
+    password: string;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    githubAccessToken?: string | null;
+    githubInstallationId?: string | null;
+    githubUsername?: string | null;
+    wallet?: Prisma.WalletCreateNestedOneWithoutUserInput;
+};
+export type UserUncheckedCreateWithoutProjectsInput = {
+    id?: string;
+    name: string;
+    email: string;
+    password: string;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    githubAccessToken?: string | null;
+    githubInstallationId?: string | null;
+    githubUsername?: string | null;
+    wallet?: Prisma.WalletUncheckedCreateNestedOneWithoutUserInput;
+};
+export type UserCreateOrConnectWithoutProjectsInput = {
+    where: Prisma.UserWhereUniqueInput;
+    create: Prisma.XOR<Prisma.UserCreateWithoutProjectsInput, Prisma.UserUncheckedCreateWithoutProjectsInput>;
+};
+export type UserUpsertWithoutProjectsInput = {
+    update: Prisma.XOR<Prisma.UserUpdateWithoutProjectsInput, Prisma.UserUncheckedUpdateWithoutProjectsInput>;
+    create: Prisma.XOR<Prisma.UserCreateWithoutProjectsInput, Prisma.UserUncheckedCreateWithoutProjectsInput>;
+    where?: Prisma.UserWhereInput;
+};
+export type UserUpdateToOneWithWhereWithoutProjectsInput = {
+    where?: Prisma.UserWhereInput;
+    data: Prisma.XOR<Prisma.UserUpdateWithoutProjectsInput, Prisma.UserUncheckedUpdateWithoutProjectsInput>;
+};
+export type UserUpdateWithoutProjectsInput = {
+    id?: Prisma.StringFieldUpdateOperationsInput | string;
+    name?: Prisma.StringFieldUpdateOperationsInput | string;
+    email?: Prisma.StringFieldUpdateOperationsInput | string;
+    password?: Prisma.StringFieldUpdateOperationsInput | string;
+    createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    githubAccessToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    githubInstallationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    githubUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    wallet?: Prisma.WalletUpdateOneWithoutUserNestedInput;
+};
+export type UserUncheckedUpdateWithoutProjectsInput = {
+    id?: Prisma.StringFieldUpdateOperationsInput | string;
+    name?: Prisma.StringFieldUpdateOperationsInput | string;
+    email?: Prisma.StringFieldUpdateOperationsInput | string;
+    password?: Prisma.StringFieldUpdateOperationsInput | string;
+    createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    githubAccessToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    githubInstallationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    githubUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
+    wallet?: Prisma.WalletUncheckedUpdateOneWithoutUserNestedInput;
+};
+export type UserCountOutputType = {
+    projects: number;
+};
+export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    projects?: boolean | UserCountOutputTypeCountProjectsArgs;
+};
+export type UserCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    select?: Prisma.UserCountOutputTypeSelect<ExtArgs> | null;
+};
+export type UserCountOutputTypeCountProjectsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    where?: Prisma.ProjectWhereInput;
 };
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
     id?: boolean;
@@ -392,6 +488,8 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
     githubInstallationId?: boolean;
     githubUsername?: boolean;
     wallet?: boolean | Prisma.User$walletArgs<ExtArgs>;
+    projects?: boolean | Prisma.User$projectsArgs<ExtArgs>;
+    _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>;
 }, ExtArgs["result"]["user"]>;
 export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
     id?: boolean;
@@ -429,6 +527,8 @@ export type UserSelectScalar = {
 export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "password" | "createdAt" | "updatedAt" | "githubAccessToken" | "githubInstallationId" | "githubUsername", ExtArgs["result"]["user"]>;
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     wallet?: boolean | Prisma.User$walletArgs<ExtArgs>;
+    projects?: boolean | Prisma.User$projectsArgs<ExtArgs>;
+    _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>;
 };
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {};
 export type UserIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {};
@@ -436,6 +536,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     name: "User";
     objects: {
         wallet: Prisma.$WalletPayload<ExtArgs> | null;
+        projects: Prisma.$ProjectPayload<ExtArgs>[];
     };
     scalars: runtime.Types.Extensions.GetPayloadResult<{
         id: string;
@@ -500,6 +601,7 @@ export interface UserDelegate<ExtArgs extends runtime.Types.Extensions.InternalA
 export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise";
     wallet<T extends Prisma.User$walletArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$walletArgs<ExtArgs>>): Prisma.Prisma__WalletClient<runtime.Types.Result.GetResult<Prisma.$WalletPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>;
+    projects<T extends Prisma.User$projectsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$projectsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>;
     then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): runtime.Types.Utils.JsPromise<TResult1 | TResult2>;
     catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): runtime.Types.Utils.JsPromise<T | TResult>;
     finally(onfinally?: (() => void) | undefined | null): runtime.Types.Utils.JsPromise<T>;
@@ -618,6 +720,17 @@ export type User$walletArgs<ExtArgs extends runtime.Types.Extensions.InternalArg
     omit?: Prisma.WalletOmit<ExtArgs> | null;
     include?: Prisma.WalletInclude<ExtArgs> | null;
     where?: Prisma.WalletWhereInput;
+};
+export type User$projectsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+    select?: Prisma.ProjectSelect<ExtArgs> | null;
+    omit?: Prisma.ProjectOmit<ExtArgs> | null;
+    include?: Prisma.ProjectInclude<ExtArgs> | null;
+    where?: Prisma.ProjectWhereInput;
+    orderBy?: Prisma.ProjectOrderByWithRelationInput | Prisma.ProjectOrderByWithRelationInput[];
+    cursor?: Prisma.ProjectWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: Prisma.ProjectScalarFieldEnum | Prisma.ProjectScalarFieldEnum[];
 };
 export type UserDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     select?: Prisma.UserSelect<ExtArgs> | null;

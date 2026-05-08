@@ -13,6 +13,8 @@ export declare const AnyNull: import("@prisma/client/runtime/client").AnyNullCla
 export declare const ModelName: {
     readonly User: "User";
     readonly Wallet: "Wallet";
+    readonly Project: "Project";
+    readonly Deployment: "Deployment";
 };
 export type ModelName = (typeof ModelName)[keyof typeof ModelName];
 export declare const TransactionIsolationLevel: {
@@ -45,6 +47,34 @@ export declare const WalletScalarFieldEnum: {
     readonly balance: "balance";
 };
 export type WalletScalarFieldEnum = (typeof WalletScalarFieldEnum)[keyof typeof WalletScalarFieldEnum];
+export declare const ProjectScalarFieldEnum: {
+    readonly id: "id";
+    readonly name: "name";
+    readonly description: "description";
+    readonly framework: "framework";
+    readonly nodeVersion: "nodeVersion";
+    readonly buildCommand: "buildCommand";
+    readonly installCommand: "installCommand";
+    readonly outputDirectory: "outputDirectory";
+    readonly devCommand: "devCommand";
+    readonly gitRepositoryName: "gitRepositoryName";
+    readonly gitRepositoryOwner: "gitRepositoryOwner";
+    readonly gitRepositoryType: "gitRepositoryType";
+    readonly createdAt: "createdAt";
+    readonly updatedAt: "updatedAt";
+    readonly userId: "userId";
+};
+export type ProjectScalarFieldEnum = (typeof ProjectScalarFieldEnum)[keyof typeof ProjectScalarFieldEnum];
+export declare const DeploymentScalarFieldEnum: {
+    readonly id: "id";
+    readonly projectId: "projectId";
+    readonly status: "status";
+    readonly url: "url";
+    readonly name: "name";
+    readonly createdAt: "createdAt";
+    readonly updatedAt: "updatedAt";
+};
+export type DeploymentScalarFieldEnum = (typeof DeploymentScalarFieldEnum)[keyof typeof DeploymentScalarFieldEnum];
 export declare const SortOrder: {
     readonly asc: "asc";
     readonly desc: "desc";

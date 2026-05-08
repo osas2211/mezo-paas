@@ -1,3 +1,4 @@
+import * as $Enums from "./enums.js";
 import type * as Prisma from "./internal/prismaNamespace.js";
 export type StringFilter<$PrismaModel = never> = {
     equals?: string | Prisma.StringFieldRefInput<$PrismaModel>;
@@ -87,6 +88,51 @@ export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
     _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
     _min?: Prisma.NestedStringNullableFilter<$PrismaModel>;
     _max?: Prisma.NestedStringNullableFilter<$PrismaModel>;
+};
+export type EnumFrameworkFilter<$PrismaModel = never> = {
+    equals?: $Enums.Framework | Prisma.EnumFrameworkFieldRefInput<$PrismaModel>;
+    in?: $Enums.Framework[] | Prisma.ListEnumFrameworkFieldRefInput<$PrismaModel>;
+    notIn?: $Enums.Framework[] | Prisma.ListEnumFrameworkFieldRefInput<$PrismaModel>;
+    not?: Prisma.NestedEnumFrameworkFilter<$PrismaModel> | $Enums.Framework;
+};
+export type EnumGitProviderNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.GitProvider | Prisma.EnumGitProviderFieldRefInput<$PrismaModel> | null;
+    in?: $Enums.GitProvider[] | Prisma.ListEnumGitProviderFieldRefInput<$PrismaModel> | null;
+    notIn?: $Enums.GitProvider[] | Prisma.ListEnumGitProviderFieldRefInput<$PrismaModel> | null;
+    not?: Prisma.NestedEnumGitProviderNullableFilter<$PrismaModel> | $Enums.GitProvider | null;
+};
+export type EnumFrameworkWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.Framework | Prisma.EnumFrameworkFieldRefInput<$PrismaModel>;
+    in?: $Enums.Framework[] | Prisma.ListEnumFrameworkFieldRefInput<$PrismaModel>;
+    notIn?: $Enums.Framework[] | Prisma.ListEnumFrameworkFieldRefInput<$PrismaModel>;
+    not?: Prisma.NestedEnumFrameworkWithAggregatesFilter<$PrismaModel> | $Enums.Framework;
+    _count?: Prisma.NestedIntFilter<$PrismaModel>;
+    _min?: Prisma.NestedEnumFrameworkFilter<$PrismaModel>;
+    _max?: Prisma.NestedEnumFrameworkFilter<$PrismaModel>;
+};
+export type EnumGitProviderNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.GitProvider | Prisma.EnumGitProviderFieldRefInput<$PrismaModel> | null;
+    in?: $Enums.GitProvider[] | Prisma.ListEnumGitProviderFieldRefInput<$PrismaModel> | null;
+    notIn?: $Enums.GitProvider[] | Prisma.ListEnumGitProviderFieldRefInput<$PrismaModel> | null;
+    not?: Prisma.NestedEnumGitProviderNullableWithAggregatesFilter<$PrismaModel> | $Enums.GitProvider | null;
+    _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
+    _min?: Prisma.NestedEnumGitProviderNullableFilter<$PrismaModel>;
+    _max?: Prisma.NestedEnumGitProviderNullableFilter<$PrismaModel>;
+};
+export type EnumDeploymentStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.DeploymentStatus | Prisma.EnumDeploymentStatusFieldRefInput<$PrismaModel>;
+    in?: $Enums.DeploymentStatus[] | Prisma.ListEnumDeploymentStatusFieldRefInput<$PrismaModel>;
+    notIn?: $Enums.DeploymentStatus[] | Prisma.ListEnumDeploymentStatusFieldRefInput<$PrismaModel>;
+    not?: Prisma.NestedEnumDeploymentStatusFilter<$PrismaModel> | $Enums.DeploymentStatus;
+};
+export type EnumDeploymentStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.DeploymentStatus | Prisma.EnumDeploymentStatusFieldRefInput<$PrismaModel>;
+    in?: $Enums.DeploymentStatus[] | Prisma.ListEnumDeploymentStatusFieldRefInput<$PrismaModel>;
+    notIn?: $Enums.DeploymentStatus[] | Prisma.ListEnumDeploymentStatusFieldRefInput<$PrismaModel>;
+    not?: Prisma.NestedEnumDeploymentStatusWithAggregatesFilter<$PrismaModel> | $Enums.DeploymentStatus;
+    _count?: Prisma.NestedIntFilter<$PrismaModel>;
+    _min?: Prisma.NestedEnumDeploymentStatusFilter<$PrismaModel>;
+    _max?: Prisma.NestedEnumDeploymentStatusFilter<$PrismaModel>;
 };
 export type NestedStringFilter<$PrismaModel = never> = {
     equals?: string | Prisma.StringFieldRefInput<$PrismaModel>;
@@ -188,4 +234,49 @@ export type NestedIntNullableFilter<$PrismaModel = never> = {
     gt?: number | Prisma.IntFieldRefInput<$PrismaModel>;
     gte?: number | Prisma.IntFieldRefInput<$PrismaModel>;
     not?: Prisma.NestedIntNullableFilter<$PrismaModel> | number | null;
+};
+export type NestedEnumFrameworkFilter<$PrismaModel = never> = {
+    equals?: $Enums.Framework | Prisma.EnumFrameworkFieldRefInput<$PrismaModel>;
+    in?: $Enums.Framework[] | Prisma.ListEnumFrameworkFieldRefInput<$PrismaModel>;
+    notIn?: $Enums.Framework[] | Prisma.ListEnumFrameworkFieldRefInput<$PrismaModel>;
+    not?: Prisma.NestedEnumFrameworkFilter<$PrismaModel> | $Enums.Framework;
+};
+export type NestedEnumGitProviderNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.GitProvider | Prisma.EnumGitProviderFieldRefInput<$PrismaModel> | null;
+    in?: $Enums.GitProvider[] | Prisma.ListEnumGitProviderFieldRefInput<$PrismaModel> | null;
+    notIn?: $Enums.GitProvider[] | Prisma.ListEnumGitProviderFieldRefInput<$PrismaModel> | null;
+    not?: Prisma.NestedEnumGitProviderNullableFilter<$PrismaModel> | $Enums.GitProvider | null;
+};
+export type NestedEnumFrameworkWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.Framework | Prisma.EnumFrameworkFieldRefInput<$PrismaModel>;
+    in?: $Enums.Framework[] | Prisma.ListEnumFrameworkFieldRefInput<$PrismaModel>;
+    notIn?: $Enums.Framework[] | Prisma.ListEnumFrameworkFieldRefInput<$PrismaModel>;
+    not?: Prisma.NestedEnumFrameworkWithAggregatesFilter<$PrismaModel> | $Enums.Framework;
+    _count?: Prisma.NestedIntFilter<$PrismaModel>;
+    _min?: Prisma.NestedEnumFrameworkFilter<$PrismaModel>;
+    _max?: Prisma.NestedEnumFrameworkFilter<$PrismaModel>;
+};
+export type NestedEnumGitProviderNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.GitProvider | Prisma.EnumGitProviderFieldRefInput<$PrismaModel> | null;
+    in?: $Enums.GitProvider[] | Prisma.ListEnumGitProviderFieldRefInput<$PrismaModel> | null;
+    notIn?: $Enums.GitProvider[] | Prisma.ListEnumGitProviderFieldRefInput<$PrismaModel> | null;
+    not?: Prisma.NestedEnumGitProviderNullableWithAggregatesFilter<$PrismaModel> | $Enums.GitProvider | null;
+    _count?: Prisma.NestedIntNullableFilter<$PrismaModel>;
+    _min?: Prisma.NestedEnumGitProviderNullableFilter<$PrismaModel>;
+    _max?: Prisma.NestedEnumGitProviderNullableFilter<$PrismaModel>;
+};
+export type NestedEnumDeploymentStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.DeploymentStatus | Prisma.EnumDeploymentStatusFieldRefInput<$PrismaModel>;
+    in?: $Enums.DeploymentStatus[] | Prisma.ListEnumDeploymentStatusFieldRefInput<$PrismaModel>;
+    notIn?: $Enums.DeploymentStatus[] | Prisma.ListEnumDeploymentStatusFieldRefInput<$PrismaModel>;
+    not?: Prisma.NestedEnumDeploymentStatusFilter<$PrismaModel> | $Enums.DeploymentStatus;
+};
+export type NestedEnumDeploymentStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.DeploymentStatus | Prisma.EnumDeploymentStatusFieldRefInput<$PrismaModel>;
+    in?: $Enums.DeploymentStatus[] | Prisma.ListEnumDeploymentStatusFieldRefInput<$PrismaModel>;
+    notIn?: $Enums.DeploymentStatus[] | Prisma.ListEnumDeploymentStatusFieldRefInput<$PrismaModel>;
+    not?: Prisma.NestedEnumDeploymentStatusWithAggregatesFilter<$PrismaModel> | $Enums.DeploymentStatus;
+    _count?: Prisma.NestedIntFilter<$PrismaModel>;
+    _min?: Prisma.NestedEnumDeploymentStatusFilter<$PrismaModel>;
+    _max?: Prisma.NestedEnumDeploymentStatusFilter<$PrismaModel>;
 };

@@ -15,7 +15,7 @@ export declare class GithubService {
     getGithubUser(token: string): Promise<any>;
     uninstallGithubApp(userId: string): Promise<any>;
     fetchSingleRepoDatails(userId: string, repo: string): Promise<GithubRepoDto>;
-    importRepo(userId: string, repoName: string, branch?: string): Promise<{
+    importRepo(repoName: string, branch: string, accessToken: string, githubUsername: string): Promise<{
         folder_name: string;
     }>;
 }
