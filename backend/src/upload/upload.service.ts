@@ -5,6 +5,7 @@ import { join, relative } from 'path'
 import { simpleGit } from 'simple-git'
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
 import { ConfigService } from '@nestjs/config'
+import { createClient } from 'redis'
 
 @Injectable()
 export class UploadService {
@@ -15,6 +16,8 @@ export class UploadService {
   constructor(
     private readonly configService: ConfigService
   ) {
+
+
     this.s3Client = new S3Client({
       region: this.configService.get<string>('AWS_REGION') || 'us-east-1',
       credentials: {
@@ -24,8 +27,11 @@ export class UploadService {
     })
   }
 
-  async importRepo(repoUrl: string, branch: string = 'main') {
+  async uploadRepo(repoUrl: string, branch: string = 'main') {
+    const redisClient = createClient()
+    await redisClient.connect()
     this.logger.log(`Importing repo from ${repoUrl}`)
+
     const session_id = this.generate_session_id()
     const repoDir = join(__dirname, 'repos', session_id)
     if (!existsSync(repoDir)) {
@@ -35,9 +41,8 @@ export class UploadService {
       '--branch': branch,
     })
     this.logger.log(`Repo imported successfully: ${repoUrl}`)
-
     await this.uploadDirectory(repoDir, `repos/${session_id}`)
-
+    redisClient.lPush('deployment-queue', session_id)
     return { session_id }
   }
 

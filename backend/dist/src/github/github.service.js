@@ -15,13 +15,30 @@ const common_1 = require("@nestjs/common");
 const rxjs_1 = require("rxjs");
 const axios_1 = require("@nestjs/axios");
 const prisma_service_1 = require("../prisma/prisma.service");
+const upload_service_1 = require("../upload/upload.service");
+const octokit_1 = require("octokit");
+const config_1 = require("@nestjs/config");
 let GithubService = GithubService_1 = class GithubService {
     httpService;
     prismaService;
+    uploadService;
+    configService;
     logger = new common_1.Logger(GithubService_1.name);
-    constructor(httpService, prismaService) {
+    githubApp;
+    constructor(httpService, prismaService, uploadService, configService) {
         this.httpService = httpService;
         this.prismaService = prismaService;
+        this.uploadService = uploadService;
+        this.configService = configService;
+        const appId = this.configService.get('GITHUB_APP_ID');
+        const privateKey = this.configService.get('GITHUB_PRIVATE_KEY')?.replace(/\\n/g, '\n');
+        if (!appId || !privateKey) {
+            throw new Error('GitHub App credentials are not fully configured in the environment.');
+        }
+        this.githubApp = new octokit_1.App({
+            appId,
+            privateKey,
+        });
     }
     async fetchInstallationRepos(installationId, access_Token, search, limit) {
         try {
@@ -61,15 +78,8 @@ let GithubService = GithubService_1 = class GithubService {
             throw new common_1.UnauthorizedException('Could not connect to GitHub');
         }
     }
-    async uninstallGithubApp(installationId, token, userId) {
-        console.log(installationId, token, userId);
+    async uninstallGithubApp(userId) {
         try {
-            const response = await (0, rxjs_1.firstValueFrom)(this.httpService.delete(`https://api.github.com/user/installations/${installationId}`, {
-                headers: {
-                    Authorization: `token ${token}`,
-                    Accept: 'application/vnd.github.v3+json',
-                },
-            }));
             await this.prismaService.user.update({
                 where: {
                     id: userId,
@@ -77,8 +87,38 @@ let GithubService = GithubService_1 = class GithubService {
                 data: {
                     githubAccessToken: null,
                     githubInstallationId: null,
+                    githubUsername: null
                 },
             });
+            return { success: true, message: 'GitHub app uninstalled successfully' };
+        }
+        catch (error) {
+            this.logger.error('GitHub API Error', error.response?.data || error.message);
+            throw new common_1.UnauthorizedException('Could not connect to GitHub');
+        }
+    }
+    async fetchSingleRepoDatails(userId, repo) {
+        const userData = await this.prismaService.user.findUnique({
+            where: {
+                id: userId,
+            },
+            select: {
+                githubAccessToken: true,
+                githubInstallationId: true,
+                githubUsername: true,
+            }
+        });
+        if (!userData?.githubAccessToken || !userData?.githubInstallationId || !userData?.githubUsername) {
+            throw new common_1.UnauthorizedException('You are not authorized to perform this action');
+        }
+        const token = userData?.githubAccessToken;
+        try {
+            const response = await (0, rxjs_1.firstValueFrom)(this.httpService.get(`https://api.github.com/repos/${userData?.githubUsername}/${repo}`, {
+                headers: {
+                    Authorization: `token ${token}`,
+                    Accept: 'application/vnd.github.v3+json',
+                },
+            }));
             return response.data;
         }
         catch (error) {
@@ -86,11 +126,29 @@ let GithubService = GithubService_1 = class GithubService {
             throw new common_1.UnauthorizedException('Could not connect to GitHub');
         }
     }
+    async importRepo(userId, repoName, branch = 'main') {
+        const userData = await this.prismaService.user.findUnique({
+            where: {
+                id: userId,
+            },
+        });
+        if (!userData?.githubAccessToken || !userData?.githubInstallationId || !userData?.githubUsername) {
+            throw new common_1.UnauthorizedException('You are not authorized to perform this action');
+        }
+        const cloneUrl = `https://x-access-token:${userData?.githubAccessToken}@github.com/${userData?.githubUsername}/${repoName}.git`;
+        const repo = await this.fetchSingleRepoDatails(userId, repoName);
+        if (!repo) {
+            throw new common_1.NotFoundException('Repository not found');
+        }
+        return await this.uploadService.uploadRepo(cloneUrl, repo.default_branch);
+    }
 };
 exports.GithubService = GithubService;
 exports.GithubService = GithubService = GithubService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [axios_1.HttpService,
-        prisma_service_1.PrismaService])
+        prisma_service_1.PrismaService,
+        upload_service_1.UploadService,
+        config_1.ConfigService])
 ], GithubService);
 //# sourceMappingURL=github.service.js.map

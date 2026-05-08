@@ -55,6 +55,7 @@ let GithubController = class GithubController {
             const generated_accessToken = tokenResponse.data.access_token;
             const decodedState = JSON.parse(Buffer.from(state, 'base64').toString('utf-8'));
             const userId = decodedState.userId;
+            const githubUser = await this.githubService.getGithubUser(generated_accessToken);
             await this.prismaService.user.update({
                 where: {
                     id: userId,
@@ -62,6 +63,7 @@ let GithubController = class GithubController {
                 data: {
                     githubAccessToken: generated_accessToken,
                     githubInstallationId: installationId,
+                    githubUsername: githubUser.login,
                 },
             });
             return res.redirect(`${frontendUrl}/dashboard?status=success`);
@@ -94,7 +96,16 @@ let GithubController = class GithubController {
         if (!installationId || !access_token) {
             throw new common_1.UnauthorizedException('You are not authorized to perform this action');
         }
-        return this.githubService.uninstallGithubApp(installationId, access_token, req["user"]?.userId);
+        return this.githubService.uninstallGithubApp(req["user"]?.userId);
+    }
+    async importRepo(req, repoName) {
+        const user = await this.prismaService.user.findUnique({ where: { id: req["user"]?.userId }, select: { githubAccessToken: true, githubInstallationId: true } });
+        const installationId = user?.githubInstallationId;
+        const access_token = user?.githubAccessToken;
+        if (!installationId || !access_token) {
+            throw new common_1.UnauthorizedException('You are not authorized to perform this action');
+        }
+        return this.githubService.importRepo(req["user"]?.userId, repoName);
     }
 };
 exports.GithubController = GithubController;
@@ -142,6 +153,15 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], GithubController.prototype, "uninstallGithubApp", null);
+__decorate([
+    (0, common_1.UseGuards)(auth_guard_1.AuthGuard),
+    (0, common_1.Post)('import'),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Body)("repoName")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], GithubController.prototype, "importRepo", null);
 exports.GithubController = GithubController = __decorate([
     (0, common_1.Controller)('github'),
     __metadata("design:paramtypes", [config_1.ConfigService,

@@ -51,6 +51,7 @@ const path_1 = require("path");
 const simple_git_1 = require("simple-git");
 const client_s3_1 = require("@aws-sdk/client-s3");
 const config_1 = require("@nestjs/config");
+const redis_1 = require("redis");
 let UploadService = UploadService_1 = class UploadService {
     configService;
     logger = new common_1.Logger(UploadService_1.name);
@@ -66,7 +67,9 @@ let UploadService = UploadService_1 = class UploadService {
             },
         });
     }
-    async importRepo(repoUrl, branch = 'main') {
+    async uploadRepo(repoUrl, branch = 'main') {
+        const redisClient = (0, redis_1.createClient)();
+        await redisClient.connect();
         this.logger.log(`Importing repo from ${repoUrl}`);
         const session_id = this.generate_session_id();
         const repoDir = (0, path_1.join)(__dirname, 'repos', session_id);
@@ -78,6 +81,7 @@ let UploadService = UploadService_1 = class UploadService {
         });
         this.logger.log(`Repo imported successfully: ${repoUrl}`);
         await this.uploadDirectory(repoDir, `repos/${session_id}`);
+        redisClient.lPush('deployment-queue', session_id);
         return { session_id };
     }
     generate_session_id() {

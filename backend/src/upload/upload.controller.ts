@@ -7,6 +7,6 @@ export class UploadController {
 
   @Post('/import')
   async importRepo(@Body('repoUrl') repoUrl: string) {
-    return await this.uploadService.importRepo(repoUrl)
+    return await this.uploadService.uploadRepo(repoUrl)
   }
 }

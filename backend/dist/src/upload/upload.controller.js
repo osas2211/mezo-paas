@@ -21,7 +21,7 @@ let UploadController = class UploadController {
         this.uploadService = uploadService;
     }
     async importRepo(repoUrl) {
-        return await this.uploadService.importRepo(repoUrl);
+        return await this.uploadService.uploadRepo(repoUrl);
     }
 };
 exports.UploadController = UploadController;

@@ -13,6 +13,7 @@ const github_service_1 = require("./github.service");
 const axios_1 = require("@nestjs/axios");
 const config_1 = require("@nestjs/config");
 const prisma_service_1 = require("../prisma/prisma.service");
+const upload_service_1 = require("../upload/upload.service");
 let GithubModule = class GithubModule {
 };
 exports.GithubModule = GithubModule;
@@ -20,7 +21,7 @@ exports.GithubModule = GithubModule = __decorate([
     (0, common_1.Module)({
         imports: [axios_1.HttpModule, config_1.ConfigModule],
         controllers: [github_controller_1.GithubController],
-        providers: [github_service_1.GithubService, prisma_service_1.PrismaService]
+        providers: [github_service_1.GithubService, prisma_service_1.PrismaService, upload_service_1.UploadService]
     })
 ], GithubModule);
 //# sourceMappingURL=github.module.js.map

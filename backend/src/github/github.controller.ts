@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, Query, Req, Res, UnauthorizedException, UseGuards } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Post, Query, Req, Res, UnauthorizedException, UseGuards } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { GithubService } from './github.service'
 import express from 'express'
@@ -61,6 +61,7 @@ export class GithubController {
       // Decode the state to get the userId
       const decodedState = JSON.parse(Buffer.from(state, 'base64').toString('utf-8'))
       const userId = decodedState.userId
+      const githubUser = await this.githubService.getGithubUser(generated_accessToken)
 
       await this.prismaService.user.update({
         where: {
@@ -69,6 +70,7 @@ export class GithubController {
         data: {
           githubAccessToken: generated_accessToken,
           githubInstallationId: installationId,
+          githubUsername: githubUser.login,
         },
       })
 
@@ -123,6 +125,21 @@ export class GithubController {
       throw new UnauthorizedException('You are not authorized to perform this action')
     }
 
-    return this.githubService.uninstallGithubApp(installationId!, access_token as string, req["user"]?.userId as string)
+    return this.githubService.uninstallGithubApp(req["user"]?.userId as string)
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('import')
+  async importRepo(
+    @Req() req: express.Request,
+    @Body("repoName") repoName: string,
+  ) {
+    const user = await this.prismaService.user.findUnique({ where: { id: req["user"]?.userId }, select: { githubAccessToken: true, githubInstallationId: true } })
+    const installationId = user?.githubInstallationId
+    const access_token = user?.githubAccessToken
+    if (!installationId || !access_token) {
+      throw new UnauthorizedException('You are not authorized to perform this action')
+    }
+    return this.githubService.importRepo(req["user"]?.userId as string, repoName)
   }
 }
