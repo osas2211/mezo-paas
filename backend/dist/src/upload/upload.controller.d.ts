@@ -3,6 +3,6 @@ export declare class UploadController {
     private readonly uploadService;
     constructor(uploadService: UploadService);
     importRepo(repoUrl: string): Promise<{
-        session_id: string;
+        folder_name: string;
     }>;
 }

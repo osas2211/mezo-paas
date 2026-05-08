@@ -6,7 +6,7 @@ export declare class UploadService {
     private readonly s3Client;
     constructor(configService: ConfigService);
     uploadRepo(repoUrl: string, branch?: string): Promise<{
-        session_id: string;
+        folder_name: string;
     }>;
     generate_session_id(): string;
     getAllFiles: (folderPath: string) => string[];

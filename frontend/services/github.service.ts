@@ -28,4 +28,9 @@ export const uninstallGithubApp = async () => {
   return response.data
 }
 
+export const importRepo = async ({ repoName }: { repoName: string }) => {
+  const response = await api.post('/github/import', { repoName })
+  return response.data as { folder_name: string }
+}
+
 

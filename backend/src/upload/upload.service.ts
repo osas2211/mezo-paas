@@ -28,12 +28,14 @@ export class UploadService {
   }
 
   async uploadRepo(repoUrl: string, branch: string = 'main') {
+    const repoName = repoUrl.split('/').pop() || ''
     const redisClient = createClient()
     await redisClient.connect()
     this.logger.log(`Importing repo from ${repoUrl}`)
 
     const session_id = this.generate_session_id()
-    const repoDir = join(__dirname, 'repos', session_id)
+    const folder_name = repoName.replace(".git", "") + "-" + session_id
+    const repoDir = join(__dirname, 'repos', folder_name)
     if (!existsSync(repoDir)) {
       mkdirSync(repoDir, { recursive: true })
     }
@@ -41,9 +43,9 @@ export class UploadService {
       '--branch': branch,
     })
     this.logger.log(`Repo imported successfully: ${repoUrl}`)
-    await this.uploadDirectory(repoDir, `repos/${session_id}`)
-    redisClient.lPush('deployment-queue', session_id)
-    return { session_id }
+    await this.uploadDirectory(repoDir, `repos/${folder_name}`)
+    redisClient.lPush('deployment-queue', folder_name)
+    return { folder_name }
   }
 
   generate_session_id() {

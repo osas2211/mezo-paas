@@ -1,12 +1,20 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { getGithubRepos, getGithubUser, installGithubApp, uninstallGithubApp } from "@/services/github.service"
+import { getGithubRepos, getGithubUser, importRepo, installGithubApp, uninstallGithubApp } from "@/services/github.service"
+import { useToastify } from "./use-toastify"
 
 export const useInstallGithubApp = () => {
+  const { successToast, errorToast } = useToastify()
   return useMutation({
     mutationKey: ["github-install"],
     mutationFn: installGithubApp,
     retry: false,
     gcTime: 0,
+    onSuccess: () => {
+      successToast("Github App installation initiated", "bottom-right")
+    },
+    onError: (error: any) => {
+      errorToast(error?.response?.data?.message || "Something went wrong", "bottom-right")
+    },
   })
 
 
@@ -28,6 +36,7 @@ export const useGetGithubUser = () => {
 
 export const useUninstallGithubApp = () => {
   const queryClient = useQueryClient()
+  const { successToast, errorToast } = useToastify()
   return useMutation({
     mutationKey: ["github-uninstall"],
     mutationFn: uninstallGithubApp,
@@ -36,6 +45,26 @@ export const useUninstallGithubApp = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["github-user"] })
       queryClient.invalidateQueries({ queryKey: ["github-repos"] })
+      successToast("Github App uninstalled successfully", "bottom-right")
+    },
+    onError: (error: any) => {
+      errorToast(error?.response?.data?.message || "Something went wrong", "bottom-right")
+    },
+  })
+}
+
+export const useImportRepo = () => {
+  const { successToast, errorToast } = useToastify()
+  return useMutation({
+    mutationKey: ["github-import"],
+    mutationFn: importRepo,
+    retry: false,
+    gcTime: 0,
+    onSuccess: () => {
+      successToast("Repo imported successfully", "bottom-right")
+    },
+    onError: (error: any) => {
+      errorToast(error?.response?.data?.message || "Something went wrong", "bottom-right")
     },
   })
 }

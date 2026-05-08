@@ -20,7 +20,11 @@ import {
 } from "lucide-react"
 import { FaGithub } from "react-icons/fa"
 import Link from "next/link"
-import { useGetGithubRepos } from "@/hooks/use-github"
+import {
+  useGetGithubRepos,
+  useGetGithubUser,
+  useImportRepo,
+} from "@/hooks/use-github"
 import { useDebounce } from "@/hooks/use-debounce"
 
 const LANGUAGE_COLORS: Record<string, string> = {
@@ -42,11 +46,15 @@ const formatRelativeDate = (dateStr: string) => {
   if (diffDays === 1) return "yesterday"
   if (diffDays < 7) return `${diffDays}d ago`
   if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  })
 }
 
 const CreateProjectPage = () => {
-  const { data } = useUser()
+  const { data } = useGetGithubUser()
   const [searchQuery, setSearchQuery] = useState("")
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [importingId, setImportingId] = useState<number | null>(null)
@@ -55,20 +63,18 @@ const CreateProjectPage = () => {
     data: repos,
     isLoading,
     isError,
-  } = useGetGithubRepos(debouncedSearch, 5)
+  } = useGetGithubRepos(debouncedSearch, 7)
 
   const filteredRepos = repos || []
+  const { mutateAsync: importRepo, isPending: isImporting } = useImportRepo()
 
-  const handleImport = (repoId: number) => {
-    setImportingId(repoId)
-    // Simulate import action
-    setTimeout(() => {
-      setImportingId(null)
-    }, 2000)
+  const handleImport = async (repo: GithubRepoI) => {
+    setImportingId(repo.id)
+    await importRepo({ repoName: repo.name })
+    setImportingId(null)
   }
 
-  const username =
-    data?.user?.name || data?.user?.email?.split("@")[0] || "user"
+  const username = data?.login || "user"
 
   return (
     <div className="space-y-5 md:space-y-10">
@@ -77,7 +83,7 @@ const CreateProjectPage = () => {
         subtitle="Import an existing repository or start from scratch"
       />
 
-      <div className="grid lg:grid-cols-[1fr_340px] gap-5">
+      <div className="flex items-center justify-center gap-5">
         {/* Import Git Repository Section */}
         <div>
           <div className="border border-white/10 bg-white/5 p-1">
@@ -139,9 +145,12 @@ const CreateProjectPage = () => {
                           </button>
                         </div>
                         <div className="border-t border-white/10 p-1">
-                          <button className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-white/50 hover:text-white/80 hover:bg-white/5 transition-colors">
-                            + Add GitHub Account
-                          </button>
+                          <Link
+                            href={"/integrations"}
+                            className="w-full flex items-center gap-2.5 px-3 py-2.5 text-sm text-white/50 hover:text-white/80 hover:bg-white/5 transition-colors"
+                          >
+                            Update Account
+                          </Link>
                         </div>
                       </motion.div>
                     )}
@@ -279,11 +288,11 @@ const CreateProjectPage = () => {
 
                           {/* Import Button */}
                           <button
-                            onClick={() => handleImport(repo.id)}
-                            disabled={importingId === repo.id}
+                            onClick={() => handleImport(repo)}
+                            disabled={importingId === repo.id && isImporting}
                             className="shrink-0 ml-4 px-4 py-1.5 text-xs font-medium border border-white/20 text-white/80 hover:bg-white hover:text-black hover:border-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
                           >
-                            {importingId === repo.id ? (
+                            {importingId === repo.id && isImporting ? (
                               <>
                                 <Loader2 size={12} className="animate-spin" />
                                 Importing
@@ -298,161 +307,34 @@ const CreateProjectPage = () => {
                   </AnimatePresence>
                 )}
               </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Quick Setup Panel (replaces Clone Template) */}
-        <div className="flex flex-col gap-5">
-          {/* Quick Config Card */}
-          <div className="border border-white/10 bg-white/5 p-1">
-            <div className="border border-white/20 bg-dark p-5 space-y-5">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/10 border border-primary/20">
-                  <FolderPlus size={18} className="text-primary" />
-                </div>
-                <div>
-                  <h3 className="text-[15px] font-medium">Quick Setup</h3>
-                  <p className="text-xs text-white/50 mt-0.5">
-                    Start without a repository
-                  </p>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                {/* Project Name Input */}
-                <div>
-                  <label className="text-xs text-white/50 uppercase tracking-wider mb-1.5 block">
-                    Project Name
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="my-awesome-project"
-                    className="w-full px-3.5 py-2.5 bg-white/5 border border-white/15 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-primary/40 transition-colors"
-                  />
-                </div>
-
-                {/* Framework Selection */}
-                <div>
-                  <label className="text-xs text-white/50 uppercase tracking-wider mb-1.5 block">
-                    Framework
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {[
-                      { name: "Next.js", icon: "▲" },
-                      { name: "Vite", icon: "⚡" },
-                      { name: "Remix", icon: "💿" },
-                      { name: "Other", icon: "•••" },
-                    ].map((fw) => (
-                      <button
-                        key={fw.name}
-                        className="px-3 py-2.5 bg-white/[0.03] border border-white/10 text-xs text-white/60 hover:border-primary/30 hover:text-white/90 hover:bg-primary/5 transition-all duration-200 text-left flex items-center gap-2"
-                      >
-                        <span className="text-sm">{fw.icon}</span>
-                        {fw.name}
-                      </button>
-                    ))}
+              <div className="border border-white/10 bg-white/5 p-1 mt-7">
+                <div className="border border-white/20 bg-dark px-5 py-4  space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex gap-3 items-center">
+                      <File size={16} className="text-white/30" />
+                      <div>
+                        <p className="text-sm text-white/70">
+                          Can&apos;t find your repository?
+                        </p>
+                        <p className="text-xs text-white/40 mt-0.5">
+                          Make sure the GitHub App is installed and has access
+                          to the correct repositories.
+                        </p>
+                      </div>
+                      <div className="mt-3">
+                        <Link
+                          href="/integrations"
+                          className="shrink-0 px-4 py-2 text-xs font-medium border border-white/15 text-white/60 hover:text-white hover:border-white/30 transition-colors"
+                        >
+                          Configure GitHub App
+                        </Link>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-
-              <Link
-                href="/projects/create"
-                className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-primary text-black text-sm font-medium hover:bg-primary/90 transition-colors"
-              >
-                Create Empty Project
-                <ArrowUpRight size={15} />
-              </Link>
             </div>
           </div>
-
-          {/* Git Provider Connect Card */}
-          <div className="border border-white/10 bg-white/5 p-1">
-            <div className="border border-white/20 bg-dark p-5 space-y-4">
-              <h4 className="text-xs text-white/50 uppercase tracking-wider">
-                Connect Provider
-              </h4>
-              <div className="space-y-2">
-                {[
-                  {
-                    name: "GitHub",
-                    icon: <FaGithub size={16} />,
-                    connected: true,
-                  },
-                  {
-                    name: "GitLab",
-                    icon: (
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                      >
-                        <path d="M22.65 14.39L12 22.13 1.35 14.39a.84.84 0 01-.3-.94l1.22-3.78 2.44-7.51A.42.42 0 014.82 2a.43.43 0 01.58 0 .42.42 0 01.11.18l2.44 7.49h8.1l2.44-7.51A.42.42 0 0118.6 2a.43.43 0 01.58 0 .42.42 0 01.11.18l2.44 7.51L23 13.45a.84.84 0 01-.35.94z" />
-                      </svg>
-                    ),
-                    connected: false,
-                  },
-                  {
-                    name: "Bitbucket",
-                    icon: (
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                      >
-                        <path d="M.778 1.213a.768.768 0 00-.768.892l3.263 19.81c.084.5.515.868 1.022.873H19.95a.772.772 0 00.77-.646L23.984 2.1a.77.77 0 00-.765-.89H.778zm13.505 13.96h-4.56l-1.243-6.52h6.985l-1.182 6.52z" />
-                      </svg>
-                    ),
-                    connected: false,
-                  },
-                ].map((provider) => (
-                  <button
-                    key={provider.name}
-                    className="w-full flex items-center justify-between px-3.5 py-3 bg-white/[0.02] border border-white/10 hover:border-white/20 transition-colors group"
-                  >
-                    <span className="flex items-center gap-2.5 text-sm text-white/70 group-hover:text-white/90 transition-colors">
-                      <span className="text-white/50 group-hover:text-white/70 transition-colors">
-                        {provider.icon}
-                      </span>
-                      {provider.name}
-                    </span>
-                    {provider.connected ? (
-                      <span className="text-[10px] font-medium text-primary/80 bg-primary/10 px-2 py-0.5 border border-primary/20">
-                        Connected
-                      </span>
-                    ) : (
-                      <span className="text-[10px] font-medium text-white/30 group-hover:text-white/50 transition-colors">
-                        Connect
-                      </span>
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Bottom Info Bar */}
-      <div className="border border-white/10 bg-white/5 p-1">
-        <div className="border border-white/20 bg-dark px-5 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <File size={16} className="text-white/30" />
-            <div>
-              <p className="text-sm text-white/70">
-                Can&apos;t find your repository?
-              </p>
-              <p className="text-xs text-white/40 mt-0.5">
-                Make sure the GitHub App is installed and has access to the
-                correct repositories.
-              </p>
-            </div>
-          </div>
-          <button className="shrink-0 px-4 py-2 text-xs font-medium border border-white/15 text-white/60 hover:text-white hover:border-white/30 transition-colors">
-            Configure GitHub App
-          </button>
         </div>
       </div>
     </div>

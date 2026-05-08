@@ -17,6 +17,6 @@ export declare class GithubController {
     getGithubUser(req: express.Request): Promise<any>;
     uninstallGithubApp(req: express.Request): Promise<any>;
     importRepo(req: express.Request, repoName: string): Promise<{
-        session_id: string;
+        folder_name: string;
     }>;
 }

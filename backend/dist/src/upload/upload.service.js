@@ -68,11 +68,13 @@ let UploadService = UploadService_1 = class UploadService {
         });
     }
     async uploadRepo(repoUrl, branch = 'main') {
+        const repoName = repoUrl.split('/').pop() || '';
         const redisClient = (0, redis_1.createClient)();
         await redisClient.connect();
         this.logger.log(`Importing repo from ${repoUrl}`);
         const session_id = this.generate_session_id();
-        const repoDir = (0, path_1.join)(__dirname, 'repos', session_id);
+        const folder_name = repoName.replace(".git", "") + "-" + session_id;
+        const repoDir = (0, path_1.join)(__dirname, 'repos', folder_name);
         if (!(0, fs_1.existsSync)(repoDir)) {
             (0, fs_1.mkdirSync)(repoDir, { recursive: true });
         }
@@ -80,9 +82,9 @@ let UploadService = UploadService_1 = class UploadService {
             '--branch': branch,
         });
         this.logger.log(`Repo imported successfully: ${repoUrl}`);
-        await this.uploadDirectory(repoDir, `repos/${session_id}`);
-        redisClient.lPush('deployment-queue', session_id);
-        return { session_id };
+        await this.uploadDirectory(repoDir, `repos/${folder_name}`);
+        redisClient.lPush('deployment-queue', folder_name);
+        return { folder_name };
     }
     generate_session_id() {
         const subset = "123456789qwertyuiopasdfghjklzxcvbnm";
