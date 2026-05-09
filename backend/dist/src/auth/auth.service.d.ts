@@ -12,9 +12,9 @@ export declare class AuthService {
     signup(body: SignUpDto): Promise<{
         message: string;
         user: {
+            name: string;
             password: string;
             email: string;
-            name: string;
             id: string;
             createdAt: Date;
             updatedAt: Date;
@@ -27,17 +27,17 @@ export declare class AuthService {
         message: string;
         user: {
             wallet: {
+                address: string;
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
                 encryptedPK: string;
-                address: string;
                 encryptedMnemonic: string;
                 balance: string;
                 userId: string;
             } | null;
-            email: string;
             name: string;
+            email: string;
             id: string;
             createdAt: Date;
             updatedAt: Date;

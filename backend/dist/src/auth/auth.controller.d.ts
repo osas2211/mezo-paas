@@ -6,9 +6,9 @@ export declare class AuthController {
     createUser(body: SignUpDto): Promise<{
         message: string;
         user: {
+            name: string;
             password: string;
             email: string;
-            name: string;
             id: string;
             createdAt: Date;
             updatedAt: Date;
@@ -21,17 +21,17 @@ export declare class AuthController {
         message: string;
         user: {
             wallet: {
+                address: string;
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
                 encryptedPK: string;
-                address: string;
                 encryptedMnemonic: string;
                 balance: string;
                 userId: string;
             } | null;
-            email: string;
             name: string;
+            email: string;
             id: string;
             createdAt: Date;
             updatedAt: Date;

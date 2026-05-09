@@ -110,10 +110,10 @@ let ProjectService = ProjectService_1 = class ProjectService {
         return project;
     }
     async getProjects(userId) {
-        return this.prismaService.project.findMany({ where: { userId } });
+        return this.prismaService.project.findMany({ where: { userId }, include: { deployment: true } });
     }
     async getProject(projectId) {
-        return this.prismaService.project.findUnique({ where: { id: projectId } });
+        return this.prismaService.project.findUnique({ where: { id: projectId }, include: { deployment: true } });
     }
     async deleteProject() {
         return {};

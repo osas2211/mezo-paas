@@ -22,7 +22,6 @@ export const useProjects = () => {
   return useQuery({
     queryKey: ['projects'],
     queryFn: () => getProjects(),
-
   })
 }
 

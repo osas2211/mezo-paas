@@ -72,11 +72,11 @@ export class ProjectService {
   }
 
   async getProjects(userId: string) {
-    return this.prismaService.project.findMany({ where: { userId } })
+    return this.prismaService.project.findMany({ where: { userId }, include: { deployment: true } })
   }
 
   async getProject(projectId: string) {
-    return this.prismaService.project.findUnique({ where: { id: projectId } })
+    return this.prismaService.project.findUnique({ where: { id: projectId }, include: { deployment: true } })
   }
 
   async deleteProject() {

@@ -44,7 +44,7 @@ export interface DeploymentI {
   id: string
   url: string
   name?: string          // Optional: You might want to store a user-friendly name
-  status: "QUEUED" | "BUILDING" | "READY" | "ERROR" | "CANCELED"
+  status: "PENDING_DEPLOYMENT" | "QUEUED" | "BUILDING" | "READY" | "ERROR" | "CANCELED"
   createdAt: number      // Unix timestamp in ms
   updatedAt?: number       // Unix timestamp in ms
 

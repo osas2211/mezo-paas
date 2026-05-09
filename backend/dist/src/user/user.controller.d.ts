@@ -10,16 +10,16 @@ export declare class UserController {
         user: {
             wallet: {
                 balance: string;
+                address?: string | undefined;
                 id?: string | undefined;
                 createdAt?: Date | undefined;
                 updatedAt?: Date | undefined;
                 encryptedPK?: string | undefined;
-                address?: string | undefined;
                 encryptedMnemonic?: string | undefined;
                 userId?: string | undefined;
             };
-            email: string;
             name: string;
+            email: string;
             id: string;
             createdAt: Date;
             updatedAt: Date;
