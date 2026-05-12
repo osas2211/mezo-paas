@@ -16,7 +16,7 @@ export declare class GithubController {
     getRepos(req: express.Request, search?: string, limit?: string): Promise<import("./dto/github.dto").GithubRepoDto[]>;
     getGithubUser(req: express.Request): Promise<any>;
     uninstallGithubApp(req: express.Request): Promise<any>;
-    importRepo(req: express.Request, repoName: string): Promise<{
+    importRepo(req: express.Request, repoName: string, projectId: string): Promise<{
         folder_name: string;
     }>;
 }

@@ -141,8 +141,8 @@ export class GithubService {
     }
   }
 
-  async importRepo(repoName: string, branch: string, accessToken: string, githubUsername: string) {
+  async importRepo(repoName: string, branch: string, accessToken: string, githubUsername: string, projectId: string, encryptedEnvironmentVariables?: string) {
     const cloneUrl = `https://x-access-token:${accessToken}@github.com/${githubUsername}/${repoName}.git`
-    return await this.uploadService.uploadRepo(cloneUrl, branch)
+    return await this.uploadService.uploadRepo(cloneUrl, branch, projectId, encryptedEnvironmentVariables)
   }
 }

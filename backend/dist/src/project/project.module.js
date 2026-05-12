@@ -14,13 +14,14 @@ const prisma_service_1 = require("../prisma/prisma.service");
 const github_module_1 = require("../github/github.module");
 const upload_module_1 = require("../upload/upload.module");
 const config_1 = require("@nestjs/config");
+const encryption_service_1 = require("../encryption/encryption.service");
 let ProjectModule = class ProjectModule {
 };
 exports.ProjectModule = ProjectModule;
 exports.ProjectModule = ProjectModule = __decorate([
     (0, common_1.Module)({
         imports: [github_module_1.GithubModule, upload_module_1.UploadModule, config_1.ConfigModule],
-        providers: [project_service_1.ProjectService, prisma_service_1.PrismaService],
+        providers: [project_service_1.ProjectService, prisma_service_1.PrismaService, encryption_service_1.EncryptionService],
         controllers: [project_controller_1.ProjectController]
     })
 ], ProjectModule);

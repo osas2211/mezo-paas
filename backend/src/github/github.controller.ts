@@ -133,6 +133,7 @@ export class GithubController {
   async importRepo(
     @Req() req: express.Request,
     @Body("repoName") repoName: string,
+    @Body("projectId") projectId: string,
   ) {
     const user = await this.prismaService.user.findUnique({ where: { id: req["user"]?.userId }, select: { githubAccessToken: true, githubInstallationId: true, githubUsername: true } })
     const installationId = user?.githubInstallationId
@@ -144,6 +145,6 @@ export class GithubController {
     if (!repo) {
       throw new NotFoundException('Repository not found')
     }
-    return this.githubService.importRepo(repoName, repo.default_branch, access_token, user?.githubUsername as string)
+    return this.githubService.importRepo(repoName, repo.default_branch, access_token, user?.githubUsername as string, projectId)
   }
 }

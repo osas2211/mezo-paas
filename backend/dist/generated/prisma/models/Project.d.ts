@@ -23,6 +23,7 @@ export type ProjectMinAggregateOutputType = {
     createdAt: Date | null;
     updatedAt: Date | null;
     userId: string | null;
+    environmentVariables: string | null;
 };
 export type ProjectMaxAggregateOutputType = {
     id: string | null;
@@ -40,6 +41,7 @@ export type ProjectMaxAggregateOutputType = {
     createdAt: Date | null;
     updatedAt: Date | null;
     userId: string | null;
+    environmentVariables: string | null;
 };
 export type ProjectCountAggregateOutputType = {
     id: number;
@@ -57,6 +59,7 @@ export type ProjectCountAggregateOutputType = {
     createdAt: number;
     updatedAt: number;
     userId: number;
+    environmentVariables: number;
     _all: number;
 };
 export type ProjectMinAggregateInputType = {
@@ -75,6 +78,7 @@ export type ProjectMinAggregateInputType = {
     createdAt?: true;
     updatedAt?: true;
     userId?: true;
+    environmentVariables?: true;
 };
 export type ProjectMaxAggregateInputType = {
     id?: true;
@@ -92,6 +96,7 @@ export type ProjectMaxAggregateInputType = {
     createdAt?: true;
     updatedAt?: true;
     userId?: true;
+    environmentVariables?: true;
 };
 export type ProjectCountAggregateInputType = {
     id?: true;
@@ -109,6 +114,7 @@ export type ProjectCountAggregateInputType = {
     createdAt?: true;
     updatedAt?: true;
     userId?: true;
+    environmentVariables?: true;
     _all?: true;
 };
 export type ProjectAggregateArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -151,6 +157,7 @@ export type ProjectGroupByOutputType = {
     createdAt: Date;
     updatedAt: Date;
     userId: string;
+    environmentVariables: string | null;
     _count: ProjectCountAggregateOutputType | null;
     _min: ProjectMinAggregateOutputType | null;
     _max: ProjectMaxAggregateOutputType | null;
@@ -177,6 +184,7 @@ export type ProjectWhereInput = {
     createdAt?: Prisma.DateTimeFilter<"Project"> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<"Project"> | Date | string;
     userId?: Prisma.StringFilter<"Project"> | string;
+    environmentVariables?: Prisma.StringNullableFilter<"Project"> | string | null;
     user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>;
     deployment?: Prisma.XOR<Prisma.DeploymentNullableScalarRelationFilter, Prisma.DeploymentWhereInput> | null;
 };
@@ -196,6 +204,7 @@ export type ProjectOrderByWithRelationInput = {
     createdAt?: Prisma.SortOrder;
     updatedAt?: Prisma.SortOrder;
     userId?: Prisma.SortOrder;
+    environmentVariables?: Prisma.SortOrderInput | Prisma.SortOrder;
     user?: Prisma.UserOrderByWithRelationInput;
     deployment?: Prisma.DeploymentOrderByWithRelationInput;
 };
@@ -218,6 +227,7 @@ export type ProjectWhereUniqueInput = Prisma.AtLeast<{
     createdAt?: Prisma.DateTimeFilter<"Project"> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<"Project"> | Date | string;
     userId?: Prisma.StringFilter<"Project"> | string;
+    environmentVariables?: Prisma.StringNullableFilter<"Project"> | string | null;
     user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>;
     deployment?: Prisma.XOR<Prisma.DeploymentNullableScalarRelationFilter, Prisma.DeploymentWhereInput> | null;
 }, "id">;
@@ -237,6 +247,7 @@ export type ProjectOrderByWithAggregationInput = {
     createdAt?: Prisma.SortOrder;
     updatedAt?: Prisma.SortOrder;
     userId?: Prisma.SortOrder;
+    environmentVariables?: Prisma.SortOrderInput | Prisma.SortOrder;
     _count?: Prisma.ProjectCountOrderByAggregateInput;
     _max?: Prisma.ProjectMaxOrderByAggregateInput;
     _min?: Prisma.ProjectMinOrderByAggregateInput;
@@ -260,6 +271,7 @@ export type ProjectScalarWhereWithAggregatesInput = {
     createdAt?: Prisma.DateTimeWithAggregatesFilter<"Project"> | Date | string;
     updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Project"> | Date | string;
     userId?: Prisma.StringWithAggregatesFilter<"Project"> | string;
+    environmentVariables?: Prisma.StringNullableWithAggregatesFilter<"Project"> | string | null;
 };
 export type ProjectCreateInput = {
     id?: string;
@@ -276,6 +288,7 @@ export type ProjectCreateInput = {
     gitRepositoryType?: $Enums.GitProvider | null;
     createdAt?: Date | string;
     updatedAt?: Date | string;
+    environmentVariables?: string | null;
     user: Prisma.UserCreateNestedOneWithoutProjectsInput;
     deployment?: Prisma.DeploymentCreateNestedOneWithoutProjectInput;
 };
@@ -295,6 +308,7 @@ export type ProjectUncheckedCreateInput = {
     createdAt?: Date | string;
     updatedAt?: Date | string;
     userId: string;
+    environmentVariables?: string | null;
     deployment?: Prisma.DeploymentUncheckedCreateNestedOneWithoutProjectInput;
 };
 export type ProjectUpdateInput = {
@@ -312,6 +326,7 @@ export type ProjectUpdateInput = {
     gitRepositoryType?: Prisma.NullableEnumGitProviderFieldUpdateOperationsInput | $Enums.GitProvider | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    environmentVariables?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     user?: Prisma.UserUpdateOneRequiredWithoutProjectsNestedInput;
     deployment?: Prisma.DeploymentUpdateOneWithoutProjectNestedInput;
 };
@@ -331,6 +346,7 @@ export type ProjectUncheckedUpdateInput = {
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     userId?: Prisma.StringFieldUpdateOperationsInput | string;
+    environmentVariables?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     deployment?: Prisma.DeploymentUncheckedUpdateOneWithoutProjectNestedInput;
 };
 export type ProjectCreateManyInput = {
@@ -349,6 +365,7 @@ export type ProjectCreateManyInput = {
     createdAt?: Date | string;
     updatedAt?: Date | string;
     userId: string;
+    environmentVariables?: string | null;
 };
 export type ProjectUpdateManyMutationInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -365,6 +382,7 @@ export type ProjectUpdateManyMutationInput = {
     gitRepositoryType?: Prisma.NullableEnumGitProviderFieldUpdateOperationsInput | $Enums.GitProvider | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    environmentVariables?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 };
 export type ProjectUncheckedUpdateManyInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -382,6 +400,7 @@ export type ProjectUncheckedUpdateManyInput = {
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     userId?: Prisma.StringFieldUpdateOperationsInput | string;
+    environmentVariables?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 };
 export type ProjectListRelationFilter = {
     every?: Prisma.ProjectWhereInput;
@@ -407,6 +426,7 @@ export type ProjectCountOrderByAggregateInput = {
     createdAt?: Prisma.SortOrder;
     updatedAt?: Prisma.SortOrder;
     userId?: Prisma.SortOrder;
+    environmentVariables?: Prisma.SortOrder;
 };
 export type ProjectMaxOrderByAggregateInput = {
     id?: Prisma.SortOrder;
@@ -424,6 +444,7 @@ export type ProjectMaxOrderByAggregateInput = {
     createdAt?: Prisma.SortOrder;
     updatedAt?: Prisma.SortOrder;
     userId?: Prisma.SortOrder;
+    environmentVariables?: Prisma.SortOrder;
 };
 export type ProjectMinOrderByAggregateInput = {
     id?: Prisma.SortOrder;
@@ -441,6 +462,7 @@ export type ProjectMinOrderByAggregateInput = {
     createdAt?: Prisma.SortOrder;
     updatedAt?: Prisma.SortOrder;
     userId?: Prisma.SortOrder;
+    environmentVariables?: Prisma.SortOrder;
 };
 export type ProjectScalarRelationFilter = {
     is?: Prisma.ProjectWhereInput;
@@ -517,6 +539,7 @@ export type ProjectCreateWithoutUserInput = {
     gitRepositoryType?: $Enums.GitProvider | null;
     createdAt?: Date | string;
     updatedAt?: Date | string;
+    environmentVariables?: string | null;
     deployment?: Prisma.DeploymentCreateNestedOneWithoutProjectInput;
 };
 export type ProjectUncheckedCreateWithoutUserInput = {
@@ -534,6 +557,7 @@ export type ProjectUncheckedCreateWithoutUserInput = {
     gitRepositoryType?: $Enums.GitProvider | null;
     createdAt?: Date | string;
     updatedAt?: Date | string;
+    environmentVariables?: string | null;
     deployment?: Prisma.DeploymentUncheckedCreateNestedOneWithoutProjectInput;
 };
 export type ProjectCreateOrConnectWithoutUserInput = {
@@ -576,6 +600,7 @@ export type ProjectScalarWhereInput = {
     createdAt?: Prisma.DateTimeFilter<"Project"> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<"Project"> | Date | string;
     userId?: Prisma.StringFilter<"Project"> | string;
+    environmentVariables?: Prisma.StringNullableFilter<"Project"> | string | null;
 };
 export type ProjectCreateWithoutDeploymentInput = {
     id?: string;
@@ -592,6 +617,7 @@ export type ProjectCreateWithoutDeploymentInput = {
     gitRepositoryType?: $Enums.GitProvider | null;
     createdAt?: Date | string;
     updatedAt?: Date | string;
+    environmentVariables?: string | null;
     user: Prisma.UserCreateNestedOneWithoutProjectsInput;
 };
 export type ProjectUncheckedCreateWithoutDeploymentInput = {
@@ -610,6 +636,7 @@ export type ProjectUncheckedCreateWithoutDeploymentInput = {
     createdAt?: Date | string;
     updatedAt?: Date | string;
     userId: string;
+    environmentVariables?: string | null;
 };
 export type ProjectCreateOrConnectWithoutDeploymentInput = {
     where: Prisma.ProjectWhereUniqueInput;
@@ -639,6 +666,7 @@ export type ProjectUpdateWithoutDeploymentInput = {
     gitRepositoryType?: Prisma.NullableEnumGitProviderFieldUpdateOperationsInput | $Enums.GitProvider | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    environmentVariables?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     user?: Prisma.UserUpdateOneRequiredWithoutProjectsNestedInput;
 };
 export type ProjectUncheckedUpdateWithoutDeploymentInput = {
@@ -657,6 +685,7 @@ export type ProjectUncheckedUpdateWithoutDeploymentInput = {
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     userId?: Prisma.StringFieldUpdateOperationsInput | string;
+    environmentVariables?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 };
 export type ProjectCreateManyUserInput = {
     id?: string;
@@ -673,6 +702,7 @@ export type ProjectCreateManyUserInput = {
     gitRepositoryType?: $Enums.GitProvider | null;
     createdAt?: Date | string;
     updatedAt?: Date | string;
+    environmentVariables?: string | null;
 };
 export type ProjectUpdateWithoutUserInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -689,6 +719,7 @@ export type ProjectUpdateWithoutUserInput = {
     gitRepositoryType?: Prisma.NullableEnumGitProviderFieldUpdateOperationsInput | $Enums.GitProvider | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    environmentVariables?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     deployment?: Prisma.DeploymentUpdateOneWithoutProjectNestedInput;
 };
 export type ProjectUncheckedUpdateWithoutUserInput = {
@@ -706,6 +737,7 @@ export type ProjectUncheckedUpdateWithoutUserInput = {
     gitRepositoryType?: Prisma.NullableEnumGitProviderFieldUpdateOperationsInput | $Enums.GitProvider | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    environmentVariables?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     deployment?: Prisma.DeploymentUncheckedUpdateOneWithoutProjectNestedInput;
 };
 export type ProjectUncheckedUpdateManyWithoutUserInput = {
@@ -723,6 +755,7 @@ export type ProjectUncheckedUpdateManyWithoutUserInput = {
     gitRepositoryType?: Prisma.NullableEnumGitProviderFieldUpdateOperationsInput | $Enums.GitProvider | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    environmentVariables?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
 };
 export type ProjectSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
     id?: boolean;
@@ -740,6 +773,7 @@ export type ProjectSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     createdAt?: boolean;
     updatedAt?: boolean;
     userId?: boolean;
+    environmentVariables?: boolean;
     user?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
     deployment?: boolean | Prisma.Project$deploymentArgs<ExtArgs>;
 }, ExtArgs["result"]["project"]>;
@@ -759,6 +793,7 @@ export type ProjectSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
     createdAt?: boolean;
     updatedAt?: boolean;
     userId?: boolean;
+    environmentVariables?: boolean;
     user?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
 }, ExtArgs["result"]["project"]>;
 export type ProjectSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -777,6 +812,7 @@ export type ProjectSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
     createdAt?: boolean;
     updatedAt?: boolean;
     userId?: boolean;
+    environmentVariables?: boolean;
     user?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
 }, ExtArgs["result"]["project"]>;
 export type ProjectSelectScalar = {
@@ -795,8 +831,9 @@ export type ProjectSelectScalar = {
     createdAt?: boolean;
     updatedAt?: boolean;
     userId?: boolean;
+    environmentVariables?: boolean;
 };
-export type ProjectOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "description" | "framework" | "nodeVersion" | "buildCommand" | "installCommand" | "outputDirectory" | "devCommand" | "gitRepositoryName" | "gitRepositoryOwner" | "gitRepositoryType" | "createdAt" | "updatedAt" | "userId", ExtArgs["result"]["project"]>;
+export type ProjectOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "description" | "framework" | "nodeVersion" | "buildCommand" | "installCommand" | "outputDirectory" | "devCommand" | "gitRepositoryName" | "gitRepositoryOwner" | "gitRepositoryType" | "createdAt" | "updatedAt" | "userId" | "environmentVariables", ExtArgs["result"]["project"]>;
 export type ProjectInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     user?: boolean | Prisma.UserDefaultArgs<ExtArgs>;
     deployment?: boolean | Prisma.Project$deploymentArgs<ExtArgs>;
@@ -829,6 +866,7 @@ export type $ProjectPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
         createdAt: Date;
         updatedAt: Date;
         userId: string;
+        environmentVariables: string | null;
     }, ExtArgs["result"]["project"]>;
     composites: {};
 };
@@ -903,6 +941,7 @@ export interface ProjectFieldRefs {
     readonly createdAt: Prisma.FieldRef<"Project", 'DateTime'>;
     readonly updatedAt: Prisma.FieldRef<"Project", 'DateTime'>;
     readonly userId: Prisma.FieldRef<"Project", 'String'>;
+    readonly environmentVariables: Prisma.FieldRef<"Project", 'String'>;
 }
 export type ProjectFindUniqueArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     select?: Prisma.ProjectSelect<ExtArgs> | null;

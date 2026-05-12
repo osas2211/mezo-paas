@@ -5,7 +5,7 @@ export declare class UploadService {
     private readonly git;
     private readonly s3Client;
     constructor(configService: ConfigService);
-    uploadRepo(repoUrl: string, branch?: string): Promise<{
+    uploadRepo(repoUrl: string, branch: string | undefined, projectId: string, encryptedEnvironmentVariables?: string): Promise<{
         folder_name: string;
     }>;
     generate_session_id(): string;

@@ -543,6 +543,7 @@ export declare const ProjectScalarFieldEnum: {
     readonly createdAt: "createdAt";
     readonly updatedAt: "updatedAt";
     readonly userId: "userId";
+    readonly environmentVariables: "environmentVariables";
 };
 export type ProjectScalarFieldEnum = (typeof ProjectScalarFieldEnum)[keyof typeof ProjectScalarFieldEnum];
 export declare const DeploymentScalarFieldEnum: {

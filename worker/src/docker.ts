@@ -5,11 +5,10 @@ import path from "path"
 
 const docker = new Docker()
 
-
 export async function buildAndRun(
   projectId: string,
   sourcePath: string,
-  envVars?: Record<string, string>
+  envVars?: Record<string, string>,
 ): Promise<string> {
   const tagName = `mezo-app-${projectId}:latest`
   const dockerIgnoreContent = `
@@ -19,7 +18,10 @@ node_modules
 dist
 build
 `
-  fs.writeFileSync(path.join(sourcePath, '.dockerignore'), dockerIgnoreContent.trim())
+  fs.writeFileSync(
+    path.join(sourcePath, ".dockerignore"),
+    dockerIgnoreContent.trim(),
+  )
 
   // Format for Build-Time (Next.js / React)
   const buildargs: Record<string, string> = {}
@@ -29,10 +31,15 @@ build
 
   // Format for Run-Time (Node.js / NestJS)
   // Docker expects an array of "KEY=VALUE" strings
-  const runtimeEnvArray = Object.entries(envVars ?? {}).map(([key, value]) => `${key}=${value}`)
+  const runtimeEnvArray = Object.entries(envVars ?? {}).map(
+    ([key, value]) => `${key}=${value}`,
+  )
 
   // Build Phase
-  const stream = await docker.buildImage(tar.pack(sourcePath), { t: tagName, cachefrom: tagName, buildargs })
+  const stream = await docker.buildImage(tar.pack(sourcePath), {
+    t: tagName,
+    buildargs,
+  })
   await new Promise((res, rej) => {
     docker.modem.followProgress(stream, (err, result) =>
       err ? rej(err) : res(result),
@@ -47,7 +54,6 @@ build
     HostConfig: {
       PortBindings: { "3000/tcp": [{ HostPort: "0" }] }, // Auto-assigns free host port
     },
-
   })
 
   await container.start()

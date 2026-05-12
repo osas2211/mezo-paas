@@ -27,14 +27,13 @@ export class UploadService {
     })
   }
 
-  async uploadRepo(repoUrl: string, branch: string = 'master') {
+  async uploadRepo(repoUrl: string, branch: string = 'master', projectId: string, encryptedEnvironmentVariables?: string) {
     const repoName = repoUrl.split('/').pop() || ''
     const redisClient = createClient()
     await redisClient.connect()
     this.logger.log(`Importing repo from ${repoUrl}`)
 
-    const session_id = this.generate_session_id()
-    const folder_name = repoName.replace(".git", "") + "-" + session_id
+    const folder_name = repoName.replace(".git", "") + "-" + projectId
     const repoDir = join(__dirname, 'repos', folder_name)
     if (!existsSync(repoDir)) {
       mkdirSync(repoDir, { recursive: true })
@@ -44,7 +43,16 @@ export class UploadService {
     })
     this.logger.log(`Repo imported successfully: ${repoUrl}`)
     await this.uploadDirectory(repoDir, `repos/${folder_name}`)
-    await redisClient.lPush('deployment-queue', folder_name)
+
+
+
+    const deploymentPayload = {
+      "projectId": projectId,
+      "encryptedEnv": encryptedEnvironmentVariables,
+      "folder_name": folder_name,
+    }
+
+    await redisClient.lPush('deployment-queue', JSON.stringify(deploymentPayload))
 
 
     // const value = await redisClient.brPop('deployment-queue', 0)

@@ -3,20 +3,17 @@ import * as crypto from 'crypto'
 import "dotenv/config"
 
 const ALGORITHM = 'aes-256-gcm'
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY! // Must be 32 bytes
+const ENCRYPTION_SECRET = process.env.ENCRYPTION_SECRET! // Must be 32 bytes
+const KEY = Buffer.from(ENCRYPTION_SECRET, "hex")
 
-export function decrypt(content: string, iv: string, tag: string): Record<string, string> {
-  const decipher = crypto.createDecipheriv(
-    ALGORITHM,
-    Buffer.from(ENCRYPTION_KEY, 'utf-8'),
-    Buffer.from(iv, 'hex')
-  )
+export function decrypt(payload: string): Record<string, string> {
+  const [ivHex, tagHex, encryptedHex] = payload.split(':')
+  const iv = Buffer.from(ivHex, 'hex')
+  const tag = Buffer.from(tagHex, 'hex')
+  const encrypted = Buffer.from(encryptedHex, 'hex')
 
-  decipher.setAuthTag(Buffer.from(tag, 'hex'))
+  const decipher = crypto.createDecipheriv(ALGORITHM, KEY, iv)
+  decipher.setAuthTag(tag)
 
-  let decrypted = decipher.update(content, 'hex', 'utf8')
-  decrypted += decipher.final('utf8')
-
-  // Assuming you stored the env as a JSON string before encrypting
-  return JSON.parse(decrypted)
+  return JSON.parse(decipher.update(encrypted).toString() + decipher.final('utf8')) as Record<string, string>
 }

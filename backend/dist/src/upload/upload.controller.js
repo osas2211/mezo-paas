@@ -20,16 +20,18 @@ let UploadController = class UploadController {
     constructor(uploadService) {
         this.uploadService = uploadService;
     }
-    async importRepo(repoUrl) {
-        return await this.uploadService.uploadRepo(repoUrl);
+    async importRepo(repoUrl, branch, projectId) {
+        return await this.uploadService.uploadRepo(repoUrl, branch, projectId);
     }
 };
 exports.UploadController = UploadController;
 __decorate([
     (0, common_1.Post)('/import'),
     __param(0, (0, common_1.Body)('repoUrl')),
+    __param(1, (0, common_1.Body)('branch')),
+    __param(2, (0, common_1.Body)('projectId')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, String, String]),
     __metadata("design:returntype", Promise)
 ], UploadController.prototype, "importRepo", null);
 exports.UploadController = UploadController = __decorate([

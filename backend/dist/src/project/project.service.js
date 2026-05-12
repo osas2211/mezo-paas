@@ -51,16 +51,19 @@ const common_2 = require("@nestjs/common");
 const semver = __importStar(require("semver"));
 const octokit_1 = require("octokit");
 const config_1 = require("@nestjs/config");
+const encryption_service_1 = require("../encryption/encryption.service");
 let ProjectService = ProjectService_1 = class ProjectService {
     prismaService;
     githubService;
     configService;
+    encryptionService;
     logger = new common_2.Logger(ProjectService_1.name);
     octokitApp;
-    constructor(prismaService, githubService, configService) {
+    constructor(prismaService, githubService, configService, encryptionService) {
         this.prismaService = prismaService;
         this.githubService = githubService;
         this.configService = configService;
+        this.encryptionService = encryptionService;
         const appId = this.configService.get('GITHUB_APP_ID');
         const privateKey = this.configService.get('GITHUB_PRIVATE_KEY')?.replace(/\\n/g, '\n');
         if (!appId || !privateKey) {
@@ -71,12 +74,13 @@ let ProjectService = ProjectService_1 = class ProjectService {
             privateKey,
         });
     }
-    async create(repoName, userId, userToken) {
+    async create(repoName, userId, userToken, environmentVariables = {}) {
         const githubRepo = await this.githubService.fetchSingleRepoDatails(userId, repoName);
         const analysis = await this.analyzeRepository(githubRepo.owner.login, githubRepo.name, userToken);
         if (analysis.framework !== "reactjs" && analysis.framework !== "nextjs" && analysis.framework !== "node" && analysis.framework !== "nestjs") {
             throw new common_1.BadRequestException("We currently only support Next.js, React, Node and NestJS projects");
         }
+        const encryptedEnvironmentVariables = await this.encryptionService.encrypt(JSON.stringify(environmentVariables));
         const project = await this.prismaService.project.create({
             data: {
                 name: repoName,
@@ -94,7 +98,8 @@ let ProjectService = ProjectService_1 = class ProjectService {
                     create: {
                         url: "",
                     }
-                }
+                },
+                environmentVariables: encryptedEnvironmentVariables
             },
             include: {
                 deployment: true,
@@ -106,7 +111,7 @@ let ProjectService = ProjectService_1 = class ProjectService {
                 },
             }
         });
-        await this.githubService.importRepo(githubRepo.name, githubRepo.default_branch, userToken, githubRepo.owner.login);
+        await this.githubService.importRepo(githubRepo.name, githubRepo.default_branch, userToken, githubRepo.owner.login, project.id, encryptedEnvironmentVariables);
         return project;
     }
     async getProjects(userId) {
@@ -226,6 +231,7 @@ exports.ProjectService = ProjectService = ProjectService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
         github_service_1.GithubService,
-        config_1.ConfigService])
+        config_1.ConfigService,
+        encryption_service_1.EncryptionService])
 ], ProjectService);
 //# sourceMappingURL=project.service.js.map

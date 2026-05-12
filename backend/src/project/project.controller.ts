@@ -16,13 +16,15 @@ export class ProjectController {
   async create(
     @Req() req: express.Request,
     @Body("repoName") repoName: string,
+    @Body("envVariables") envVariables?: JSON
   ) {
+    const parsedEnvVariables = envVariables ?? {}
     const user = await this.prismaService.user.findUnique({ where: { id: req["user"]?.userId }, select: { githubAccessToken: true, githubInstallationId: true } })
     if (!user?.githubAccessToken || !user.githubInstallationId) {
       throw new UnauthorizedException('You are not authorized to perform this action')
     }
 
-    return this.projectService.create(repoName, req["user"]?.userId as string, user.githubAccessToken)
+    return this.projectService.create(repoName, req["user"]?.userId as string, user.githubAccessToken, parsedEnvVariables)
   }
 
   @UseGuards(AuthGuard)

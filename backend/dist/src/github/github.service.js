@@ -126,9 +126,9 @@ let GithubService = GithubService_1 = class GithubService {
             throw new common_1.UnauthorizedException('Could not connect to GitHub');
         }
     }
-    async importRepo(repoName, branch, accessToken, githubUsername) {
+    async importRepo(repoName, branch, accessToken, githubUsername, projectId, encryptedEnvironmentVariables) {
         const cloneUrl = `https://x-access-token:${accessToken}@github.com/${githubUsername}/${repoName}.git`;
-        return await this.uploadService.uploadRepo(cloneUrl, branch);
+        return await this.uploadService.uploadRepo(cloneUrl, branch, projectId, encryptedEnvironmentVariables);
     }
 };
 exports.GithubService = GithubService;

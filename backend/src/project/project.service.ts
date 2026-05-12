@@ -6,6 +6,7 @@ import * as semver from 'semver'
 import { App as OctokitApp, Octokit } from 'octokit'
 import { ConfigService } from '@nestjs/config'
 import { Framework } from 'generated/prisma/enums'
+import { EncryptionService } from 'src/encryption/encryption.service'
 
 @Injectable()
 export class ProjectService {
@@ -16,7 +17,8 @@ export class ProjectService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly githubService: GithubService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
+    private readonly encryptionService: EncryptionService
   ) {
     const appId = this.configService.get<string>('GITHUB_APP_ID')
     const privateKey = this.configService.get<string>('GITHUB_PRIVATE_KEY')?.replace(/\\n/g, '\n')
@@ -31,12 +33,14 @@ export class ProjectService {
     })
   }
 
-  async create(repoName: string, userId: string, userToken: string) {
+  async create(repoName: string, userId: string, userToken: string, environmentVariables: Record<string, string> = {}) {
     const githubRepo = await this.githubService.fetchSingleRepoDatails(userId, repoName)
     const analysis = await this.analyzeRepository(githubRepo.owner.login, githubRepo.name, userToken)
     if (analysis.framework !== "reactjs" && analysis.framework !== "nextjs" && analysis.framework !== "node" && analysis.framework !== "nestjs") {
       throw new BadRequestException("We currently only support Next.js, React, Node and NestJS projects")
     }
+
+    const encryptedEnvironmentVariables = await this.encryptionService.encrypt(JSON.stringify(environmentVariables))
     const project = await this.prismaService.project.create({
       data: {
         name: repoName,
@@ -54,7 +58,8 @@ export class ProjectService {
           create: {
             url: "",
           }
-        }
+        },
+        environmentVariables: encryptedEnvironmentVariables
       },
       include: {
         deployment: true,
@@ -66,7 +71,7 @@ export class ProjectService {
         },
       }
     })
-    await this.githubService.importRepo(githubRepo.name, githubRepo.default_branch, userToken, githubRepo.owner.login)
+    await this.githubService.importRepo(githubRepo.name, githubRepo.default_branch, userToken, githubRepo.owner.login, project.id, encryptedEnvironmentVariables)
 
     return project
   }

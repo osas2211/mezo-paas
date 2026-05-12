@@ -92,7 +92,8 @@ exports.ProjectScalarFieldEnum = {
     gitRepositoryType: 'gitRepositoryType',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
-    userId: 'userId'
+    userId: 'userId',
+    environmentVariables: 'environmentVariables'
 };
 exports.DeploymentScalarFieldEnum = {
     id: 'id',

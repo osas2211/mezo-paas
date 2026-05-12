@@ -98,7 +98,7 @@ let GithubController = class GithubController {
         }
         return this.githubService.uninstallGithubApp(req["user"]?.userId);
     }
-    async importRepo(req, repoName) {
+    async importRepo(req, repoName, projectId) {
         const user = await this.prismaService.user.findUnique({ where: { id: req["user"]?.userId }, select: { githubAccessToken: true, githubInstallationId: true, githubUsername: true } });
         const installationId = user?.githubInstallationId;
         const access_token = user?.githubAccessToken;
@@ -109,7 +109,7 @@ let GithubController = class GithubController {
         if (!repo) {
             throw new common_1.NotFoundException('Repository not found');
         }
-        return this.githubService.importRepo(repoName, repo.default_branch, access_token, user?.githubUsername);
+        return this.githubService.importRepo(repoName, repo.default_branch, access_token, user?.githubUsername, projectId);
     }
 };
 exports.GithubController = GithubController;
@@ -162,8 +162,9 @@ __decorate([
     (0, common_1.Post)('import'),
     __param(0, (0, common_1.Req)()),
     __param(1, (0, common_1.Body)("repoName")),
+    __param(2, (0, common_1.Body)("projectId")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:paramtypes", [Object, String, String]),
     __metadata("design:returntype", Promise)
 ], GithubController.prototype, "importRepo", null);
 exports.GithubController = GithubController = __decorate([

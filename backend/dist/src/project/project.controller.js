@@ -28,12 +28,13 @@ let ProjectController = class ProjectController {
         this.projectService = projectService;
         this.prismaService = prismaService;
     }
-    async create(req, repoName) {
+    async create(req, repoName, envVariables) {
+        const parsedEnvVariables = envVariables ?? {};
         const user = await this.prismaService.user.findUnique({ where: { id: req["user"]?.userId }, select: { githubAccessToken: true, githubInstallationId: true } });
         if (!user?.githubAccessToken || !user.githubInstallationId) {
             throw new common_1.UnauthorizedException('You are not authorized to perform this action');
         }
-        return this.projectService.create(repoName, req["user"]?.userId, user.githubAccessToken);
+        return this.projectService.create(repoName, req["user"]?.userId, user.githubAccessToken, parsedEnvVariables);
     }
     async getProjects(req) {
         return this.projectService.getProjects(req["user"]?.userId);
@@ -48,8 +49,9 @@ __decorate([
     (0, common_1.Post)('create'),
     __param(0, (0, common_1.Req)()),
     __param(1, (0, common_1.Body)("repoName")),
+    __param(2, (0, common_1.Body)("envVariables")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:paramtypes", [Object, String, Object]),
     __metadata("design:returntype", Promise)
 ], ProjectController.prototype, "create", null);
 __decorate([
