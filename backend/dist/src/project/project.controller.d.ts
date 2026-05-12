@@ -6,25 +6,24 @@ export declare class ProjectController {
     private readonly prismaService;
     constructor(projectService: ProjectService, prismaService: PrismaService);
     create(req: express.Request, repoName: string): Promise<{
-        user: {
-            email: string;
-            id: string;
-        };
         deployment: {
-            url: string;
             name: string | null;
+            status: import("../../generated/prisma/enums").DeploymentStatus;
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            status: import("../../generated/prisma/enums").DeploymentStatus;
+            url: string;
             projectId: string;
         } | null;
+        user: {
+            id: string;
+            email: string;
+        };
     } & {
         name: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        userId: string;
         description: string | null;
         framework: import("../../generated/prisma/enums").Framework;
         nodeVersion: string;
@@ -35,15 +34,16 @@ export declare class ProjectController {
         gitRepositoryName: string | null;
         gitRepositoryOwner: string | null;
         gitRepositoryType: import("../../generated/prisma/enums").GitProvider | null;
+        userId: string;
     }>;
     getProjects(req: express.Request): Promise<({
         deployment: {
-            url: string;
             name: string | null;
+            status: import("../../generated/prisma/enums").DeploymentStatus;
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            status: import("../../generated/prisma/enums").DeploymentStatus;
+            url: string;
             projectId: string;
         } | null;
     } & {
@@ -51,7 +51,6 @@ export declare class ProjectController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        userId: string;
         description: string | null;
         framework: import("../../generated/prisma/enums").Framework;
         nodeVersion: string;
@@ -62,15 +61,16 @@ export declare class ProjectController {
         gitRepositoryName: string | null;
         gitRepositoryOwner: string | null;
         gitRepositoryType: import("../../generated/prisma/enums").GitProvider | null;
+        userId: string;
     })[]>;
     getProject(projectId: string): Promise<({
         deployment: {
-            url: string;
             name: string | null;
+            status: import("../../generated/prisma/enums").DeploymentStatus;
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            status: import("../../generated/prisma/enums").DeploymentStatus;
+            url: string;
             projectId: string;
         } | null;
     } & {
@@ -78,7 +78,6 @@ export declare class ProjectController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        userId: string;
         description: string | null;
         framework: import("../../generated/prisma/enums").Framework;
         nodeVersion: string;
@@ -89,5 +88,6 @@ export declare class ProjectController {
         gitRepositoryName: string | null;
         gitRepositoryOwner: string | null;
         gitRepositoryType: import("../../generated/prisma/enums").GitProvider | null;
+        userId: string;
     }) | null>;
 }

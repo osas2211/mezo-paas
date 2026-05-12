@@ -67,7 +67,7 @@ let UploadService = UploadService_1 = class UploadService {
             },
         });
     }
-    async uploadRepo(repoUrl, branch = 'main') {
+    async uploadRepo(repoUrl, branch = 'master') {
         const repoName = repoUrl.split('/').pop() || '';
         const redisClient = (0, redis_1.createClient)();
         await redisClient.connect();
@@ -83,7 +83,7 @@ let UploadService = UploadService_1 = class UploadService {
         });
         this.logger.log(`Repo imported successfully: ${repoUrl}`);
         await this.uploadDirectory(repoDir, `repos/${folder_name}`);
-        redisClient.lPush('deployment-queue', folder_name);
+        await redisClient.lPush('deployment-queue', folder_name);
         return { folder_name };
     }
     generate_session_id() {

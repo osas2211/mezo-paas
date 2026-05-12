@@ -27,7 +27,7 @@ export class UploadService {
     })
   }
 
-  async uploadRepo(repoUrl: string, branch: string = 'main') {
+  async uploadRepo(repoUrl: string, branch: string = 'master') {
     const repoName = repoUrl.split('/').pop() || ''
     const redisClient = createClient()
     await redisClient.connect()
@@ -44,7 +44,14 @@ export class UploadService {
     })
     this.logger.log(`Repo imported successfully: ${repoUrl}`)
     await this.uploadDirectory(repoDir, `repos/${folder_name}`)
-    redisClient.lPush('deployment-queue', folder_name)
+    await redisClient.lPush('deployment-queue', folder_name)
+
+
+    // const value = await redisClient.brPop('deployment-queue', 0)
+    // console.log('value', value)
+    // Get all in queue
+    // const queueList = await redisClient.lRange('deployment-queue', 0, -1)
+    // console.log('All value', queueList)
     return { folder_name }
   }
 

@@ -1,0 +1,53 @@
+import { createClient } from "redis"
+import { downloadS3Folder } from "./s3"
+import { buildAndRun } from "./docker"
+import * as fs from "fs"
+import "dotenv/config"
+import { generateDockerfile } from "./detector"
+import path from "path"
+
+const redis = createClient({ url: process.env.REDIS_URL })
+
+async function main() {
+  await redis.connect()
+  console.log("👷 Mezo Worker is live and listening...")
+  // const queueList = await redis.lRange("deployment-queue", 0, -1)
+  // console.log("All value", queueList)
+
+  while (true) {
+    // brPop blocks until a job arrives
+    const job = await redis.brPop("deployment-queue", 0)
+    if (!job) continue
+
+    const projectId = job.element
+    const localPath = `./temp/${projectId}`
+
+    try {
+      console.log(`🚀 Deploying: ${projectId}`)
+
+      await downloadS3Folder(`repos/${projectId}`, localPath)
+
+      // 2. Check for Dockerfile, generate one if missing
+      const autoDockerFile = generateDockerfile(localPath)
+      if (autoDockerFile) {
+        console.log(`📝 No Dockerfile found. Injecting auto-generated Node.js template.`)
+        fs.writeFileSync(path.join(localPath, "Dockerfile"), autoDockerFile)
+      }
+
+      const port = await buildAndRun(projectId, localPath)
+
+      // Update status and port mapping for the Proxy
+      await redis.hSet("routing", projectId, port)
+      await redis.hSet("status", projectId, "live")
+
+      console.log(`✅ Success! ${projectId} on port ${port}`)
+    } catch (err) {
+      console.error(`❌ Failed ${projectId}:`, err)
+      await redis.hSet("status", projectId, "failed")
+    } finally {
+      fs.rmSync(localPath, { recursive: true, force: true })
+    }
+  }
+}
+
+main()
