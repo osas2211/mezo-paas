@@ -60,6 +60,7 @@ export class UploadService {
     // Get all in queue
     // const queueList = await redisClient.lRange('deployment-queue', 0, -1)
     // console.log('All value', queueList)
+    fs.rmSync(repoDir, { recursive: true, force: true })
     return { folder_name }
   }
 

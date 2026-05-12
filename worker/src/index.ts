@@ -24,6 +24,7 @@ async function main() {
     const localPath = `./temp/${folder_name}`
 
     try {
+      const startTime = Date.now()
       console.log(`🚀 Deploying: ${folder_name}`)
       let envVars = {}
 
@@ -37,20 +38,25 @@ async function main() {
       // 2. Check for Dockerfile, generate one if missing
       const autoDockerFile = generateDockerfile(localPath)
       if (autoDockerFile) {
-        console.log(`📝 No Dockerfile found. Injecting auto-generated Node.js template.`)
+        console.log(
+          `📝 No Dockerfile found. Injecting auto-generated Node.js template.`,
+        )
         fs.writeFileSync(path.join(localPath, "Dockerfile"), autoDockerFile)
       }
 
       const port = await buildAndRun(projectId, localPath, envVars)
 
       // Update status and port mapping for the Proxy
-      await redis.hSet("routing", projectId, port)
-      await redis.hSet("status", projectId, "live")
+      await redis.hSet("routing", folder_name, port)
+      await redis.hSet("status", folder_name, "live")
 
       console.log(`✅ Success! ${folder_name} on port ${port}`)
+      const endTime = Date.now()
+      const duration = (endTime - startTime) / 1000
+      console.log(`⏱️ Deployment took ${duration} seconds`)
     } catch (err) {
       console.error(`❌ Failed ${folder_name}:`, err)
-      await redis.hSet("status", projectId, "failed")
+      await redis.hSet("status", folder_name, "failed")
     } finally {
       fs.rmSync(localPath, { recursive: true, force: true })
     }

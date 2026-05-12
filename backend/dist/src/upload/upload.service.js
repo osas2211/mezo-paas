@@ -88,6 +88,7 @@ let UploadService = UploadService_1 = class UploadService {
             "folder_name": folder_name,
         };
         await redisClient.lPush('deployment-queue', JSON.stringify(deploymentPayload));
+        fs.rmSync(repoDir, { recursive: true, force: true });
         return { folder_name };
     }
     generate_session_id() {
