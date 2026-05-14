@@ -17,6 +17,7 @@ import EnvVarsTab from "@/components/project/details/env-vars-tab"
 import DomainsTab from "@/components/project/details/domains-tab"
 import RunningTimeTab from "@/components/project/details/running-time-tab"
 import CreditTab from "@/components/project/details/credit-tab"
+import { ReactNode } from "react"
 
 const tabs = [
   { id: "overview", label: "Overview" },
