@@ -1,6 +1,6 @@
 import http from "http"
 import httpProxy from "http-proxy"
-import { createClient } from "redis"
+import { createClient, createCluster } from "redis"
 import "dotenv/config"
 
 const proxy = httpProxy.createProxyServer({
@@ -10,7 +10,18 @@ const proxy = httpProxy.createProxyServer({
 // Environment detection
 const isProd = process.env.NODE_ENV === "production"
 const backendUrl = process.env.BACKEND_URL // http://<API_PRIVATE_IP>:3000 (Prod) or http://localhost:3000 (Local)
-const redis = createClient({ url: process.env.REDIS_URL })
+const redis = createCluster({
+  rootNodes: [
+    { url: process.env.REDIS_URL }
+  ],
+  defaults: {
+    socket: {
+      // If you added the 's' to make it rediss://, 
+      // this ensures the cluster client handles the handshake correctly
+      tls: process.env.REDIS_URL?.startsWith('rediss')
+    }
+  }
+})
 
 async function main() {
   await redis.connect()

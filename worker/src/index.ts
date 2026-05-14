@@ -1,4 +1,4 @@
-import { createClient } from "redis"
+import { createCluster } from "redis"
 import { downloadS3Folder } from "./s3"
 import { buildAndRun } from "./docker"
 import * as fs from "fs"
@@ -7,7 +7,19 @@ import path from "path"
 import { decrypt } from "./crypto"
 import "dotenv/config"
 
-const redis = createClient({ url: process.env.REDIS_URL })
+const redisUrl = process.env.REDIS_URL || ""
+
+const redis = createCluster({
+  rootNodes: [
+    { url: redisUrl }
+  ],
+  defaults: {
+    socket: {
+      // Automatically handle the AWS TLS handshake if using rediss://
+      tls: redisUrl.startsWith('rediss')
+    }
+  }
+})
 
 async function main() {
   await redis.connect()
