@@ -4,37 +4,48 @@ import { createClient } from "redis"
 import "dotenv/config"
 
 const proxy = httpProxy.createProxyServer({
-  // This helps when the containerized app expects a specific host header
   changeOrigin: true,
 })
 
+// Environment detection
+const isProd = process.env.NODE_ENV === "production"
+const backendUrl = process.env.BACKEND_URL // http://<API_PRIVATE_IP>:3000 (Prod) or http://localhost:3000 (Local)
 const redis = createClient({ url: process.env.REDIS_URL })
 
 async function main() {
   await redis.connect()
-  console.log("🌐 Mezo Proxy Gateway is live")
+  console.log(`🌐 Mezo Gateway is live [Mode: ${isProd ? "PRODUCTION" : "LOCAL"}]`)
 
   const server = http.createServer(async (req, res) => {
     const host = req.headers.host || ""
 
-    // Extract Project ID (e.g., project1.lvh.me:8080 -> project1)
-    const projectId = host.split(".")[0]
-
-    // Avoid proxying if someone hits the naked lvh.me domain
-    if (projectId === "lvh" || !projectId) {
-      res.writeHead(200)
-      return res.end("Mezo PaaS Gateway - System Operational")
+    // 1. Handle API Routing (api.lvh.me or api.stellarsampled.com)
+    if (host.startsWith("api.")) {
+      return proxy.web(req, res, { target: backendUrl }, (err) => {
+        console.error("Proxy Error for API:", err.message)
+        res.writeHead(502)
+        res.end("Bad Gateway: API Server unreachable.")
+      })
     }
+
+    // 2. Handle System Messages (Naked Domains)
+    if (host === "stellarsampled.com" || host === "www.stellarsampled.com" || host === "lvh.me") {
+      res.writeHead(200, { "Content-Type": "text/html" })
+      return res.end("<h1>Mezo Gateway</h1><p>Operational. Use a subdomain to access projects.</p>")
+    }
+
+    // 3. Dynamic Subdomain Extraction
+    // Works for project1.lvh.me AND project1.stellarsampled.com
+    const projectId = host.split(".")[0]
 
     try {
       const targetPort = await redis.hGet("routing", projectId)
 
       if (!targetPort) {
         res.writeHead(404, { "Content-Type": "text/plain" })
-        return res.end("Project not found or deployment in progress.")
+        return res.end(`Project '${projectId}' not found.`)
       }
 
-      // Standard HTTP Proxying
       proxy.web(
         req,
         res,
@@ -43,7 +54,7 @@ async function main() {
           console.error(`Proxy Error for ${projectId}:`, err.message)
           if (!res.headersSent) {
             res.writeHead(502)
-            res.end("Bad Gateway: App container might be restarting.")
+            res.end("Bad Gateway: Container offline.")
           }
         },
       )
@@ -54,10 +65,14 @@ async function main() {
     }
   })
 
-  // --- CRITICAL: WebSocket Support ---
-  // This allows HMR (Hot Module Replacement) and Socket.io to work
+  // --- WebSocket Support ---
   server.on("upgrade", async (req, socket, head) => {
     const host = req.headers.host || ""
+
+    if (host.startsWith("api.")) {
+      return proxy.ws(req, socket, head, { target: backendUrl })
+    }
+
     const projectId = host.split(".")[0]
     const targetPort = await redis.hGet("routing", projectId)
 
@@ -68,10 +83,13 @@ async function main() {
     }
   })
 
-  const PORT = 8010
+  // Listen on Port 80 for AWS, or 8010 for local development
+  const PORT = isProd ? 80 : 8010
   server.listen(PORT, () => {
-    console.log(`🌐 Local Proxy Gateway running at http://lvh.me:${PORT}`)
-    console.log(`🚀 Test your projects at http://[PROJECT_ID].lvh.me:${PORT}`)
+    console.log(`🚀 Proxy running on port ${PORT}`)
+    if (!isProd) {
+      console.log(`🔗 Local Test: http://api.lvh.me:${PORT}`)
+    }
   })
 }
 

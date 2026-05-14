@@ -11,19 +11,20 @@ export declare class ProjectController {
             email: string;
         };
         deployment: {
+            url: string;
             id: string;
             name: string | null;
             createdAt: Date;
             updatedAt: Date;
-            status: import("../../generated/prisma/enums").DeploymentStatus;
-            url: string;
             projectId: string;
+            status: import("../../generated/prisma/enums").DeploymentStatus;
         } | null;
     } & {
         id: string;
         name: string;
         createdAt: Date;
         updatedAt: Date;
+        userId: string;
         description: string | null;
         framework: import("../../generated/prisma/enums").Framework;
         nodeVersion: string;
@@ -35,23 +36,23 @@ export declare class ProjectController {
         gitRepositoryOwner: string | null;
         gitRepositoryType: import("../../generated/prisma/enums").GitProvider | null;
         environmentVariables: string | null;
-        userId: string;
     }>;
     getProjects(req: express.Request): Promise<({
         deployment: {
+            url: string;
             id: string;
             name: string | null;
             createdAt: Date;
             updatedAt: Date;
-            status: import("../../generated/prisma/enums").DeploymentStatus;
-            url: string;
             projectId: string;
+            status: import("../../generated/prisma/enums").DeploymentStatus;
         } | null;
     } & {
         id: string;
         name: string;
         createdAt: Date;
         updatedAt: Date;
+        userId: string;
         description: string | null;
         framework: import("../../generated/prisma/enums").Framework;
         nodeVersion: string;
@@ -63,23 +64,23 @@ export declare class ProjectController {
         gitRepositoryOwner: string | null;
         gitRepositoryType: import("../../generated/prisma/enums").GitProvider | null;
         environmentVariables: string | null;
-        userId: string;
     })[]>;
     getProject(projectId: string): Promise<({
         deployment: {
+            url: string;
             id: string;
             name: string | null;
             createdAt: Date;
             updatedAt: Date;
-            status: import("../../generated/prisma/enums").DeploymentStatus;
-            url: string;
             projectId: string;
+            status: import("../../generated/prisma/enums").DeploymentStatus;
         } | null;
     } & {
         id: string;
         name: string;
         createdAt: Date;
         updatedAt: Date;
+        userId: string;
         description: string | null;
         framework: import("../../generated/prisma/enums").Framework;
         nodeVersion: string;
@@ -91,6 +92,39 @@ export declare class ProjectController {
         gitRepositoryOwner: string | null;
         gitRepositoryType: import("../../generated/prisma/enums").GitProvider | null;
         environmentVariables: string | null;
-        userId: string;
     }) | null>;
+    handleDeploymentSuccess(projectId: string, body: {
+        liveUrl: string;
+    }, workerSecret: string): Promise<{
+        success: boolean;
+        message: string;
+        project: {
+            deployment: {
+                url: string;
+                id: string;
+                name: string | null;
+                createdAt: Date;
+                updatedAt: Date;
+                projectId: string;
+                status: import("../../generated/prisma/enums").DeploymentStatus;
+            } | null;
+        } & {
+            id: string;
+            name: string;
+            createdAt: Date;
+            updatedAt: Date;
+            userId: string;
+            description: string | null;
+            framework: import("../../generated/prisma/enums").Framework;
+            nodeVersion: string;
+            buildCommand: string | null;
+            installCommand: string | null;
+            outputDirectory: string | null;
+            devCommand: string | null;
+            gitRepositoryName: string | null;
+            gitRepositoryOwner: string | null;
+            gitRepositoryType: import("../../generated/prisma/enums").GitProvider | null;
+            environmentVariables: string | null;
+        };
+    }>;
 }

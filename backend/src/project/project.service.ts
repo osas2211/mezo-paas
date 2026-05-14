@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common'
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common'
 import { GithubService } from 'src/github/github.service'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { Logger } from '@nestjs/common'
@@ -91,6 +91,32 @@ export class ProjectService {
   async editProject() {
     return {}
   }
+
+  async updateDeploymentStatus(projectId: string, liveUrl: string, workerSecret: string) {
+    if (workerSecret !== this.configService.get<string>('WORKER_SECRET')) {
+      throw new UnauthorizedException('Invalid Worker Secret')
+    }
+
+    const project = await this.prismaService.project.findUnique({
+      where: { id: projectId },
+      include: { deployment: true }
+    })
+    if (!project) {
+      throw new BadRequestException('Project not found')
+    }
+    // if (project.deployment?.url) {
+    //   throw new BadRequestException('Project is already deployed')
+    // }
+    await this.prismaService.deployment.update({
+      where: { projectId },
+      data: {
+        url: liveUrl,
+        status: "READY", // Ready for the proxy to route traffic
+      },
+    })
+    return { success: true, message: "Deployment status updated successfully", project }
+  }
+
 
   private async analyzeRepository(owner: string, repo: string, token: string) {
     const octokit = new Octokit({ auth: token })
@@ -206,5 +232,6 @@ export class ProjectService {
     }
     return framework && map[framework] ? map[framework] : 'dist'
   }
+
 
 }

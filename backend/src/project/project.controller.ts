@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query, Req, UnauthorizedException, UseGuards } from '@nestjs/common'
+import { Body, Controller, Get, Headers, Param, Patch, Post, Query, Req, UnauthorizedException, UseGuards } from '@nestjs/common'
 import { AuthGuard } from 'src/auth/auth.guard'
 import { ProjectService } from './project.service'
 import express from 'express'
@@ -37,5 +37,14 @@ export class ProjectController {
   @Get(':projectId')
   async getProject(@Param("projectId") projectId: string) {
     return this.projectService.getProject(projectId)
+  }
+
+  @Patch(':projectId/deployment-success')
+  async handleDeploymentSuccess(
+    @Param('projectId') projectId: string,
+    @Body() body: { liveUrl: string },
+    @Headers('x-worker-secret') workerSecret: string,
+  ) {
+    return this.projectService.updateDeploymentStatus(projectId, body.liveUrl, workerSecret)
   }
 }

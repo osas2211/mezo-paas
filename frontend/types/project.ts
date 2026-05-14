@@ -21,13 +21,7 @@ export interface ProjectI {
   gitRepositoryType: 'github' | 'gitlab' | 'bitbucket'
 
   // Environment Variables associated with this project
-  environmentVariables?: Array<{
-    id: string
-    key: string
-    value: string
-    target: Array<'production' | 'preview' | 'development'>
-    type: 'system' | 'secret' | 'plain' | 'encrypted'
-  }>
+  environmentVariables?: Record<string, string>
 
   // Information regarding the most recent deployments
   // latestDeployments?: Array<{

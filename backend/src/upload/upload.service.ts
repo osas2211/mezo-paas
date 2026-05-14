@@ -18,12 +18,18 @@ export class UploadService {
   ) {
 
 
+    const accessKeyId = this.configService.get<string>('AWS_ACCESS_KEY')
+    const secretAccessKey = this.configService.get<string>('AWS_SECRET_KEY')
+
     this.s3Client = new S3Client({
       region: this.configService.get<string>('AWS_REGION') || 'us-east-1',
-      credentials: {
-        accessKeyId: this.configService.get<string>('AWS_ACCESS_KEY') || '',
-        secretAccessKey: this.configService.get<string>('AWS_SECRET_KEY') || '',
-      },
+      // Only include the credentials object if the keys actually exist
+      ...(accessKeyId && secretAccessKey ? {
+        credentials: {
+          accessKeyId,
+          secretAccessKey,
+        },
+      } : {}),
     })
   }
 

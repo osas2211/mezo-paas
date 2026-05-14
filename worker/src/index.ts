@@ -2,10 +2,10 @@ import { createClient } from "redis"
 import { downloadS3Folder } from "./s3"
 import { buildAndRun } from "./docker"
 import * as fs from "fs"
-import "dotenv/config"
 import { generateDockerfile } from "./detector"
 import path from "path"
 import { decrypt } from "./crypto"
+import "dotenv/config"
 
 const redis = createClient({ url: process.env.REDIS_URL })
 
@@ -51,6 +51,23 @@ async function main() {
       await redis.hSet("status", folder_name, "live")
 
       console.log(`✅ Success! ${folder_name} on port ${port}`)
+
+      const liveUrl = `http://${folder_name}.${process.env.NODE_ENV === 'production' ? 'stellarsampled.com' : 'lvh.me:8010'}`
+      console.log(`🌐 Live URL: ${liveUrl}`)
+
+      // 3Ping the NestJS API to save it to Postgres
+      await fetch(`${process.env.BACKEND_URL}/api/v1/project/${projectId}/deployment-success`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-worker-secret': process.env.WORKER_SECRET! // Must match the backend .env
+        },
+        body: JSON.stringify({ liveUrl })
+      })
+
+      console.log(`✅ Deployment complete. URL saved to DB.`)
+
+
       const endTime = Date.now()
       const duration = (endTime - startTime) / 1000
       console.log(`⏱️ Deployment took ${duration} seconds`)

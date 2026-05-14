@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { createProject, getProjects } from "@/services/project.service"
+import { createProject, getProject, getProjects } from "@/services/project.service"
 import { ProjectI } from "@/types/project"
 import { useToastify } from "@/hooks/use-toastify"
 
@@ -22,6 +22,13 @@ export const useProjects = () => {
   return useQuery({
     queryKey: ['projects'],
     queryFn: () => getProjects(),
+  })
+}
+
+export const useProject = (projectId: string) => {
+  return useQuery({
+    queryKey: ['project', projectId],
+    queryFn: () => getProject(projectId),
   })
 }
 

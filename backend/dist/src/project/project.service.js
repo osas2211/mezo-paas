@@ -126,6 +126,26 @@ let ProjectService = ProjectService_1 = class ProjectService {
     async editProject() {
         return {};
     }
+    async updateDeploymentStatus(projectId, liveUrl, workerSecret) {
+        if (workerSecret !== this.configService.get('WORKER_SECRET')) {
+            throw new common_1.UnauthorizedException('Invalid Worker Secret');
+        }
+        const project = await this.prismaService.project.findUnique({
+            where: { id: projectId },
+            include: { deployment: true }
+        });
+        if (!project) {
+            throw new common_1.BadRequestException('Project not found');
+        }
+        await this.prismaService.deployment.update({
+            where: { projectId },
+            data: {
+                url: liveUrl,
+                status: "READY",
+            },
+        });
+        return { success: true, message: "Deployment status updated successfully", project };
+    }
     async analyzeRepository(owner, repo, token) {
         const octokit = new octokit_1.Octokit({ auth: token });
         let packageJson = null;
