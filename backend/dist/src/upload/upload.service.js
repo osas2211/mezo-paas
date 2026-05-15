@@ -59,17 +59,31 @@ let UploadService = UploadService_1 = class UploadService {
     s3Client;
     constructor(configService) {
         this.configService = configService;
+        const accessKeyId = this.configService.get('AWS_ACCESS_KEY');
+        const secretAccessKey = this.configService.get('AWS_SECRET_KEY');
         this.s3Client = new client_s3_1.S3Client({
             region: this.configService.get('AWS_REGION') || 'us-east-1',
-            credentials: {
-                accessKeyId: this.configService.get('AWS_ACCESS_KEY') || '',
-                secretAccessKey: this.configService.get('AWS_SECRET_KEY') || '',
-            },
+            ...(accessKeyId && secretAccessKey ? {
+                credentials: {
+                    accessKeyId,
+                    secretAccessKey,
+                },
+            } : {}),
         });
     }
     async uploadRepo(repoUrl, branch = 'master', projectId, encryptedEnvironmentVariables) {
+        const redisUrl = this.configService.get('REDIS_URL') || "";
         const repoName = repoUrl.split('/').pop() || '';
-        const redisClient = (0, redis_1.createClient)();
+        const redisClient = (0, redis_1.createCluster)({
+            rootNodes: [
+                { url: redisUrl }
+            ],
+            defaults: {
+                socket: {
+                    tls: redisUrl.startsWith('rediss')
+                }
+            }
+        });
         await redisClient.connect();
         this.logger.log(`Importing repo from ${repoUrl}`);
         const folder_name = repoName.replace(".git", "") + "-" + projectId;

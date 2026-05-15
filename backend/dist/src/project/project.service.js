@@ -51,19 +51,23 @@ const common_2 = require("@nestjs/common");
 const semver = __importStar(require("semver"));
 const octokit_1 = require("octokit");
 const config_1 = require("@nestjs/config");
+const enums_1 = require("../../generated/prisma/enums");
 const encryption_service_1 = require("../encryption/encryption.service");
+const project_gateway_1 = require("./project.gateway");
 let ProjectService = ProjectService_1 = class ProjectService {
     prismaService;
     githubService;
     configService;
     encryptionService;
+    buildGateway;
     logger = new common_2.Logger(ProjectService_1.name);
     octokitApp;
-    constructor(prismaService, githubService, configService, encryptionService) {
+    constructor(prismaService, githubService, configService, encryptionService, buildGateway) {
         this.prismaService = prismaService;
         this.githubService = githubService;
         this.configService = configService;
         this.encryptionService = encryptionService;
+        this.buildGateway = buildGateway;
         const appId = this.configService.get('GITHUB_APP_ID');
         const privateKey = this.configService.get('GITHUB_PRIVATE_KEY')?.replace(/\\n/g, '\n');
         if (!appId || !privateKey) {
@@ -111,7 +115,9 @@ let ProjectService = ProjectService_1 = class ProjectService {
                 },
             }
         });
+        this.buildGateway.broadcastStatus(project.id, enums_1.DeploymentStatus.PENDING_DEPLOYMENT, Date.now());
         await this.githubService.importRepo(githubRepo.name, githubRepo.default_branch, userToken, githubRepo.owner.login, project.id, encryptedEnvironmentVariables);
+        this.buildGateway.broadcastStatus(project.id, enums_1.DeploymentStatus.QUEUED_FOR_BUILDING, Date.now());
         return project;
     }
     async getProjects(userId) {
@@ -126,7 +132,7 @@ let ProjectService = ProjectService_1 = class ProjectService {
     async editProject() {
         return {};
     }
-    async updateDeploymentStatus(projectId, liveUrl, workerSecret) {
+    async updateDeploymentStatus(projectId, workerSecret, status, liveUrl) {
         if (workerSecret !== this.configService.get('WORKER_SECRET')) {
             throw new common_1.UnauthorizedException('Invalid Worker Secret');
         }
@@ -137,13 +143,24 @@ let ProjectService = ProjectService_1 = class ProjectService {
         if (!project) {
             throw new common_1.BadRequestException('Project not found');
         }
-        await this.prismaService.deployment.update({
-            where: { projectId },
-            data: {
-                url: liveUrl,
-                status: "READY",
-            },
-        });
+        if (status === enums_1.DeploymentStatus.READY) {
+            await this.prismaService.deployment.update({
+                where: { projectId },
+                data: {
+                    url: liveUrl,
+                    status: status,
+                },
+            });
+        }
+        else {
+            await this.prismaService.deployment.update({
+                where: { projectId },
+                data: {
+                    status: status,
+                },
+            });
+        }
+        this.buildGateway.broadcastStatus(project.id, status, Date.now());
         return { success: true, message: "Deployment status updated successfully", project };
     }
     async analyzeRepository(owner, repo, token) {
@@ -252,6 +269,7 @@ exports.ProjectService = ProjectService = ProjectService_1 = __decorate([
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
         github_service_1.GithubService,
         config_1.ConfigService,
-        encryption_service_1.EncryptionService])
+        encryption_service_1.EncryptionService,
+        project_gateway_1.ProjectGateway])
 ], ProjectService);
 //# sourceMappingURL=project.service.js.map

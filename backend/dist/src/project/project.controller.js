@@ -42,8 +42,8 @@ let ProjectController = class ProjectController {
     async getProject(projectId) {
         return this.projectService.getProject(projectId);
     }
-    async handleDeploymentSuccess(projectId, body, workerSecret) {
-        return this.projectService.updateDeploymentStatus(projectId, body.liveUrl, workerSecret);
+    async handleDeploymentStatus(projectId, body, workerSecret) {
+        return this.projectService.updateDeploymentStatus(projectId, workerSecret, body.status, body.liveUrl);
     }
 };
 exports.ProjectController = ProjectController;
@@ -74,14 +74,14 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], ProjectController.prototype, "getProject", null);
 __decorate([
-    (0, common_1.Patch)(':projectId/deployment-success'),
+    (0, common_1.Patch)(':projectId/deployment-status'),
     __param(0, (0, common_1.Param)('projectId')),
     __param(1, (0, common_1.Body)()),
     __param(2, (0, common_1.Headers)('x-worker-secret')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, Object, String]),
     __metadata("design:returntype", Promise)
-], ProjectController.prototype, "handleDeploymentSuccess", null);
+], ProjectController.prototype, "handleDeploymentStatus", null);
 exports.ProjectController = ProjectController = __decorate([
     (0, common_1.Controller)('project'),
     __metadata("design:paramtypes", [project_service_1.ProjectService,

@@ -5,20 +5,21 @@ import { Logger } from '@nestjs/common'
 import * as semver from 'semver'
 import { App as OctokitApp, Octokit } from 'octokit'
 import { ConfigService } from '@nestjs/config'
-import { Framework } from 'generated/prisma/enums'
+import { DeploymentStatus, Framework } from 'generated/prisma/enums'
 import { EncryptionService } from 'src/encryption/encryption.service'
+import { ProjectGateway } from './project.gateway'
 
 @Injectable()
 export class ProjectService {
   private readonly logger = new Logger(ProjectService.name)
   private readonly octokitApp: OctokitApp
 
-
   constructor(
     private readonly prismaService: PrismaService,
     private readonly githubService: GithubService,
     private readonly configService: ConfigService,
-    private readonly encryptionService: EncryptionService
+    private readonly encryptionService: EncryptionService,
+    private readonly buildGateway: ProjectGateway
   ) {
     const appId = this.configService.get<string>('GITHUB_APP_ID')
     const privateKey = this.configService.get<string>('GITHUB_PRIVATE_KEY')?.replace(/\\n/g, '\n')
@@ -71,8 +72,9 @@ export class ProjectService {
         },
       }
     })
+    this.buildGateway.broadcastStatus(project.id, DeploymentStatus.PENDING_DEPLOYMENT, Date.now())
     await this.githubService.importRepo(githubRepo.name, githubRepo.default_branch, userToken, githubRepo.owner.login, project.id, encryptedEnvironmentVariables)
-
+    this.buildGateway.broadcastStatus(project.id, DeploymentStatus.QUEUED_FOR_BUILDING, Date.now())
     return project
   }
 
@@ -92,7 +94,7 @@ export class ProjectService {
     return {}
   }
 
-  async updateDeploymentStatus(projectId: string, liveUrl: string, workerSecret: string) {
+  async updateDeploymentStatus(projectId: string, workerSecret: string, status: DeploymentStatus, liveUrl?: string) {
     if (workerSecret !== this.configService.get<string>('WORKER_SECRET')) {
       throw new UnauthorizedException('Invalid Worker Secret')
     }
@@ -104,16 +106,25 @@ export class ProjectService {
     if (!project) {
       throw new BadRequestException('Project not found')
     }
-    // if (project.deployment?.url) {
-    //   throw new BadRequestException('Project is already deployed')
-    // }
-    await this.prismaService.deployment.update({
-      where: { projectId },
-      data: {
-        url: liveUrl,
-        status: "READY", // Ready for the proxy to route traffic
-      },
-    })
+
+    if (status === DeploymentStatus.READY) {
+      await this.prismaService.deployment.update({
+        where: { projectId },
+        data: {
+          url: liveUrl,
+          status: status,
+        },
+      })
+    } else {
+      await this.prismaService.deployment.update({
+        where: { projectId },
+        data: {
+          status: status,
+        },
+      })
+    }
+    this.buildGateway.broadcastStatus(project.id, status, Date.now())
+
     return { success: true, message: "Deployment status updated successfully", project }
   }
 

@@ -3,6 +3,7 @@ import { AuthGuard } from 'src/auth/auth.guard'
 import { ProjectService } from './project.service'
 import express from 'express'
 import { PrismaService } from 'src/prisma/prisma.service'
+import { DeploymentStatus } from 'generated/prisma/enums'
 
 @Controller('project')
 export class ProjectController {
@@ -39,12 +40,12 @@ export class ProjectController {
     return this.projectService.getProject(projectId)
   }
 
-  @Patch(':projectId/deployment-success')
-  async handleDeploymentSuccess(
+  @Patch(':projectId/deployment-status')
+  async handleDeploymentStatus(
     @Param('projectId') projectId: string,
-    @Body() body: { liveUrl: string },
+    @Body() body: { liveUrl?: string, status: DeploymentStatus },
     @Headers('x-worker-secret') workerSecret: string,
   ) {
-    return this.projectService.updateDeploymentStatus(projectId, body.liveUrl, workerSecret)
+    return this.projectService.updateDeploymentStatus(projectId, workerSecret, body.status, body.liveUrl)
   }
 }

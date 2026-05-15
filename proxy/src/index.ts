@@ -2,7 +2,7 @@ import http, { IncomingMessage, ServerResponse } from "http"
 import https from "https"
 import fs from "fs"
 import httpProxy from "http-proxy"
-import { createCluster } from "redis"
+import { createClient, createCluster } from "redis"
 import "dotenv/config"
 import { Socket } from "net"
 
@@ -14,11 +14,14 @@ const isProd = process.env.NODE_ENV === "production"
 const backendUrl = process.env.BACKEND_URL
 const redisUrl = process.env.REDIS_URL || ""
 
-const redis = createCluster({
+
+const redis = isProd ? createCluster({
   rootNodes: [{ url: redisUrl }],
   defaults: {
     socket: { tls: redisUrl.startsWith('rediss') }
   }
+}) : createClient({
+  url: redisUrl
 })
 
 async function main() {

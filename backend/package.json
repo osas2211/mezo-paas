@@ -27,6 +27,8 @@
     "@nestjs/core": "^11.0.1",
     "@nestjs/jwt": "^11.0.2",
     "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/platform-socket.io": "^11.1.21",
+    "@nestjs/websockets": "^11.1.21",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "axios": "^1.16.0",
@@ -40,6 +42,7 @@
     "rxjs": "^7.8.1",
     "semver": "^7.7.4",
     "simple-git": "^3.36.0",
+    "socket.io": "^4.8.3",
     "viem": "^2.48.4"
   },
   "devDependencies": {

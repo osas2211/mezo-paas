@@ -1,33 +1,35 @@
 import { GithubService } from "../github/github.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { ConfigService } from '@nestjs/config';
-import { Framework } from "../../generated/prisma/enums";
+import { DeploymentStatus, Framework } from "../../generated/prisma/enums";
 import { EncryptionService } from "../encryption/encryption.service";
+import { ProjectGateway } from './project.gateway';
 export declare class ProjectService {
     private readonly prismaService;
     private readonly githubService;
     private readonly configService;
     private readonly encryptionService;
+    private readonly buildGateway;
     private readonly logger;
     private readonly octokitApp;
-    constructor(prismaService: PrismaService, githubService: GithubService, configService: ConfigService, encryptionService: EncryptionService);
+    constructor(prismaService: PrismaService, githubService: GithubService, configService: ConfigService, encryptionService: EncryptionService, buildGateway: ProjectGateway);
     create(repoName: string, userId: string, userToken: string, environmentVariables?: Record<string, string>): Promise<{
         user: {
-            id: string;
             email: string;
+            id: string;
         };
         deployment: {
             url: string;
-            id: string;
             name: string | null;
+            id: string;
             createdAt: Date;
             updatedAt: Date;
+            status: DeploymentStatus;
             projectId: string;
-            status: import("generated/prisma/enums").DeploymentStatus;
         } | null;
     } & {
-        id: string;
         name: string;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
         userId: string;
@@ -46,16 +48,16 @@ export declare class ProjectService {
     getProjects(userId: string): Promise<({
         deployment: {
             url: string;
-            id: string;
             name: string | null;
+            id: string;
             createdAt: Date;
             updatedAt: Date;
+            status: DeploymentStatus;
             projectId: string;
-            status: import("generated/prisma/enums").DeploymentStatus;
         } | null;
     } & {
-        id: string;
         name: string;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
         userId: string;
@@ -74,16 +76,16 @@ export declare class ProjectService {
     getProject(projectId: string): Promise<({
         deployment: {
             url: string;
-            id: string;
             name: string | null;
+            id: string;
             createdAt: Date;
             updatedAt: Date;
+            status: DeploymentStatus;
             projectId: string;
-            status: import("generated/prisma/enums").DeploymentStatus;
         } | null;
     } & {
-        id: string;
         name: string;
+        id: string;
         createdAt: Date;
         updatedAt: Date;
         userId: string;
@@ -101,22 +103,22 @@ export declare class ProjectService {
     }) | null>;
     deleteProject(): Promise<{}>;
     editProject(): Promise<{}>;
-    updateDeploymentStatus(projectId: string, liveUrl: string, workerSecret: string): Promise<{
+    updateDeploymentStatus(projectId: string, workerSecret: string, status: DeploymentStatus, liveUrl?: string): Promise<{
         success: boolean;
         message: string;
         project: {
             deployment: {
                 url: string;
-                id: string;
                 name: string | null;
+                id: string;
                 createdAt: Date;
                 updatedAt: Date;
+                status: DeploymentStatus;
                 projectId: string;
-                status: import("generated/prisma/enums").DeploymentStatus;
             } | null;
         } & {
-            id: string;
             name: string;
+            id: string;
             createdAt: Date;
             updatedAt: Date;
             userId: string;

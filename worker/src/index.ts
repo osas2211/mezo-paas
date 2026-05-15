@@ -1,4 +1,4 @@
-import { createCluster } from "redis"
+import { createClient, createCluster } from "redis"
 import { downloadS3Folder } from "./s3"
 import { buildAndRun } from "./docker"
 import * as fs from "fs"
@@ -8,8 +8,10 @@ import { decrypt } from "./crypto"
 import "dotenv/config"
 
 const redisUrl = process.env.REDIS_URL || ""
+const isProduction = process.env.NODE_ENV === "production"
 
-const redis = createCluster({
+
+const redis = isProduction ? createCluster({
   rootNodes: [
     { url: redisUrl }
   ],
@@ -19,7 +21,22 @@ const redis = createCluster({
       tls: redisUrl.startsWith('rediss')
     }
   }
+}) : createClient({
+  url: redisUrl
 })
+
+type statusType = "PENDING_DEPLOYMENT" | "QUEUED_FOR_BUILDING" | "BUILDING" | "READY" | "ERROR" | "CANCELED"
+
+const updateDeploymentStatus = async (projectId: string, status: statusType, liveUrl?: string) => {
+  await fetch(`${process.env.BACKEND_URL}/api/v1/project/${projectId}/deployment-status`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-worker-secret': process.env.WORKER_SECRET! // Must match the backend .env
+    },
+    body: JSON.stringify({ status, liveUrl })
+  })
+}
 
 async function main() {
   await redis.connect()
@@ -56,6 +73,7 @@ async function main() {
         fs.writeFileSync(path.join(localPath, "Dockerfile"), autoDockerFile)
       }
 
+      updateDeploymentStatus(projectId, "BUILDING")
       const port = await buildAndRun(projectId, localPath, envVars)
 
       // Update status and port mapping for the Proxy
@@ -68,14 +86,7 @@ async function main() {
       console.log(`🌐 Live URL: ${liveUrl}`)
 
       // 3Ping the NestJS API to save it to Postgres
-      await fetch(`${process.env.BACKEND_URL}/api/v1/project/${projectId}/deployment-success`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-worker-secret': process.env.WORKER_SECRET! // Must match the backend .env
-        },
-        body: JSON.stringify({ liveUrl })
-      })
+      await updateDeploymentStatus(projectId, "READY", liveUrl)
 
       console.log(`✅ Deployment complete. URL saved to DB.`)
 
@@ -85,7 +96,7 @@ async function main() {
       console.log(`⏱️ Deployment took ${duration} seconds`)
     } catch (err) {
       console.error(`❌ Failed ${folder_name}:`, err)
-      await redis.hSet("status", folder_name, "failed")
+      await updateDeploymentStatus(projectId, "ERROR")
     } finally {
       fs.rmSync(localPath, { recursive: true, force: true })
     }
