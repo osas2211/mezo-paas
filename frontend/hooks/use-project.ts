@@ -7,7 +7,10 @@ export const useCreateProject = () => {
   const queryClient = useQueryClient()
   const { successToast, errorToast } = useToastify()
   return useMutation({
-    mutationFn: ({ repoName }: { repoName: string }) => createProject(repoName),
+    mutationFn: ({ repoName }: {
+      repoName: string
+      envVariables: Record<string, string>
+    }) => createProject(repoName),
     onSuccess: (data: ProjectI) => {
       queryClient.invalidateQueries({ queryKey: ['projects'] })
       successToast('Project created successfully', "bottom-right")

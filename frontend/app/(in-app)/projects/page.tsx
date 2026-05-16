@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/utilities/page-header"
 import { useProjects } from "@/hooks/use-project"
 import { ProjectList } from "@/components/project/project-list"
 import { Search } from "lucide-react"
+import Link from "next/link"
 
 const ProjectsPage = () => {
   const { data: projects = [], isLoading } = useProjects()
@@ -11,15 +12,27 @@ const ProjectsPage = () => {
 
   return (
     <div className="space-y-5 md:space-y-10">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <PageHeader
-          title="Projects"
-          subtitle="Manage your infrastructure projects"
-        />
-        
+      <div className="">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <PageHeader
+            title="Projects"
+            subtitle="Manage your infrastructure projects"
+          />
+
+          <Link
+            href="/projects/create"
+            className="px-4 py-2 bg-primary text-black font-medium text-sm rounded-md transition-transform hover:scale-105 active:scale-95"
+          >
+            + Create Project
+          </Link>
+        </div>
+
         {/* Search Input */}
-        <div className="relative w-full sm:w-72">
-          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30" />
+        <div className="relative w-full sm:w-72 mt-5">
+          <Search
+            size={16}
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30"
+          />
           <input
             type="text"
             placeholder="Search projects..."
@@ -31,7 +44,11 @@ const ProjectsPage = () => {
       </div>
 
       <div>
-        <ProjectList projects={projects} isLoading={isLoading} searchQuery={searchQuery} />
+        <ProjectList
+          projects={projects}
+          isLoading={isLoading}
+          searchQuery={searchQuery}
+        />
       </div>
     </div>
   )

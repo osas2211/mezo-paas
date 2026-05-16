@@ -149,6 +149,16 @@ let ProjectService = ProjectService_1 = class ProjectService {
                 data: {
                     url: liveUrl,
                     status: status,
+                    deploymentFinishedAt: new Date().toISOString(),
+                },
+            });
+        }
+        else if (status === enums_1.DeploymentStatus.BUILDING) {
+            await this.prismaService.deployment.update({
+                where: { projectId },
+                data: {
+                    status: status,
+                    deploymentStartedAt: new Date().toISOString(),
                 },
             });
         }
@@ -157,6 +167,7 @@ let ProjectService = ProjectService_1 = class ProjectService {
                 where: { projectId },
                 data: {
                     status: status,
+                    deploymentFinishedAt: new Date().toISOString(),
                 },
             });
         }

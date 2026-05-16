@@ -58,6 +58,7 @@ export const CreateProject = () => {
   const [searchQuery, setSearchQuery] = useState("")
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [selectedRepo, setSelectedRepo] = useState<GithubRepoI | null>(null)
+  const [envVars, setEnvVars] = useState([{ key: "", value: "" }])
 
   const debouncedSearch = useDebounce(searchQuery, 500)
   const {
@@ -77,8 +78,17 @@ export const CreateProject = () => {
   const router = useRouter()
   const handleDeploy = async (config: any) => {
     if (!selectedRepo) return
-    await createproject({ repoName: selectedRepo.name })
-    router.push("/projects")
+    const response = await createproject({
+      repoName: selectedRepo.name,
+      envVariables: envVars.reduce(
+        (acc, envVar) => {
+          acc[envVar.key] = envVar.value
+          return acc
+        },
+        {} as Record<string, string>,
+      ),
+    })
+    router.push(`/projects/${response.id}`)
   }
 
   const username = data?.login || "user"
@@ -90,6 +100,8 @@ export const CreateProject = () => {
         onBack={() => setSelectedRepo(null)}
         onDeploy={handleDeploy}
         isDeploying={isDeploying}
+        envVars={envVars}
+        setEnvVars={setEnvVars}
       />
     )
   }

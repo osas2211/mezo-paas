@@ -1,32 +1,11 @@
 import React from "react"
 import { ProjectI } from "@/types/project"
-import {
-  ExternalLink,
-  Activity,
-  ShieldCheck,
-  BarChart3,
-  Clock,
-  GitCommit,
-} from "lucide-react"
+import { ExternalLink, Activity, ShieldCheck, BarChart3 } from "lucide-react"
 import { GithubOutlined } from "@ant-design/icons"
-import Link from "next/link"
+import DeploymentTracker from "../deployment-tracker"
+import { IoIosGitBranch } from "react-icons/io"
 
 export default function OverviewTab({ project }: { project: ProjectI }) {
-  const statusColors = {
-    READY: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20",
-    BUILDING: "text-blue-400 bg-blue-400/10 border-blue-400/20 animate-pulse",
-    ERROR: "text-red-400 bg-red-400/10 border-red-400/20",
-    QUEUED: "text-amber-400 bg-amber-400/10 border-amber-400/20",
-    PENDING_DEPLOYMENT: "text-zinc-400 bg-zinc-800 border-zinc-700",
-    CANCELED: "text-zinc-400 bg-zinc-800 border-zinc-700",
-    QUEUED_FOR_BUILDING: "text-amber-400 bg-amber-400/10 border-amber-400/20",
-  }
-
-  const status = project.deployment?.status || "PENDING_DEPLOYMENT"
-  const colorClass =
-    statusColors[status as keyof typeof statusColors] ||
-    statusColors.PENDING_DEPLOYMENT
-
   return (
     <div className="space-y-6">
       {/* Production Deployment Card */}
@@ -47,9 +26,9 @@ export default function OverviewTab({ project }: { project: ProjectI }) {
           </div>
         </div>
 
-        <div className="p-6 grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-8">
+        <div className="p-6 grid grid-cols-1 lg:grid-cols-[550px_1fr] gap-8">
           {/* Preview Window Mock */}
-          <div className="relative aspect-video bg-black border border-white/10 rounded-lg overflow-hidden group flex items-center justify-center">
+          <div className="relative aspect-auto bg-black border border-white/10 rounded-lg overflow-hidden group flex items-center justify-center">
             {/* Browser Dots */}
             <div className="absolute top-0 left-0 w-full h-8 bg-white/5 border-b border-white/10 flex items-center px-3 gap-1.5">
               <div className="w-2.5 h-2.5 rounded-full bg-white/20 group-hover:bg-red-400/50 transition-colors" />
@@ -82,20 +61,25 @@ export default function OverviewTab({ project }: { project: ProjectI }) {
           {/* Details Sidebar */}
           <div className="flex flex-col gap-6">
             <div>
-              <p className="text-xs text-white/50 uppercase tracking-wider mb-2 font-semibold">
+              <p className="text-xs text-white/60 capitalize tracking-wider mb-2 font-normal">
                 Deployment
               </p>
               <a
                 href={`${project.deployment?.url || "#"}`}
                 target="_blank"
-                className="text-sm text-primary hover:underline truncate block"
+                className="text-sm text-white hover:underline truncate block"
               >
-                {project.deployment?.url || "Waiting for deployment..."}
+                {project.deployment?.id || "Waiting for deployment..."}
               </a>
             </div>
 
+            {/* <DeploymentTracker
+              projectId={project.id}
+              defaultStatus={project.deployment?.status}
+            /> */}
+
             <div>
-              <p className="text-xs text-white/50 uppercase tracking-wider mb-2 font-semibold">
+              <p className="text-xs text-white/60 capitalize tracking-wider mb-2 font-normal">
                 Domains
               </p>
               <div className="flex items-center gap-2">
@@ -104,34 +88,24 @@ export default function OverviewTab({ project }: { project: ProjectI }) {
                   target="_blank"
                   className="text-sm text-white/90 hover:underline flex items-center gap-1.5"
                 >
-                  {project.deployment?.url || `${project.name}.mezo.app`}{" "}
+                  {project.deployment?.url || `N/A`}{" "}
                   <ExternalLink size={12} className="text-white/40" />
                 </a>
               </div>
             </div>
 
-            <div>
-              <p className="text-xs text-white/50 uppercase tracking-wider mb-2 font-semibold">
-                Status
-              </p>
-              <div
-                className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-full border text-xs font-medium ${colorClass}`}
-              >
-                <div
-                  className={`w-2 h-2 rounded-full ${status === "READY" ? "bg-emerald-400" : status === "BUILDING" ? "bg-blue-400" : status === "ERROR" ? "bg-red-400" : "bg-current"}`}
-                />
-                {status.replace(/_/g, " ")}
-              </div>
-            </div>
+            <DeploymentTracker projectId={project.id} project={project} />
 
             <div>
-              <p className="text-xs text-white/50 uppercase tracking-wider mb-2 font-semibold">
+              <p className="text-xs text-white/60 capitalize tracking-wider mb-2 font-normal">
                 Source
               </p>
               <div className="flex flex-col gap-2 text-sm text-white/80">
                 <div className="flex items-center gap-2">
-                  <GitCommit size={14} className="text-white/40" />
-                  <span>main</span>
+                  <IoIosGitBranch size={20} className="text-white/40" />
+                  <span>
+                    {project.gitRepositoryOwner}/{project.gitRepositoryName}
+                  </span>
                 </div>
               </div>
             </div>

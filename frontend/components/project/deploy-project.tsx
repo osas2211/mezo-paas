@@ -21,6 +21,8 @@ interface DeployProjectProps {
   onBack: () => void
   onDeploy: (config: any) => void
   isDeploying?: boolean
+  envVars: { key: string; value: string }[]
+  setEnvVars: (envVars: { key: string; value: string }[]) => void
 }
 
 export const DeployProject = ({
@@ -28,11 +30,11 @@ export const DeployProject = ({
   onBack,
   onDeploy,
   isDeploying,
+  envVars,
+  setEnvVars,
 }: DeployProjectProps) => {
   const [projectName, setProjectName] = useState(repo.name)
   const [activeAccordion, setActiveAccordion] = useState<string | null>("build")
-  const [envVars, setEnvVars] = useState([{ key: "", value: "" }])
-
   const [buildConfig, setBuildConfig] = useState({
     buildCommand: "",
     outputDirectory: "",

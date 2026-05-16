@@ -102,7 +102,9 @@ exports.DeploymentScalarFieldEnum = {
     url: 'url',
     name: 'name',
     createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
+    updatedAt: 'updatedAt',
+    deploymentStartedAt: 'deploymentStartedAt',
+    deploymentFinishedAt: 'deploymentFinishedAt'
 };
 exports.SortOrder = {
     asc: 'asc',
