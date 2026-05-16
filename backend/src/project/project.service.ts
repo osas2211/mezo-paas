@@ -74,13 +74,6 @@ export class ProjectService {
     })
     this.buildGateway.broadcastStatus(project.id, DeploymentStatus.PENDING_DEPLOYMENT, Date.now())
     await this.githubService.importRepo(githubRepo.name, githubRepo.default_branch, userToken, githubRepo.owner.login, project.id, encryptedEnvironmentVariables)
-
-    // Update DB status to QUEUED_FOR_BUILDING
-    await this.prismaService.deployment.update({
-      where: { projectId: project.id },
-      data: { status: DeploymentStatus.QUEUED_FOR_BUILDING }
-    })
-
     this.buildGateway.broadcastStatus(project.id, DeploymentStatus.QUEUED_FOR_BUILDING, Date.now())
     return project
   }

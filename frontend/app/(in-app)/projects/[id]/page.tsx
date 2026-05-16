@@ -17,6 +17,18 @@ import EnvVarsTab from "@/components/project/details/env-vars-tab"
 import DomainsTab from "@/components/project/details/domains-tab"
 import RunningTimeTab from "@/components/project/details/running-time-tab"
 import CreditTab from "@/components/project/details/credit-tab"
+import { useEffect, useState } from "react"
+import { io, Socket } from "socket.io-client"
+
+const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:8000"
+
+type statusType =
+  | "PENDING_DEPLOYMENT"
+  | "QUEUED_FOR_BUILDING"
+  | "BUILDING"
+  | "READY"
+  | "ERROR"
+  | "CANCELED"
 
 const tabs = [
   { id: "overview", label: "Overview" },
@@ -35,7 +47,64 @@ export default function ProjectDetailsPage() {
   const projectId = params.id as string
   const activeTab = searchParams.get("tab") || "overview"
 
-  const { data: project, isLoading, isError } = useProject(projectId)
+  const { data: project, isLoading, isError, refetch } = useProject(projectId)
+
+  const [status, setStatus] = useState<statusType>(
+    (project?.deployment?.status as statusType) || "PENDING_DEPLOYMENT",
+  )
+
+  const [startTime, setStartTime] = useState<number | null>(null)
+  const [elapsedMs, setElapsedMs] = useState<number>(0)
+
+  const startTimeFromProject = project?.deployment?.deploymentStartedAt
+    ? new Date(project?.deployment?.deploymentStartedAt).getTime()
+    : 0
+
+  useEffect(() => {
+    if (project?.deployment?.status) {
+      setStatus(project?.deployment?.status as statusType)
+    }
+  }, [project])
+
+  useEffect(() => {
+    // 1. Connect to the NestJS Gateway namespace
+    const socket: Socket = io(`${SOCKET_URL}/deployments`)
+
+    socket.on("connect", () => {
+      // 2. Tell the backend we only want updates for THIS project
+      socket.emit("join-project-room", projectId)
+    })
+
+    // 3. Listen for the broadcast events from NestJS
+    socket.on("status-update", (data) => {
+      setStatus(data.status)
+      if (data.startTime) {
+        setStartTime(data.startTime)
+      }
+    })
+
+    return () => {
+      socket.disconnect() // Cleanup when user leaves the page
+    }
+  }, [projectId])
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout | undefined = undefined
+
+    // Only run the high-speed timer if the status is actively building
+    if (status === "BUILDING" && (startTime || startTimeFromProject)) {
+      interval = setInterval(() => {
+        // Calculate the difference between NOW and when the backend said it started
+        setElapsedMs((Date.now() - (startTime || startTimeFromProject)) / 1000)
+      }, 100) // 100ms makes it feel buttery smooth
+    } else if (status === "READY" || status === "ERROR") {
+      // If it finishes, the interval stops automatically, freezing the final time on screen
+      clearInterval(interval)
+      refetch()
+    }
+
+    return () => clearInterval(interval)
+  }, [status, startTime, project])
 
   if (isLoading) {
     return (
@@ -115,7 +184,13 @@ export default function ProjectDetailsPage() {
 
       {/* Tab Content */}
       <div className="py-4 max-w-6xl mx-auto">
-        {activeTab === "overview" && <OverviewTab project={project} />}
+        {activeTab === "overview" && (
+          <OverviewTab
+            project={project}
+            status={status}
+            elapsedMs={elapsedMs}
+          />
+        )}
         {activeTab === "deployments" && <DeploymentsTab project={project} />}
         {activeTab === "logs" && <LogsTab project={project} />}
         {activeTab === "domains" && <DomainsTab project={project} />}

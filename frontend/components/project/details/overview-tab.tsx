@@ -5,7 +5,23 @@ import { GithubOutlined } from "@ant-design/icons"
 import DeploymentTracker from "../deployment-tracker"
 import { IoIosGitBranch } from "react-icons/io"
 
-export default function OverviewTab({ project }: { project: ProjectI }) {
+type statusType =
+  | "PENDING_DEPLOYMENT"
+  | "QUEUED_FOR_BUILDING"
+  | "BUILDING"
+  | "READY"
+  | "ERROR"
+  | "CANCELED"
+
+export default function OverviewTab({
+  project,
+  status,
+  elapsedMs,
+}: {
+  project: ProjectI
+  status: statusType
+  elapsedMs: number
+}) {
   return (
     <div className="space-y-6">
       {/* Production Deployment Card */}
@@ -94,7 +110,12 @@ export default function OverviewTab({ project }: { project: ProjectI }) {
               </div>
             </div>
 
-            <DeploymentTracker projectId={project.id} project={project} />
+            <DeploymentTracker
+              projectId={project.id}
+              project={project}
+              status={status}
+              elapsedMs={elapsedMs}
+            />
 
             <div>
               <p className="text-xs text-white/60 capitalize tracking-wider mb-2 font-normal">
