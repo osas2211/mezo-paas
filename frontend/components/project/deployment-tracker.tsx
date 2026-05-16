@@ -150,7 +150,14 @@ export default function DeploymentTracker({
             </p>
           </div>
         ) : (
-          <p className="text-xs text-white/90">{formattedTimeString}</p>
+          <div>
+            {status === "BUILDING" ? (
+              <LoadingOutlined style={{ color: "#b3ec11", fontSize: 14 }} />
+            ) : (
+              <></>
+            )}
+            <p className="text-xs text-white/90">{formattedTimeString}</p>
+          </div>
         )}
       </div>
     </>
