@@ -37,6 +37,14 @@ export default function DeploymentTracker({
   const [status, setStatus] = useState<statusType>(
     project.deployment?.status as statusType,
   )
+
+  // Sync state if the project prop updates (e.g. from a fresh fetch)
+  useEffect(() => {
+    if (project.deployment?.status) {
+      setStatus(project.deployment.status as statusType)
+    }
+  }, [project.deployment?.status])
+
   const colorClass =
     statusColors[status as keyof typeof statusColors] ||
     statusColors.PENDING_DEPLOYMENT
@@ -50,7 +58,6 @@ export default function DeploymentTracker({
     socket.on("connect", () => {
       // 2. Tell the backend we only want updates for THIS project
       socket.emit("join-project-room", projectId)
-      queryClient.invalidateQueries({ queryKey: ["project", projectId] })
     })
 
     // 3. Listen for the broadcast events from NestJS
@@ -59,12 +66,16 @@ export default function DeploymentTracker({
       if (data.startTime) {
         setStartTime(data.startTime)
       }
+      // Only invalidate when the deployment finishes or errors to get final data
+      if (data.status === "READY" || data.status === "ERROR") {
+        queryClient.invalidateQueries({ queryKey: ["project", projectId] })
+      }
     })
 
     return () => {
       socket.disconnect() // Cleanup when user leaves the page
     }
-  }, [projectId])
+  }, [projectId, queryClient])
 
   const startTimeFromProject = project.deployment?.deploymentStartedAt
     ? new Date(project.deployment?.deploymentStartedAt).getTime()
@@ -73,22 +84,20 @@ export default function DeploymentTracker({
   useEffect(() => {
     let interval: NodeJS.Timeout | undefined = undefined
 
+    const effectiveStartTime = startTime || startTimeFromProject
+
     // Only run the high-speed timer if the status is actively building
-    if (status === "BUILDING" && (startTime || startTimeFromProject)) {
-      setStatus("BUILDING")
-      queryClient.invalidateQueries({ queryKey: ["project", projectId] })
+    if (status === "BUILDING" && effectiveStartTime) {
       interval = setInterval(() => {
         // Calculate the difference between NOW and when the backend said it started
-        setElapsedMs((Date.now() - (startTime || startTimeFromProject)) / 1000)
+        setElapsedMs((Date.now() - effectiveStartTime) / 1000)
       }, 100) // 100ms makes it feel buttery smooth
-    } else if (status === "READY" || status === "ERROR") {
-      // If it finishes, the interval stops automatically, freezing the final time on screen
+    } else {
       clearInterval(interval)
-      queryClient.invalidateQueries({ queryKey: ["project", projectId] })
     }
 
     return () => clearInterval(interval)
-  }, [status, startTime, project])
+  }, [status, startTime, startTimeFromProject])
 
   const duration =
     project.deployment?.deploymentFinishedAt &&
