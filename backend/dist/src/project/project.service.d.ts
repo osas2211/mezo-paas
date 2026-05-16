@@ -19,19 +19,19 @@ export declare class ProjectService {
             email: string;
         };
         deployment: {
-            id: string;
             name: string | null;
+            url: string;
+            id: string;
             createdAt: Date;
             updatedAt: Date;
             status: DeploymentStatus;
-            url: string;
             deploymentStartedAt: Date | null;
             deploymentFinishedAt: Date | null;
             projectId: string;
         } | null;
     } & {
-        id: string;
         name: string;
+        id: string;
         description: string | null;
         framework: Framework;
         nodeVersion: string;
@@ -49,19 +49,19 @@ export declare class ProjectService {
     }>;
     getProjects(userId: string): Promise<({
         deployment: {
-            id: string;
             name: string | null;
+            url: string;
+            id: string;
             createdAt: Date;
             updatedAt: Date;
             status: DeploymentStatus;
-            url: string;
             deploymentStartedAt: Date | null;
             deploymentFinishedAt: Date | null;
             projectId: string;
         } | null;
     } & {
-        id: string;
         name: string;
+        id: string;
         description: string | null;
         framework: Framework;
         nodeVersion: string;
@@ -79,19 +79,19 @@ export declare class ProjectService {
     })[]>;
     getProject(projectId: string): Promise<({
         deployment: {
-            id: string;
             name: string | null;
+            url: string;
+            id: string;
             createdAt: Date;
             updatedAt: Date;
             status: DeploymentStatus;
-            url: string;
             deploymentStartedAt: Date | null;
             deploymentFinishedAt: Date | null;
             projectId: string;
         } | null;
     } & {
-        id: string;
         name: string;
+        id: string;
         description: string | null;
         framework: Framework;
         nodeVersion: string;
@@ -114,19 +114,19 @@ export declare class ProjectService {
         message: string;
         project: {
             deployment: {
-                id: string;
                 name: string | null;
+                url: string;
+                id: string;
                 createdAt: Date;
                 updatedAt: Date;
                 status: DeploymentStatus;
-                url: string;
                 deploymentStartedAt: Date | null;
                 deploymentFinishedAt: Date | null;
                 projectId: string;
             } | null;
         } & {
-            id: string;
             name: string;
+            id: string;
             description: string | null;
             framework: Framework;
             nodeVersion: string;
