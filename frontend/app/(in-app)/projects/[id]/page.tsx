@@ -95,7 +95,8 @@ export default function ProjectDetailsPage() {
     if (status === "BUILDING" && (startTime || startTimeFromProject)) {
       interval = setInterval(() => {
         // Calculate the difference between NOW and when the backend said it started
-        setElapsedMs((Date.now() - (startTime || startTimeFromProject)) / 1000)
+        const time = (Date.now() - (startTime || startTimeFromProject)) / 1000
+        setElapsedMs(time > 0 ? time : 0)
       }, 100) // 100ms makes it feel buttery smooth
     } else if (status === "READY" || status === "ERROR") {
       // If it finishes, the interval stops automatically, freezing the final time on screen
