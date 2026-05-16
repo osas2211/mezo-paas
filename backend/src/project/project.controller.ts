@@ -4,6 +4,7 @@ import { ProjectService } from './project.service'
 import express from 'express'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { DeploymentStatus } from 'generated/prisma/enums'
+import { UpdateDeploymentStatusDto } from './dto/project.dto'
 
 @Controller('project')
 export class ProjectController {
@@ -43,7 +44,7 @@ export class ProjectController {
   @Patch(':projectId/deployment-status')
   async handleDeploymentStatus(
     @Param('projectId') projectId: string,
-    @Body() body: { liveUrl?: string, status: DeploymentStatus },
+    @Body() body: UpdateDeploymentStatusDto,
     @Headers('x-worker-secret') workerSecret: string,
   ) {
     return this.projectService.updateDeploymentStatus(projectId, workerSecret, body.status, body.liveUrl)
