@@ -50,6 +50,7 @@ export default function DeploymentTracker({
     socket.on("connect", () => {
       // 2. Tell the backend we only want updates for THIS project
       socket.emit("join-project-room", projectId)
+      queryClient.invalidateQueries({ queryKey: ["project", projectId] })
     })
 
     // 3. Listen for the broadcast events from NestJS
