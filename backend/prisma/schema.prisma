@@ -72,6 +72,8 @@ model Deployment {
   name      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  deploymentStartedAt DateTime?
+  deploymentFinishedAt DateTime?
 }
 
 enum Framework {

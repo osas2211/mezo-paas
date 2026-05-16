@@ -5,7 +5,7 @@ import { join, relative } from 'path'
 import { simpleGit } from 'simple-git'
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
 import { ConfigService } from '@nestjs/config'
-import { createCluster } from 'redis'
+import { createCluster, createClient } from 'redis'
 
 @Injectable()
 export class UploadService {
@@ -16,6 +16,7 @@ export class UploadService {
   constructor(
     private readonly configService: ConfigService
   ) {
+
 
 
     const accessKeyId = this.configService.get<string>('AWS_ACCESS_KEY')
@@ -34,9 +35,10 @@ export class UploadService {
   }
 
   async uploadRepo(repoUrl: string, branch: string = 'master', projectId: string, encryptedEnvironmentVariables?: string) {
+    const isProduction = this.configService.get<string>('NODE_ENV') === 'production'
     const redisUrl = this.configService.get<string>('REDIS_URL') || ""
     const repoName = repoUrl.split('/').pop() || ''
-    const redisClient = createCluster({
+    const redisClient = isProduction ? createCluster({
       rootNodes: [
         { url: redisUrl }
       ],
@@ -46,6 +48,8 @@ export class UploadService {
           tls: redisUrl.startsWith('rediss')
         }
       }
+    }) : createClient({
+      url: redisUrl
     })
     await redisClient.connect()
     this.logger.log(`Importing repo from ${repoUrl}`)

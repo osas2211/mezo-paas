@@ -113,6 +113,16 @@ export class ProjectService {
         data: {
           url: liveUrl,
           status: status,
+          deploymentFinishedAt: new Date().toISOString(),
+        },
+      })
+    }
+    else if (status === DeploymentStatus.BUILDING) {
+      await this.prismaService.deployment.update({
+        where: { projectId },
+        data: {
+          status: status,
+          deploymentStartedAt: new Date().toISOString(),
         },
       })
     } else {
@@ -120,6 +130,7 @@ export class ProjectService {
         where: { projectId },
         data: {
           status: status,
+          deploymentFinishedAt: new Date().toISOString(),
         },
       })
     }

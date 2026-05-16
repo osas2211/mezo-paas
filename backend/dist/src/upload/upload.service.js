@@ -72,9 +72,10 @@ let UploadService = UploadService_1 = class UploadService {
         });
     }
     async uploadRepo(repoUrl, branch = 'master', projectId, encryptedEnvironmentVariables) {
+        const isProduction = this.configService.get('NODE_ENV') === 'production';
         const redisUrl = this.configService.get('REDIS_URL') || "";
         const repoName = repoUrl.split('/').pop() || '';
-        const redisClient = (0, redis_1.createCluster)({
+        const redisClient = isProduction ? (0, redis_1.createCluster)({
             rootNodes: [
                 { url: redisUrl }
             ],
@@ -83,6 +84,8 @@ let UploadService = UploadService_1 = class UploadService {
                     tls: redisUrl.startsWith('rediss')
                 }
             }
+        }) : (0, redis_1.createClient)({
+            url: redisUrl
         });
         await redisClient.connect();
         this.logger.log(`Importing repo from ${repoUrl}`);

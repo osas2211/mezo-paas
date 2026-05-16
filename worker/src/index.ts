@@ -53,7 +53,7 @@ async function main() {
     const localPath = `./temp/${folder_name}`
 
     try {
-      const startTime = Date.now()
+
       console.log(`🚀 Deploying: ${folder_name}`)
       let envVars = {}
 
@@ -74,6 +74,7 @@ async function main() {
       }
 
       updateDeploymentStatus(projectId, "BUILDING")
+      const startTime = Date.now()
       const port = await buildAndRun(projectId, localPath, envVars)
 
       // Update status and port mapping for the Proxy
@@ -93,7 +94,9 @@ async function main() {
 
       const endTime = Date.now()
       const duration = (endTime - startTime) / 1000
-      console.log(`⏱️ Deployment took ${duration} seconds`)
+      const minutes = Math.floor(duration / 60)
+      const seconds = Math.floor(duration % 60)
+      console.log(`⏱️ Deployment took ${minutes} minutes and ${seconds} seconds`)
     } catch (err) {
       console.error(`❌ Failed ${folder_name}:`, err)
       await updateDeploymentStatus(projectId, "ERROR")

@@ -74,6 +74,8 @@ export declare const DeploymentScalarFieldEnum: {
     readonly name: "name";
     readonly createdAt: "createdAt";
     readonly updatedAt: "updatedAt";
+    readonly deploymentStartedAt: "deploymentStartedAt";
+    readonly deploymentFinishedAt: "deploymentFinishedAt";
 };
 export type DeploymentScalarFieldEnum = (typeof DeploymentScalarFieldEnum)[keyof typeof DeploymentScalarFieldEnum];
 export declare const SortOrder: {

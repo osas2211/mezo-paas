@@ -15,6 +15,8 @@ export type DeploymentMinAggregateOutputType = {
     name: string | null;
     createdAt: Date | null;
     updatedAt: Date | null;
+    deploymentStartedAt: Date | null;
+    deploymentFinishedAt: Date | null;
 };
 export type DeploymentMaxAggregateOutputType = {
     id: string | null;
@@ -24,6 +26,8 @@ export type DeploymentMaxAggregateOutputType = {
     name: string | null;
     createdAt: Date | null;
     updatedAt: Date | null;
+    deploymentStartedAt: Date | null;
+    deploymentFinishedAt: Date | null;
 };
 export type DeploymentCountAggregateOutputType = {
     id: number;
@@ -33,6 +37,8 @@ export type DeploymentCountAggregateOutputType = {
     name: number;
     createdAt: number;
     updatedAt: number;
+    deploymentStartedAt: number;
+    deploymentFinishedAt: number;
     _all: number;
 };
 export type DeploymentMinAggregateInputType = {
@@ -43,6 +49,8 @@ export type DeploymentMinAggregateInputType = {
     name?: true;
     createdAt?: true;
     updatedAt?: true;
+    deploymentStartedAt?: true;
+    deploymentFinishedAt?: true;
 };
 export type DeploymentMaxAggregateInputType = {
     id?: true;
@@ -52,6 +60,8 @@ export type DeploymentMaxAggregateInputType = {
     name?: true;
     createdAt?: true;
     updatedAt?: true;
+    deploymentStartedAt?: true;
+    deploymentFinishedAt?: true;
 };
 export type DeploymentCountAggregateInputType = {
     id?: true;
@@ -61,6 +71,8 @@ export type DeploymentCountAggregateInputType = {
     name?: true;
     createdAt?: true;
     updatedAt?: true;
+    deploymentStartedAt?: true;
+    deploymentFinishedAt?: true;
     _all?: true;
 };
 export type DeploymentAggregateArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -95,6 +107,8 @@ export type DeploymentGroupByOutputType = {
     name: string | null;
     createdAt: Date;
     updatedAt: Date;
+    deploymentStartedAt: Date | null;
+    deploymentFinishedAt: Date | null;
     _count: DeploymentCountAggregateOutputType | null;
     _min: DeploymentMinAggregateOutputType | null;
     _max: DeploymentMaxAggregateOutputType | null;
@@ -113,6 +127,8 @@ export type DeploymentWhereInput = {
     name?: Prisma.StringNullableFilter<"Deployment"> | string | null;
     createdAt?: Prisma.DateTimeFilter<"Deployment"> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<"Deployment"> | Date | string;
+    deploymentStartedAt?: Prisma.DateTimeNullableFilter<"Deployment"> | Date | string | null;
+    deploymentFinishedAt?: Prisma.DateTimeNullableFilter<"Deployment"> | Date | string | null;
     project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>;
 };
 export type DeploymentOrderByWithRelationInput = {
@@ -123,6 +139,8 @@ export type DeploymentOrderByWithRelationInput = {
     name?: Prisma.SortOrderInput | Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
     updatedAt?: Prisma.SortOrder;
+    deploymentStartedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
+    deploymentFinishedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
     project?: Prisma.ProjectOrderByWithRelationInput;
 };
 export type DeploymentWhereUniqueInput = Prisma.AtLeast<{
@@ -136,6 +154,8 @@ export type DeploymentWhereUniqueInput = Prisma.AtLeast<{
     name?: Prisma.StringNullableFilter<"Deployment"> | string | null;
     createdAt?: Prisma.DateTimeFilter<"Deployment"> | Date | string;
     updatedAt?: Prisma.DateTimeFilter<"Deployment"> | Date | string;
+    deploymentStartedAt?: Prisma.DateTimeNullableFilter<"Deployment"> | Date | string | null;
+    deploymentFinishedAt?: Prisma.DateTimeNullableFilter<"Deployment"> | Date | string | null;
     project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>;
 }, "id" | "projectId">;
 export type DeploymentOrderByWithAggregationInput = {
@@ -146,6 +166,8 @@ export type DeploymentOrderByWithAggregationInput = {
     name?: Prisma.SortOrderInput | Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
     updatedAt?: Prisma.SortOrder;
+    deploymentStartedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
+    deploymentFinishedAt?: Prisma.SortOrderInput | Prisma.SortOrder;
     _count?: Prisma.DeploymentCountOrderByAggregateInput;
     _max?: Prisma.DeploymentMaxOrderByAggregateInput;
     _min?: Prisma.DeploymentMinOrderByAggregateInput;
@@ -161,6 +183,8 @@ export type DeploymentScalarWhereWithAggregatesInput = {
     name?: Prisma.StringNullableWithAggregatesFilter<"Deployment"> | string | null;
     createdAt?: Prisma.DateTimeWithAggregatesFilter<"Deployment"> | Date | string;
     updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Deployment"> | Date | string;
+    deploymentStartedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Deployment"> | Date | string | null;
+    deploymentFinishedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Deployment"> | Date | string | null;
 };
 export type DeploymentCreateInput = {
     id?: string;
@@ -169,6 +193,8 @@ export type DeploymentCreateInput = {
     name?: string | null;
     createdAt?: Date | string;
     updatedAt?: Date | string;
+    deploymentStartedAt?: Date | string | null;
+    deploymentFinishedAt?: Date | string | null;
     project: Prisma.ProjectCreateNestedOneWithoutDeploymentInput;
 };
 export type DeploymentUncheckedCreateInput = {
@@ -179,6 +205,8 @@ export type DeploymentUncheckedCreateInput = {
     name?: string | null;
     createdAt?: Date | string;
     updatedAt?: Date | string;
+    deploymentStartedAt?: Date | string | null;
+    deploymentFinishedAt?: Date | string | null;
 };
 export type DeploymentUpdateInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -187,6 +215,8 @@ export type DeploymentUpdateInput = {
     name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    deploymentStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    deploymentFinishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
     project?: Prisma.ProjectUpdateOneRequiredWithoutDeploymentNestedInput;
 };
 export type DeploymentUncheckedUpdateInput = {
@@ -197,6 +227,8 @@ export type DeploymentUncheckedUpdateInput = {
     name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    deploymentStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    deploymentFinishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 };
 export type DeploymentCreateManyInput = {
     id?: string;
@@ -206,6 +238,8 @@ export type DeploymentCreateManyInput = {
     name?: string | null;
     createdAt?: Date | string;
     updatedAt?: Date | string;
+    deploymentStartedAt?: Date | string | null;
+    deploymentFinishedAt?: Date | string | null;
 };
 export type DeploymentUpdateManyMutationInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -214,6 +248,8 @@ export type DeploymentUpdateManyMutationInput = {
     name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    deploymentStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    deploymentFinishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 };
 export type DeploymentUncheckedUpdateManyInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -223,6 +259,8 @@ export type DeploymentUncheckedUpdateManyInput = {
     name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    deploymentStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    deploymentFinishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 };
 export type DeploymentNullableScalarRelationFilter = {
     is?: Prisma.DeploymentWhereInput | null;
@@ -236,6 +274,8 @@ export type DeploymentCountOrderByAggregateInput = {
     name?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
     updatedAt?: Prisma.SortOrder;
+    deploymentStartedAt?: Prisma.SortOrder;
+    deploymentFinishedAt?: Prisma.SortOrder;
 };
 export type DeploymentMaxOrderByAggregateInput = {
     id?: Prisma.SortOrder;
@@ -245,6 +285,8 @@ export type DeploymentMaxOrderByAggregateInput = {
     name?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
     updatedAt?: Prisma.SortOrder;
+    deploymentStartedAt?: Prisma.SortOrder;
+    deploymentFinishedAt?: Prisma.SortOrder;
 };
 export type DeploymentMinOrderByAggregateInput = {
     id?: Prisma.SortOrder;
@@ -254,6 +296,8 @@ export type DeploymentMinOrderByAggregateInput = {
     name?: Prisma.SortOrder;
     createdAt?: Prisma.SortOrder;
     updatedAt?: Prisma.SortOrder;
+    deploymentStartedAt?: Prisma.SortOrder;
+    deploymentFinishedAt?: Prisma.SortOrder;
 };
 export type DeploymentCreateNestedOneWithoutProjectInput = {
     create?: Prisma.XOR<Prisma.DeploymentCreateWithoutProjectInput, Prisma.DeploymentUncheckedCreateWithoutProjectInput>;
@@ -286,6 +330,9 @@ export type DeploymentUncheckedUpdateOneWithoutProjectNestedInput = {
 export type EnumDeploymentStatusFieldUpdateOperationsInput = {
     set?: $Enums.DeploymentStatus;
 };
+export type NullableDateTimeFieldUpdateOperationsInput = {
+    set?: Date | string | null;
+};
 export type DeploymentCreateWithoutProjectInput = {
     id?: string;
     status?: $Enums.DeploymentStatus;
@@ -293,6 +340,8 @@ export type DeploymentCreateWithoutProjectInput = {
     name?: string | null;
     createdAt?: Date | string;
     updatedAt?: Date | string;
+    deploymentStartedAt?: Date | string | null;
+    deploymentFinishedAt?: Date | string | null;
 };
 export type DeploymentUncheckedCreateWithoutProjectInput = {
     id?: string;
@@ -301,6 +350,8 @@ export type DeploymentUncheckedCreateWithoutProjectInput = {
     name?: string | null;
     createdAt?: Date | string;
     updatedAt?: Date | string;
+    deploymentStartedAt?: Date | string | null;
+    deploymentFinishedAt?: Date | string | null;
 };
 export type DeploymentCreateOrConnectWithoutProjectInput = {
     where: Prisma.DeploymentWhereUniqueInput;
@@ -322,6 +373,8 @@ export type DeploymentUpdateWithoutProjectInput = {
     name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    deploymentStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    deploymentFinishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 };
 export type DeploymentUncheckedUpdateWithoutProjectInput = {
     id?: Prisma.StringFieldUpdateOperationsInput | string;
@@ -330,6 +383,8 @@ export type DeploymentUncheckedUpdateWithoutProjectInput = {
     name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null;
     createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string;
+    deploymentStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
+    deploymentFinishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null;
 };
 export type DeploymentSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
     id?: boolean;
@@ -339,6 +394,8 @@ export type DeploymentSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
     name?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
+    deploymentStartedAt?: boolean;
+    deploymentFinishedAt?: boolean;
     project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>;
 }, ExtArgs["result"]["deployment"]>;
 export type DeploymentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -349,6 +406,8 @@ export type DeploymentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
     name?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
+    deploymentStartedAt?: boolean;
+    deploymentFinishedAt?: boolean;
     project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>;
 }, ExtArgs["result"]["deployment"]>;
 export type DeploymentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -359,6 +418,8 @@ export type DeploymentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
     name?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
+    deploymentStartedAt?: boolean;
+    deploymentFinishedAt?: boolean;
     project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>;
 }, ExtArgs["result"]["deployment"]>;
 export type DeploymentSelectScalar = {
@@ -369,8 +430,10 @@ export type DeploymentSelectScalar = {
     name?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
+    deploymentStartedAt?: boolean;
+    deploymentFinishedAt?: boolean;
 };
-export type DeploymentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "projectId" | "status" | "url" | "name" | "createdAt" | "updatedAt", ExtArgs["result"]["deployment"]>;
+export type DeploymentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "projectId" | "status" | "url" | "name" | "createdAt" | "updatedAt" | "deploymentStartedAt" | "deploymentFinishedAt", ExtArgs["result"]["deployment"]>;
 export type DeploymentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>;
 };
@@ -393,6 +456,8 @@ export type $DeploymentPayload<ExtArgs extends runtime.Types.Extensions.Internal
         name: string | null;
         createdAt: Date;
         updatedAt: Date;
+        deploymentStartedAt: Date | null;
+        deploymentFinishedAt: Date | null;
     }, ExtArgs["result"]["deployment"]>;
     composites: {};
 };
@@ -458,6 +523,8 @@ export interface DeploymentFieldRefs {
     readonly name: Prisma.FieldRef<"Deployment", 'String'>;
     readonly createdAt: Prisma.FieldRef<"Deployment", 'DateTime'>;
     readonly updatedAt: Prisma.FieldRef<"Deployment", 'DateTime'>;
+    readonly deploymentStartedAt: Prisma.FieldRef<"Deployment", 'DateTime'>;
+    readonly deploymentFinishedAt: Prisma.FieldRef<"Deployment", 'DateTime'>;
 }
 export type DeploymentFindUniqueArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
     select?: Prisma.DeploymentSelect<ExtArgs> | null;

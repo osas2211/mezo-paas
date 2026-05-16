@@ -41,7 +41,8 @@ export interface DeploymentI {
   status: "PENDING_DEPLOYMENT" | "QUEUED" | "BUILDING" | "READY" | "ERROR" | "CANCELED"
   createdAt: number      // Unix timestamp in ms
   updatedAt?: number       // Unix timestamp in ms
-
+  deploymentStartedAt?: number
+  deploymentFinishedAt?: number
 }
 
 
