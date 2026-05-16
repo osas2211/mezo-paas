@@ -73,7 +73,7 @@ async function main() {
         fs.writeFileSync(path.join(localPath, "Dockerfile"), autoDockerFile)
       }
 
-      updateDeploymentStatus(projectId, "BUILDING")
+      await updateDeploymentStatus(projectId, "BUILDING")
       const startTime = Date.now()
       const port = await buildAndRun(projectId, localPath, envVars)
 
