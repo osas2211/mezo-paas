@@ -73,10 +73,11 @@ export default function DeploymentTracker({
     let interval: NodeJS.Timeout | undefined = undefined
 
     // Only run the high-speed timer if the status is actively building
-    if (status === "BUILDING" && (startTime || startTimeFromProject)) {
+    if (status === "BUILDING") {
+      queryClient.invalidateQueries({ queryKey: ["project", projectId] })
       interval = setInterval(() => {
         // Calculate the difference between NOW and when the backend said it started
-        setElapsedMs((Date.now() - (startTime || startTimeFromProject)) / 1000)
+        setElapsedMs((Date.now() - startTimeFromProject) / 1000)
       }, 100) // 100ms makes it feel buttery smooth
     } else if (status === "READY" || status === "ERROR") {
       // If it finishes, the interval stops automatically, freezing the final time on screen
