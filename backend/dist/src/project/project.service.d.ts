@@ -15,24 +15,23 @@ export declare class ProjectService {
     constructor(prismaService: PrismaService, githubService: GithubService, configService: ConfigService, encryptionService: EncryptionService, buildGateway: ProjectGateway);
     create(repoName: string, userId: string, userToken: string, environmentVariables?: Record<string, string>): Promise<{
         user: {
-            email: string;
             id: string;
+            email: string;
         };
         deployment: {
-            url: string;
             name: string | null;
+            url: string;
             id: string;
             createdAt: Date;
             updatedAt: Date;
             status: DeploymentStatus;
+            deploymentStartedAt: Date | null;
+            deploymentFinishedAt: Date | null;
             projectId: string;
         } | null;
     } & {
         name: string;
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        userId: string;
         description: string | null;
         framework: Framework;
         nodeVersion: string;
@@ -43,24 +42,26 @@ export declare class ProjectService {
         gitRepositoryName: string | null;
         gitRepositoryOwner: string | null;
         gitRepositoryType: import("generated/prisma/enums").GitProvider | null;
+        createdAt: Date;
+        updatedAt: Date;
         environmentVariables: string | null;
+        userId: string;
     }>;
     getProjects(userId: string): Promise<({
         deployment: {
-            url: string;
             name: string | null;
+            url: string;
             id: string;
             createdAt: Date;
             updatedAt: Date;
             status: DeploymentStatus;
+            deploymentStartedAt: Date | null;
+            deploymentFinishedAt: Date | null;
             projectId: string;
         } | null;
     } & {
         name: string;
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        userId: string;
         description: string | null;
         framework: Framework;
         nodeVersion: string;
@@ -71,24 +72,26 @@ export declare class ProjectService {
         gitRepositoryName: string | null;
         gitRepositoryOwner: string | null;
         gitRepositoryType: import("generated/prisma/enums").GitProvider | null;
+        createdAt: Date;
+        updatedAt: Date;
         environmentVariables: string | null;
+        userId: string;
     })[]>;
     getProject(projectId: string): Promise<({
         deployment: {
-            url: string;
             name: string | null;
+            url: string;
             id: string;
             createdAt: Date;
             updatedAt: Date;
             status: DeploymentStatus;
+            deploymentStartedAt: Date | null;
+            deploymentFinishedAt: Date | null;
             projectId: string;
         } | null;
     } & {
         name: string;
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        userId: string;
         description: string | null;
         framework: Framework;
         nodeVersion: string;
@@ -99,7 +102,10 @@ export declare class ProjectService {
         gitRepositoryName: string | null;
         gitRepositoryOwner: string | null;
         gitRepositoryType: import("generated/prisma/enums").GitProvider | null;
+        createdAt: Date;
+        updatedAt: Date;
         environmentVariables: string | null;
+        userId: string;
     }) | null>;
     deleteProject(): Promise<{}>;
     editProject(): Promise<{}>;
@@ -108,20 +114,19 @@ export declare class ProjectService {
         message: string;
         project: {
             deployment: {
-                url: string;
                 name: string | null;
+                url: string;
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
                 status: DeploymentStatus;
+                deploymentStartedAt: Date | null;
+                deploymentFinishedAt: Date | null;
                 projectId: string;
             } | null;
         } & {
             name: string;
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            userId: string;
             description: string | null;
             framework: Framework;
             nodeVersion: string;
@@ -132,7 +137,10 @@ export declare class ProjectService {
             gitRepositoryName: string | null;
             gitRepositoryOwner: string | null;
             gitRepositoryType: import("generated/prisma/enums").GitProvider | null;
+            createdAt: Date;
+            updatedAt: Date;
             environmentVariables: string | null;
+            userId: string;
         };
     }>;
     private analyzeRepository;
