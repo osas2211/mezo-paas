@@ -150,7 +150,7 @@ export default function DeploymentTracker({
             </p>
           </div>
         ) : (
-          <div>
+          <div className="flex items-center gap-2">
             {status === "BUILDING" ? (
               <LoadingOutlined style={{ color: "#b3ec11", fontSize: 14 }} />
             ) : (
