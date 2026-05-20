@@ -67,6 +67,10 @@ export class UserService {
       throw new NotFoundException('Recipient User does not exist ');
     }
 
+    if (Number(amount) > Number(from_user.wallet?.creditBalance)) {
+      throw new Error('Insufficient credits');
+    }
+
     const newUserCreditBalance = String(
       Number(from_user.wallet?.creditBalance) - amount,
     );
