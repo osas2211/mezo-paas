@@ -7,10 +7,14 @@ import {
 } from '@nestjs/common';
 import { LoginDto, SignUpDto } from './dto/auth-dto';
 import bcrypt from 'bcrypt';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { WalletService } from 'src/wallet/wallet.service';
-import { EncryptionService } from 'src/encryption/encryption.service';
+import { PrismaService } from '../prisma/prisma.service';
+import { WalletService } from '../wallet/wallet.service';
+import { EncryptionService } from '../encryption/encryption.service';
 import { JwtService } from '@nestjs/jwt';
+import {
+  TransactionType,
+  TransactionAction,
+} from '../../generated/prisma/enums';
 
 @Injectable()
 export class AuthService {
@@ -24,16 +28,33 @@ export class AuthService {
     try {
       const { password, ...rest } = body;
       const hashedPassword = await bcrypt.hash(body.password, 10);
-      const user = await this.prisma.user.create({
-        data: { ...rest, password: hashedPassword },
-      });
       const generatedWallet = this.wallet.generateWallet();
-      await this.prisma.wallet.create({
+      const welcomeCredit = '70';
+      const user = await this.prisma.user.create({
         data: {
-          encryptedMnemonic: this.encryption.encrypt(generatedWallet.mnemonic!),
-          encryptedPK: this.encryption.encrypt(generatedWallet.privateKey),
-          address: generatedWallet.address,
-          userId: user.id,
+          ...rest,
+          password: hashedPassword,
+
+          // Wallet creation
+          wallet: {
+            create: {
+              encryptedMnemonic: this.encryption.encrypt(
+                generatedWallet.mnemonic!,
+              ),
+              encryptedPK: this.encryption.encrypt(generatedWallet.privateKey),
+              address: generatedWallet.address,
+              creditBalance: welcomeCredit,
+            },
+          },
+
+          transactions: {
+            create: {
+              title: 'Welcome credit',
+              type: TransactionType.CREDIT,
+              action: TransactionAction.Deposit,
+              amount: welcomeCredit,
+            },
+          },
         },
       });
 
