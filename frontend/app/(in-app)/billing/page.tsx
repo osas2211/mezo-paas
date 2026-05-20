@@ -3,10 +3,15 @@ import { EmptyComponent } from "@/components/utilities/empty-component"
 import { InfoCard } from "@/components/utilities/info-card"
 import { PageHeader } from "@/components/utilities/page-header"
 import { useUser } from "@/hooks/use-user"
-import { ArrowDownRight, Clock, CreditCard, Package } from "lucide-react"
+import { Clock, CreditCard, Package } from "lucide-react"
 import Link from "next/link"
 import React from "react"
 import { FundWalletButton } from "@/components/billing/fund-wallet"
+import { TransferCredit } from "@/components/billing/transfer-credit"
+
+import { TransactionHistory } from "@/components/transactions/transaction-history"
+import { convertCreditsToUSD } from "@/lib/convert-credit-to-usd"
+import moment from "moment"
 
 const BillingPage = () => {
   const { data } = useUser()
@@ -20,9 +25,9 @@ const BillingPage = () => {
       <div className="grid md:grid-cols-3 gap-4">
         <InfoCard
           title="Credit Balance"
-          subtitle="$0.25 per service/month"
+          subtitle={`~${convertCreditsToUSD(data?.user?.wallet?.creditBalance ?? "")} billable credits in MUSD`}
           icon={<CreditCard className="text-primary" size={20} />}
-          value={`$${data?.user?.wallet?.balance}`}
+          value={`${Number(data?.user?.wallet?.creditBalance).toFixed(2)} MHCredit`}
         />
 
         <InfoCard
@@ -35,7 +40,7 @@ const BillingPage = () => {
         <InfoCard
           title="Next billing"
           icon={<Clock className="text-primary" size={20} />}
-          value={"June 5, 2026"}
+          value={`${moment().add(1, "day").format("MMM DD, YYYY")}`}
           status="active"
         />
       </div>
@@ -82,8 +87,9 @@ const BillingPage = () => {
                   </div>
                 </div>
 
-                <div className="">
+                <div className="flex items-center gap-3">
                   <FundWalletButton />
+                  <TransferCredit />
                 </div>
               </div>
             </div>
@@ -100,35 +106,7 @@ const BillingPage = () => {
           />
         </div>
 
-        <div className="">
-          <div className="border border-white/10 bg-white/5 p-1">
-            <div className="border border-white/20 bg-dark p-6 min-h-50 space-y-5">
-              <div className="text-xl font-semibold font-sans">
-                <h3 className="text-[16px] font-medium">Transaction History</h3>
-
-                <div className="space-y-2 font-normal md:h-50 py-7 text-xs">
-                  {/* Transaction Record */}
-                  <div className="flex items-center gap-4 justify-between">
-                    <div className="">
-                      <div className="inline-flex gap-2 items-center">
-                        <ArrowDownRight className="text-green-500" size={18} />
-                        <div>
-                          <p className="text-sm mb-0.5">Welcome credit</p>
-                          <p className="text-white/60">Mar 30, 9:43 PM</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div>
-                      <p className="text-sm mb-0.5 text-green-500">+$1.00</p>
-                      <p className="text-white/60 text-end">$1.00</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <TransactionHistory />
       </div>
     </div>
   )

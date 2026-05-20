@@ -79,7 +79,7 @@ export const SignupForm = () => {
             type="primary"
             disabled={isPending}
           >
-            {isPending ? <LoadingOutlined /> : "Sign In"}
+            {isPending ? <LoadingOutlined /> : "Sign Up"}
           </Button>
           <p className="text-white/60 text-xs font-normal  mt-4">
             By clicking “Sign Up, you agree to our Terms of Use and Privacy

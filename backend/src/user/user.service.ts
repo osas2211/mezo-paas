@@ -11,7 +11,7 @@ export class UserService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly walletService: WalletService,
-  ) {}
+  ) { }
 
   async getUserProfile(userId: string) {
     const user = await this.prisma.user.findUnique({
@@ -60,11 +60,11 @@ export class UserService {
     });
 
     if (!from_user) {
-      return new NotFoundException('User does not exist');
+      throw new NotFoundException('User does not exist');
     }
 
     if (!to_user) {
-      return new NotFoundException('Recipient User does not exist ');
+      throw new NotFoundException('Recipient User does not exist ');
     }
 
     const newUserCreditBalance = String(
@@ -73,9 +73,9 @@ export class UserService {
     const userTxMessage = `Transfer to ${to_user.name}`;
 
     const newRecipientCreditBalance = String(
-      Number(from_user.wallet?.creditBalance) + amount,
+      Number(to_user.wallet?.creditBalance) + amount,
     );
-    const recipientTxMessage = `Transfer to ${to_user.name}`;
+    const recipientTxMessage = `Transfer from ${to_user.name}`;
 
     await this.prisma.user.update({
       where: { id: from_user_Id },
@@ -106,5 +106,18 @@ export class UserService {
         },
       },
     });
+  }
+
+  async getTransactionHistory(userId: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User does not exist');
+    }
+    const transactions = await this.prisma.transaction.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return { transactions, message: 'Transactions retrieved successfully' };
   }
 }

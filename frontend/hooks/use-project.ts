@@ -1,5 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { createProject, getProject, getProjects, restartProject, stopProject } from "@/services/project.service"
+import {
+  createProject,
+  getProject,
+  getProjects,
+  restartProject,
+  stopProject,
+} from "@/services/project.service"
 import { ProjectI } from "@/types/project"
 import { useToastify } from "@/hooks/use-toastify"
 
@@ -7,48 +13,56 @@ export const useCreateProject = () => {
   const queryClient = useQueryClient()
   const { successToast, errorToast } = useToastify()
   return useMutation({
-    mutationFn: ({ repoName }: {
+    mutationFn: ({
+      repoName,
+      envVariables,
+    }: {
       repoName: string
       envVariables: Record<string, string>
-    }) => createProject(repoName),
+    }) => createProject({ repoName, envVariables }),
     onSuccess: (data: ProjectI) => {
-      queryClient.invalidateQueries({ queryKey: ['projects'] })
-      successToast('Project created successfully', "bottom-right")
+      queryClient.invalidateQueries({ queryKey: ["projects"] })
+      successToast("Project created successfully", "bottom-right")
     },
     onError: (error: any) => {
-      errorToast(error.response?.data?.message || 'Failed to create project', "bottom-right")
-    }
+      errorToast(
+        error.response?.data?.message || "Failed to create project",
+        "bottom-right",
+      )
+    },
   })
 }
 
 export const useProjects = () => {
   return useQuery({
-    queryKey: ['projects'],
+    queryKey: ["projects"],
     queryFn: () => getProjects(),
   })
 }
 
 export const useProject = (projectId: string) => {
   return useQuery({
-    queryKey: ['project', projectId],
+    queryKey: ["project", projectId],
     queryFn: () => getProject(projectId),
   })
 }
-
 
 export const useStopProject = () => {
   const queryClient = useQueryClient()
   const { successToast, errorToast } = useToastify()
   return useMutation({
     mutationFn: (projectId: string) => stopProject(projectId),
-    onSuccess: (data: { message: string, success: boolean }, projectId) => {
-      queryClient.invalidateQueries({ queryKey: ['projects'] })
-      queryClient.invalidateQueries({ queryKey: ['project', projectId] })
-      successToast('Project stopped successfully', "bottom-right")
+    onSuccess: (data: { message: string; success: boolean }, projectId) => {
+      queryClient.invalidateQueries({ queryKey: ["projects"] })
+      queryClient.invalidateQueries({ queryKey: ["project", projectId] })
+      successToast("Project stopped successfully", "bottom-right")
     },
     onError: (error: any) => {
-      errorToast(error.response?.data?.message || 'Failed to stop project', "bottom-right")
-    }
+      errorToast(
+        error.response?.data?.message || "Failed to stop project",
+        "bottom-right",
+      )
+    },
   })
 }
 
@@ -57,15 +71,16 @@ export const useRestartProject = () => {
   const { successToast, errorToast } = useToastify()
   return useMutation({
     mutationFn: (projectId: string) => restartProject(projectId),
-    onSuccess: (data: { message: string, success: boolean }, projectId) => {
-      queryClient.invalidateQueries({ queryKey: ['projects'] })
-      queryClient.invalidateQueries({ queryKey: ['project', projectId] })
-      successToast('Project restarted successfully', "bottom-right")
+    onSuccess: (data: { message: string; success: boolean }, projectId) => {
+      queryClient.invalidateQueries({ queryKey: ["projects"] })
+      queryClient.invalidateQueries({ queryKey: ["project", projectId] })
+      successToast("Project restarted successfully", "bottom-right")
     },
     onError: (error: any) => {
-      errorToast(error.response?.data?.message || 'Failed to restart project', "bottom-right")
-    }
+      errorToast(
+        error.response?.data?.message || "Failed to restart project",
+        "bottom-right",
+      )
+    },
   })
 }
-
-
