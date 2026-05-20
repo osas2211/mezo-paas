@@ -1,12 +1,6 @@
 import { ProjectI } from "@/types/project"
 import { LoadingOutlined } from "@ant-design/icons"
-import { useQueryClient } from "@tanstack/react-query"
 import moment from "moment"
-import React, { useEffect, useState } from "react"
-import { io, Socket } from "socket.io-client"
-
-// Replace with your actual NestJS API URL
-const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:8000"
 
 type statusType =
   | "PENDING_DEPLOYMENT"
@@ -15,6 +9,7 @@ type statusType =
   | "READY"
   | "ERROR"
   | "CANCELED"
+  | "SUSPENDED"
 
 export default function DeploymentTracker({
   projectId,
@@ -27,7 +22,6 @@ export default function DeploymentTracker({
   status: statusType
   elapsedMs: number
 }) {
-  const queryClient = useQueryClient()
   const statusColors = {
     READY: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20",
     BUILDING: "text-blue-400 bg-blue-400/10 border-blue-400/20 animate-pulse",
@@ -36,6 +30,7 @@ export default function DeploymentTracker({
     PENDING_DEPLOYMENT: "text-zinc-400 bg-zinc-800 border-zinc-700",
     CANCELED: "text-zinc-400 bg-zinc-800 border-zinc-700",
     QUEUED_FOR_BUILDING: "text-amber-400 bg-amber-400/10 border-amber-400/20",
+    SUSPENDED: "text-red-400 bg-red-400/10 border-red-400/20",
   }
 
   // const [status, setStatus] = useState<statusType>(
@@ -123,7 +118,7 @@ export default function DeploymentTracker({
             className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-full border text-xs font-medium ${colorClass}`}
           >
             <div
-              className={`w-2 h-2 rounded-full ${status === "READY" ? "bg-emerald-400" : status === "BUILDING" ? "bg-blue-400" : status === "ERROR" ? "bg-red-400" : "bg-current"}`}
+              className={`w-2 h-2 rounded-full ${status === "READY" ? "bg-emerald-400" : status === "BUILDING" ? "bg-blue-400" : status === "ERROR" ? "bg-red-400" : status === "SUSPENDED" ? "bg-red-400" : "bg-current"}`}
             />
             {status.replace(/_/g, " ")}
           </div>

@@ -16,3 +16,14 @@ export const getProject = async (projectId: string) => {
   return response.data as ProjectI
 }
 
+export const stopProject = async (projectId: string) => {
+  const response = await api.patch(`/project/${projectId}/stop`)
+  return response.data as { message: string, success: boolean }
+}
+
+export const restartProject = async (projectId: string) => {
+  const response = await api.patch(`/project/${projectId}/restart`)
+  return response.data as { message: string, success: boolean }
+}
+
+

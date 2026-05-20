@@ -49,7 +49,7 @@ build
   //  Create and Start Container
   const container = await docker.createContainer({
     Image: tagName,
-    name: `mezo-runtime-${projectId}-${Date.now()}`,
+    name: `mezo-runtime-${projectId}`,
     Env: runtimeEnvArray, // Pass runtime env vars
     HostConfig: {
       PortBindings: { "3000/tcp": [{ HostPort: "0" }] }, // Auto-assigns free host port

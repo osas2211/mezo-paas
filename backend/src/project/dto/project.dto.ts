@@ -6,6 +6,10 @@ export class UpdateDeploymentStatusDto {
   @IsOptional()
   liveUrl?: string
 
+  @IsString()
+  @IsOptional()
+  url_port?: string
+
   @IsEnum(DeploymentStatus)
   status: DeploymentStatus
 }

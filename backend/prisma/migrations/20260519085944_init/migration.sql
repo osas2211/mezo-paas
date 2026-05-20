@@ -1,0 +1,8 @@
+-- CreateEnum
+CREATE TYPE "Role" AS ENUM ('REGULAR_DEVELOPER', 'PRO_DEVELOPER');
+
+-- AlterTable
+ALTER TABLE "Project" ADD COLUMN     "active" BOOLEAN NOT NULL DEFAULT true;
+
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN     "role" "Role" NOT NULL DEFAULT 'REGULAR_DEVELOPER';

@@ -47,6 +47,18 @@ export class ProjectController {
     @Body() body: UpdateDeploymentStatusDto,
     @Headers('x-worker-secret') workerSecret: string,
   ) {
-    return this.projectService.updateDeploymentStatus(projectId, workerSecret, body.status, body.liveUrl)
+    return this.projectService.updateDeploymentStatus(projectId, workerSecret, body.status, body.liveUrl, body.url_port)
+  }
+
+  @UseGuards(AuthGuard)
+  @Patch(':projectId/stop')
+  async stopProject(@Param('projectId') projectId: string) {
+    return this.projectService.stopProject(projectId)
+  }
+
+  @UseGuards(AuthGuard)
+  @Patch(':projectId/restart')
+  async restartProject(@Param('projectId') projectId: string) {
+    return this.projectService.restartProject(projectId)
   }
 }

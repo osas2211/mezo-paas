@@ -1,7 +1,11 @@
 "use client"
 
 import { useParams, useSearchParams, useRouter } from "next/navigation"
-import { useProject } from "@/hooks/use-project"
+import {
+  useProject,
+  useRestartProject,
+  useStopProject,
+} from "@/hooks/use-project"
 import { PageHeader } from "@/components/utilities/page-header"
 import { PageLoading } from "@/components/utilities/page-loading"
 import { EmptyComponent } from "@/components/utilities/empty-component"
@@ -19,6 +23,7 @@ import RunningTimeTab from "@/components/project/details/running-time-tab"
 import CreditTab from "@/components/project/details/credit-tab"
 import { useEffect, useState } from "react"
 import { io, Socket } from "socket.io-client"
+import { Button } from "antd"
 
 const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:8000"
 
@@ -29,6 +34,7 @@ type statusType =
   | "READY"
   | "ERROR"
   | "CANCELED"
+  | "SUSPENDED"
 
 const tabs = [
   { id: "overview", label: "Overview" },
@@ -107,6 +113,18 @@ export default function ProjectDetailsPage() {
     return () => clearInterval(interval)
   }, [status, startTime, project])
 
+  const { mutateAsync: stopProject, isPending: isStopping } = useStopProject()
+  const { mutateAsync: restartProject, isPending: isRestarting } =
+    useRestartProject()
+
+  const handleStop = async () => {
+    await stopProject(projectId)
+  }
+
+  const handleRestart = async () => {
+    await restartProject(projectId)
+  }
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
@@ -158,6 +176,26 @@ export default function ProjectDetailsPage() {
           >
             Visit Site
           </Link>
+          {project.active ? (
+            <Button
+              onClick={handleStop}
+              loading={isStopping}
+              disabled={isStopping || status !== "READY"}
+              danger
+              className="h-[40px]!"
+            >
+              {isStopping ? "Stopping..." : "Stop Service"}
+            </Button>
+          ) : (
+            <Button
+              onClick={handleRestart}
+              loading={isRestarting}
+              disabled={isRestarting || status !== "SUSPENDED"}
+              className="h-[40px]! text-primary! border-primary!"
+            >
+              {isRestarting ? "Restarting..." : "Restart Service"}
+            </Button>
+          )}
         </div>
       </div>
 

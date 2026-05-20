@@ -15,10 +15,13 @@ import { UserService } from './user/user.service'
 import { GithubModule } from './github/github.module'
 import { UploadModule } from './upload/upload.module'
 import { ProjectModule } from './project/project.module'
+import { BillingModule } from './billing/billing.module';
+import { ScheduleModule } from '@nestjs/schedule'
 
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
@@ -31,6 +34,7 @@ import { ProjectModule } from './project/project.module'
     GithubModule,
     UploadModule,
     ProjectModule,
+    BillingModule,
   ],
   controllers: [AppController],
   providers: [

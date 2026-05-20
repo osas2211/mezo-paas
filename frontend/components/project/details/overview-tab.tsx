@@ -12,6 +12,7 @@ type statusType =
   | "READY"
   | "ERROR"
   | "CANCELED"
+  | "SUSPENDED"
 
 export default function OverviewTab({
   project,

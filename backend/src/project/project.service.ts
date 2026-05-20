@@ -8,11 +8,14 @@ import { ConfigService } from '@nestjs/config'
 import { DeploymentStatus, Framework } from 'generated/prisma/enums'
 import { EncryptionService } from 'src/encryption/encryption.service'
 import { ProjectGateway } from './project.gateway'
+import { createClient, createCluster } from 'redis'
 
 @Injectable()
 export class ProjectService {
   private readonly logger = new Logger(ProjectService.name)
   private readonly octokitApp: OctokitApp
+  private readonly isProduction: boolean
+  private readonly redisUrl: string
 
   constructor(
     private readonly prismaService: PrismaService,
@@ -32,6 +35,10 @@ export class ProjectService {
       appId,
       privateKey,
     })
+
+
+    this.isProduction = this.configService.get<string>('NODE_ENV') === 'production'
+    this.redisUrl = this.configService.get<string>('REDIS_URL') || ""
   }
 
   async create(repoName: string, userId: string, userToken: string, environmentVariables: Record<string, string> = {}) {
@@ -42,6 +49,8 @@ export class ProjectService {
     }
 
     const encryptedEnvironmentVariables = await this.encryptionService.encrypt(JSON.stringify(environmentVariables))
+
+    // const dailyCreditCost = analysis.framework === "node" || analysis.framework === "nestjs" ? "10" : "5"
     const project = await this.prismaService.project.create({
       data: {
         name: repoName,
@@ -55,6 +64,7 @@ export class ProjectService {
         outputDirectory: analysis.defaultOutputDirectory,
         installCommand: "npm install",
         devCommand: "npm run dev",
+        dailyCreditCost: "10",
         deployment: {
           create: {
             url: "",
@@ -94,7 +104,7 @@ export class ProjectService {
     return {}
   }
 
-  async updateDeploymentStatus(projectId: string, workerSecret: string, status: DeploymentStatus, liveUrl?: string) {
+  async updateDeploymentStatus(projectId: string, workerSecret: string, status: DeploymentStatus, liveUrl?: string, url_port?: string) {
     if (workerSecret !== this.configService.get<string>('WORKER_SECRET')) {
       throw new UnauthorizedException('Invalid Worker Secret')
     }
@@ -113,6 +123,7 @@ export class ProjectService {
         data: {
           url: liveUrl,
           status: status,
+          port: url_port,
           deploymentFinishedAt: new Date().toISOString(),
         },
       })
@@ -137,6 +148,71 @@ export class ProjectService {
     this.buildGateway.broadcastStatus(project.id, status, Date.now())
 
     return { success: true, message: "Deployment status updated successfully", project }
+  }
+
+  async stopProject(projectId: string) {
+    const redisClient = this.isProduction ? createCluster({
+      rootNodes: [
+        { url: this.redisUrl }
+      ],
+      defaults: {
+        socket: {
+          tls: this.redisUrl.startsWith('rediss')
+        }
+      }
+    }) : createClient({
+      url: this.redisUrl
+    })
+    await redisClient.connect()
+    const project = await this.prismaService.project.findUnique({
+      where: { id: projectId },
+      include: { deployment: true },
+    })
+    if (!project) {
+      throw new BadRequestException('Project not found')
+    }
+
+    const deploymentPayload = {
+      projectId: project.id,
+      action: 'KILL_CONTAINER',
+      folder_name: project.name + "-" + project.id,
+    }
+    await redisClient.lPush('deployment-queue', JSON.stringify(deploymentPayload))
+    await this.prismaService.project.update({ where: { id: project.id }, data: { active: false, deployment: { update: { status: DeploymentStatus.SUSPENDED } } } })
+    return { success: true, message: "Project stopped successfully" }
+  }
+
+  async restartProject(projectId: string) {
+    const redisClient = this.isProduction ? createCluster({
+      rootNodes: [
+        { url: this.redisUrl }
+      ],
+      defaults: {
+        socket: {
+          tls: this.redisUrl.startsWith('rediss')
+        }
+      }
+    }) : createClient({
+      url: this.redisUrl
+    })
+    await redisClient.connect()
+    const project = await this.prismaService.project.findUnique({
+      where: { id: projectId },
+      include: { deployment: true },
+    })
+    if (!project) {
+      throw new BadRequestException('Project not found')
+    }
+
+    const deploymentPayload = {
+      projectId: project.id,
+      action: 'RESTART_CONTAINER',
+      folder_name: project.name + "-" + project.id,
+      url_port: project?.deployment?.port,
+    }
+    await redisClient.lPush('deployment-queue', JSON.stringify(deploymentPayload))
+    await this.prismaService.project.update({ where: { id: project.id }, data: { active: true, deployment: { update: { status: DeploymentStatus.READY } } } })
+    return { success: true, message: "Project restarted successfully" }
   }
 
 

@@ -16,9 +16,6 @@ export class UploadService {
   constructor(
     private readonly configService: ConfigService
   ) {
-
-
-
     const accessKeyId = this.configService.get<string>('AWS_ACCESS_KEY')
     const secretAccessKey = this.configService.get<string>('AWS_SECRET_KEY')
 
@@ -64,8 +61,6 @@ export class UploadService {
     })
     this.logger.log(`Repo imported successfully: ${repoUrl}`)
     await this.uploadDirectory(repoDir, `repos/${folder_name}`)
-
-
 
     const deploymentPayload = {
       "projectId": projectId,

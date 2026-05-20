@@ -31,6 +31,8 @@ export const useGetGithubUser = () => {
   return useQuery({
     queryKey: ["github-user"],
     queryFn: () => getGithubUser(),
+    retry: false,
+    gcTime: 0,
   })
 }
 

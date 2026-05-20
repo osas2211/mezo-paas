@@ -31,6 +31,7 @@ export interface ProjectI {
   //   createdAt: number
   // }>
   deployment?: DeploymentI
+  active?: boolean
 }
 
 
