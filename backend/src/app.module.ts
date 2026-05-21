@@ -17,6 +17,7 @@ import { UploadModule } from './upload/upload.module'
 import { ProjectModule } from './project/project.module'
 import { BillingModule } from './billing/billing.module';
 import { ScheduleModule } from '@nestjs/schedule'
+import { BlockchainListenerService } from './blockchain-listener/blockchain-listener.service';
 
 
 @Module({
@@ -44,6 +45,7 @@ import { ScheduleModule } from '@nestjs/schedule'
     PrismaService,
     AuthService,
     UserService,
+    BlockchainListenerService,
 
   ],
 })

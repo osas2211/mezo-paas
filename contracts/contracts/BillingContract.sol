@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract HodlHostBilling is ReentrancyGuard, Ownable {
+contract MezoHostBilling is ReentrancyGuard, Ownable {
     IERC20 public immutable token;
     address public treasury;
     
@@ -44,14 +44,14 @@ contract HodlHostBilling is ReentrancyGuard, Ownable {
      * @notice Devs pay for compute directly. 
      * Money routes instantly to the treasury and is non-refundable.
      */
-    function topUpAccount(uint256 _amount) external nonReentrant {
+    function topUpAccount(address userAppWallet, uint256 _amount) external nonReentrant {
         require(_amount > 0, "Amount must be greater than 0");
         
         // Transfer directly from the Dev to your Treasury
         require(token.transferFrom(msg.sender, treasury, _amount), "Transfer failed");
         
         // NestJS sees this and adds +500 consumable credits to their Postgres record
-        emit AccountToppedUp(msg.sender, _amount);
+        emit AccountToppedUp(userAppWallet, _amount);
     }
 
     // ==========================================
@@ -62,7 +62,7 @@ contract HodlHostBilling is ReentrancyGuard, Ownable {
      * @notice Whales lock capital to get permanent staked capacity.
      * Money stays in THIS contract.
      */
-    function lockCollateral(uint256 _amount, uint256 _durationInSeconds) external nonReentrant {
+    function lockCollateral(address userAppWallet, uint256 _amount, uint256 _durationInSeconds) external nonReentrant {
         require(!lockedVaults[msg.sender].isActive, "Vault already active. Withdraw first.");
         require(_amount > 0, "Must deposit collateral");
 
@@ -77,8 +77,7 @@ contract HodlHostBilling is ReentrancyGuard, Ownable {
             isActive: true
         });
 
-        // NestJS sees this and sets their staked capacity (e.g., 10,000 Credits)
-        emit CollateralLocked(msg.sender, _amount, unlockTime);
+        emit CollateralLocked(userAppWallet, _amount, unlockTime);
     }
 
     /**

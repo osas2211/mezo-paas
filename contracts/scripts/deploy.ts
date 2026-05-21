@@ -1,27 +1,28 @@
-import { network } from "hardhat"
+import { network } from "hardhat";
 
 async function main() {
-  // 1. Initialize the Hardhat v3 Network Connection
-  const { ethers } = await network.create()
+  const { ethers } = await network.create();
+  const [deployer, treasury] = await ethers.getSigners(); // Use a separate wallet for the treasury if possible
 
-  const [deployer] = await ethers.getSigners()
-  console.log("🚀 Deploying contracts with account:", deployer.address)
+  console.log("🚀 Deploying from:", deployer.address);
+  console.log("🏦 Treasury Wallet:", treasury.address);
 
-  // 2. Deploy Mock Token (v3 syntax uses deployContract directly)
-  const token = await ethers.deployContract("MockBTC")
-  await token.waitForDeployment()
-  const tokenAddress = await token.getAddress()
-  console.log("💰 MockBTC deployed to:", tokenAddress)
+  // 1. Deploy Mock Token (For testing before mainnet Mezo)
+  const MockToken = await ethers.getContractFactory("MockBTC");
+  const token = await MockToken.deploy();
+  await token.waitForDeployment();
+  const tokenAddress = await token.getAddress();
+  console.log("🪙 MockBTC deployed to:", tokenAddress);
 
-  // 3. Deploy HodlVault
-  // Notice constructor arguments are now passed as an array
-  const vault = await ethers.deployContract("HodlVault", [tokenAddress, deployer.address])
-  await vault.waitForDeployment()
-  const vaultAddress = await vault.getAddress()
-  console.log("🏦 HodlVault deployed to:", vaultAddress)
+  // 2. Deploy the Billing Contract
+  const MezoHostBilling = await ethers.getContractFactory("MezoHostBilling");
+  const billing = await MezoHostBilling.deploy(tokenAddress, treasury.address);
+  await billing.waitForDeployment();
+  const billingAddress = await billing.getAddress();
+  console.log("⚙️ MezoHostBilling deployed to:", billingAddress);
 }
 
 main().catch((error) => {
-  console.error(error)
-  process.exitCode = 1
-})
+  console.error(error);
+  process.exitCode = 1;
+});

@@ -8,7 +8,7 @@ import Link from "next/link"
 import React from "react"
 import { FundWalletButton } from "@/components/billing/fund-wallet"
 import { TransferCredit } from "@/components/billing/transfer-credit"
-
+import { TopUpButton } from "@/components/billing/top-up"
 import { TransactionHistory } from "@/components/transactions/transaction-history"
 import { convertCreditsToUSD } from "@/lib/convert-credit-to-usd"
 import moment from "moment"
@@ -88,7 +88,8 @@ const BillingPage = () => {
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <FundWalletButton />
+                  {/* <FundWalletButton /> */}
+                  <TopUpButton />
                   <TransferCredit />
                 </div>
               </div>
