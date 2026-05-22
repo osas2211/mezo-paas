@@ -69,7 +69,7 @@ const DashboardPage = () => {
           title="Credits"
           subtitle="$0.00/mo"
           icon={<CreditCard className="text-primary" size={20} />}
-          value={"$1.00"}
+          value={"0"}
         />
       </div>
 
