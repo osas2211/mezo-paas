@@ -50,6 +50,12 @@ export class ProjectService {
 
     const encryptedEnvironmentVariables = await this.encryptionService.encrypt(JSON.stringify(environmentVariables))
 
+    const isUniqueName = await this.prismaService.project.findFirst({
+      where: {
+        name: repoName
+      }
+    })
+
     // const dailyCreditCost = analysis.framework === "node" || analysis.framework === "nestjs" ? "10" : "5"
     const project = await this.prismaService.project.create({
       data: {
@@ -83,7 +89,7 @@ export class ProjectService {
       }
     })
     this.buildGateway.broadcastStatus(project.id, DeploymentStatus.PENDING_DEPLOYMENT, Date.now())
-    await this.githubService.importRepo(githubRepo.name, githubRepo.default_branch, userToken, githubRepo.owner.login, project.id, encryptedEnvironmentVariables)
+    await this.githubService.importRepo(githubRepo.name, githubRepo.default_branch, userToken, githubRepo.owner.login, project.id, encryptedEnvironmentVariables, isUniqueName ? false : true)
     this.buildGateway.broadcastStatus(project.id, DeploymentStatus.QUEUED_FOR_BUILDING, Date.now())
     return project
   }

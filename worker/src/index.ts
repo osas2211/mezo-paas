@@ -52,7 +52,7 @@ async function main() {
     const jobData = JSON.parse(job.element)
     const action = jobData.action || "DEPLOY"
     const url_port = jobData.url_port || ""
-    const { projectId, folder_name, encryptedEnv } = jobData
+    const { projectId, folder_name, encryptedEnv, s3_folder_name } = jobData
 
     // ==========================================
     // THE KILL SWITCH (Fired by the Billing Cron)
@@ -105,11 +105,18 @@ async function main() {
       if (encryptedEnv) {
         console.log(`🔐 Decrypting environment variables for ${folder_name}...`)
         envVars = decrypt(encryptedEnv)
+
+        // Remove empty environment variables
+        envVars = Object.fromEntries(Object.entries(envVars).filter(([key, value]) => key && value))
+        // Ensure port is 3000
+        envVars = { ...envVars, PORT: "3000", port: "3000" }
       }
 
-      await downloadS3Folder(`repos/${folder_name}`, localPath)
+      console.log(`Downloading S3 folder 'repos/${s3_folder_name}' to '${localPath}'...`)
+      await downloadS3Folder(`repos/${s3_folder_name}`, localPath)
+      console.log(`S3 folder downloaded.`)
 
-      const autoDockerFile = generateDockerfile(localPath)
+      const autoDockerFile = generateDockerfile(localPath, envVars)
       if (autoDockerFile) {
         console.log(`📝 No Dockerfile found. Injecting auto-generated Node.js template.`)
         fs.writeFileSync(path.join(localPath, "Dockerfile"), autoDockerFile)
@@ -125,7 +132,7 @@ async function main() {
 
       console.log(`✅ Success! ${folder_name} on port ${port}`)
 
-      const liveUrl = `http://${folder_name}.${process.env.NODE_ENV === 'production' ? 'stellarsampled.com' : 'lvh.me:8010'}`
+      const liveUrl = `http://${folder_name}.${process.env.NODE_ENV === 'production' ? 'mezo.host' : 'lvh.me:8010'}`
       console.log(`🌐 Live URL: ${liveUrl}`)
 
       await updateDeploymentStatus(projectId, "READY", liveUrl, port.toString())

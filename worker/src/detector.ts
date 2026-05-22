@@ -23,7 +23,7 @@ export function generateDockerfile(projectPath: string, envVars: Record<string, 
             COPY . .
             ${argLines}
             RUN npm run build --if-present
-            EXPOSE 3000
+            EXPOSE ${envVars.PORT || 3000}
             CMD ["npm", "start"]
         `.trim()
   }
@@ -36,7 +36,8 @@ export function generateDockerfile(projectPath: string, envVars: Record<string, 
             COPY requirements.txt .
             RUN pip install -r requirements.txt
             COPY . .
-            EXPOSE 8000
+            ${argLines}
+            EXPOSE ${envVars.PORT || 8000}
             CMD ["python", "app.py"]
         `.trim()
   }
@@ -46,8 +47,9 @@ export function generateDockerfile(projectPath: string, envVars: Record<string, 
         FROM node:20-alpine
         WORKDIR /app
         COPY . .
+        ${argLines}
         RUN npm install -g serve
-        EXPOSE 3000
+        EXPOSE ${envVars.PORT || 3000}
         CMD ["serve", "-s", "."]
     `.trim()
 }

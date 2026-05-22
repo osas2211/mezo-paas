@@ -31,7 +31,7 @@ export class UploadService {
     })
   }
 
-  async uploadRepo(repoUrl: string, branch: string = 'master', projectId: string, encryptedEnvironmentVariables?: string) {
+  async uploadRepo(repoUrl: string, branch: string = 'master', projectId: string, encryptedEnvironmentVariables?: string, uniqueProjectName?: boolean) {
     const isProduction = this.configService.get<string>('NODE_ENV') === 'production'
     const redisUrl = this.configService.get<string>('REDIS_URL') || ""
     const repoName = repoUrl.split('/').pop() || ''
@@ -51,8 +51,9 @@ export class UploadService {
     await redisClient.connect()
     this.logger.log(`Importing repo from ${repoUrl}`)
 
-    const folder_name = repoName.replace(".git", "") + "-" + projectId
-    const repoDir = join(__dirname, 'repos', folder_name)
+    const folder_name = uniqueProjectName ? repoName.replace(".git", "") : repoName.replace(".git", "") + "-" + projectId
+    const s3_folder_name = repoName.replace(".git", "") + "-" + projectId
+    const repoDir = join(__dirname, 'repos', s3_folder_name)
     if (!existsSync(repoDir)) {
       mkdirSync(repoDir, { recursive: true })
     }
@@ -60,12 +61,13 @@ export class UploadService {
       '--branch': branch,
     })
     this.logger.log(`Repo imported successfully: ${repoUrl}`)
-    await this.uploadDirectory(repoDir, `repos/${folder_name}`)
+    await this.uploadDirectory(repoDir, `repos/${s3_folder_name}`)
 
     const deploymentPayload = {
       "projectId": projectId,
       "encryptedEnv": encryptedEnvironmentVariables,
       "folder_name": folder_name,
+      "s3_folder_name": s3_folder_name,
     }
 
     await redisClient.lPush('deployment-queue', JSON.stringify(deploymentPayload))

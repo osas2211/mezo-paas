@@ -23,7 +23,7 @@ model User {
   wallet    Wallet?
   githubAccessToken String?
   githubInstallationId String?
-  githubUsername String? @unique
+  githubUsername String?
   projects      Project[]
   role Role @default(REGULAR_DEVELOPER)
   transactions Transaction[]

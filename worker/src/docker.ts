@@ -26,14 +26,15 @@ build
   // Format for Build-Time (Next.js / React)
   const buildargs: Record<string, string> = {}
   for (const [key, value] of Object.entries(envVars ?? {})) {
-    buildargs[key] = value
+    buildargs[key.toUpperCase()] = value
   }
 
   // Format for Run-Time (Node.js / NestJS)
   // Docker expects an array of "KEY=VALUE" strings
   const runtimeEnvArray = Object.entries(envVars ?? {}).map(
-    ([key, value]) => `${key}=${value}`,
+    ([key, value]) => `${key.toUpperCase()}=${value}`,
   )
+
 
   // Build Phase
   const stream = await docker.buildImage(tar.pack(sourcePath), {
@@ -46,13 +47,16 @@ build
     )
   })
 
+  // const port_tcp = `${envVars?.port || envVars?.PORT || 3000}/tcp`
+  const port_tcp = "3000/tcp"
+
   //  Create and Start Container
   const container = await docker.createContainer({
     Image: tagName,
     name: `mezo-runtime-${projectId}`,
     Env: runtimeEnvArray, // Pass runtime env vars
     HostConfig: {
-      PortBindings: { "3000/tcp": [{ HostPort: "0" }] }, // Auto-assigns free host port
+      PortBindings: { [port_tcp]: [{ HostPort: "0" }] }, // Auto-assigns free host port
     },
   })
 
@@ -60,5 +64,5 @@ build
   const info = await container.inspect()
 
   // Return the port Docker gave us
-  return info.NetworkSettings.Ports["3000/tcp"][0].HostPort
+  return info.NetworkSettings.Ports[port_tcp][0].HostPort
 }

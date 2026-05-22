@@ -42,7 +42,7 @@ async function main() {
     }
 
     // 2. Naked Domain
-    if (host === "stellarsampled.com" || host === "www.stellarsampled.com" || host === "lvh.me") {
+    if (host === "mezo.host" || host === "www.mezo.host" || host === "lvh.me") {
       res.writeHead(200, { "Content-Type": "text/html" })
       return res.end("<h1>Mezo Gateway</h1><p>Operational. Secure Connection Active.</p>")
     }
@@ -88,8 +88,8 @@ async function main() {
   if (isProd) {
     try {
       // Load the Certbot Certificates
-      const privateKey = fs.readFileSync('/etc/letsencrypt/live/stellarsampled.com/privkey.pem', 'utf8')
-      const certificate = fs.readFileSync('/etc/letsencrypt/live/stellarsampled.com/fullchain.pem', 'utf8')
+      const privateKey = fs.readFileSync('/etc/letsencrypt/live/mezo.host/privkey.pem', 'utf8')
+      const certificate = fs.readFileSync('/etc/letsencrypt/live/mezo.host/fullchain.pem', 'utf8')
       const credentials = { key: privateKey, cert: certificate }
 
       // 1. Start the HTTPS Server on Port 443
