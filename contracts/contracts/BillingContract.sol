@@ -84,7 +84,7 @@ contract MezoHostBilling is ReentrancyGuard, Ownable {
      * @notice Whales withdraw their collateral. 
      * Early withdrawal slashes 5% to protect your AWS bills.
      */
-    function withdrawCollateral() external nonReentrant {
+    function withdrawCollateral(address userAppWallet) external nonReentrant {
         LockRecord storage record = lockedVaults[msg.sender];
         require(record.isActive, "No active vault");
 
@@ -107,7 +107,7 @@ contract MezoHostBilling is ReentrancyGuard, Ownable {
         require(token.transfer(msg.sender, amountToReturn), "Return transfer failed");
 
         // NestJS sees this, revokes the staked capacity, and shuts down their PM2 apps
-        emit CollateralWithdrawn(msg.sender, amountToReturn, isEarly);
+        emit CollateralWithdrawn(userAppWallet, amountToReturn, isEarly);
     }
 
     /**

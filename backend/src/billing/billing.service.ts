@@ -8,7 +8,7 @@ import { DeploymentStatus } from '../../generated/prisma/enums';
 import {
   TransactionType,
   TransactionAction,
-} from '../../generated/prisma/enums';
+} from '../../generated/prisma/enums'
 
 @Injectable()
 export class BillingMeterService {
@@ -17,7 +17,7 @@ export class BillingMeterService {
   constructor(
     private prisma: PrismaService,
     private configService: ConfigService,
-  ) {}
+  ) { }
 
   // Runs once a day to charge for active servers
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT, { timeZone: 'Africa/Lagos' })
@@ -27,17 +27,17 @@ export class BillingMeterService {
     const redisUrl = this.configService.get<string>('REDIS_URL') || '';
     const redisClient = isProduction
       ? createCluster({
-          rootNodes: [{ url: redisUrl }],
-          defaults: {
-            socket: {
-              // Automatically handle the AWS TLS handshake if using rediss://
-              tls: redisUrl.startsWith('rediss'),
-            },
+        rootNodes: [{ url: redisUrl }],
+        defaults: {
+          socket: {
+            // Automatically handle the AWS TLS handshake if using rediss://
+            tls: redisUrl.startsWith('rediss'),
           },
-        })
+        },
+      })
       : createClient({
-          url: redisUrl,
-        });
+        url: redisUrl,
+      });
     await redisClient.connect();
     this.logger.log('Starting daily billing cycle...');
 

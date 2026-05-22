@@ -23,7 +23,7 @@ export class AuthService {
     private readonly wallet: WalletService,
     private readonly encryption: EncryptionService,
     private jwt: JwtService,
-  ) {}
+  ) { }
   async signup(body: SignUpDto) {
     try {
       const { password, ...rest } = body;

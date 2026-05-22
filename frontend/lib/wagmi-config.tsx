@@ -5,6 +5,6 @@ import { createConfig, } from "wagmi"
 export const config = createConfig({
     chains: [mezoTestnet],
     transports: {
-        [mezoTestnet.id]: webSocket("wss://rpc-ws.test.mezo.org"),
+        [mezoTestnet.id]: http("https://rpc.test.mezo.org"),
     },
 })

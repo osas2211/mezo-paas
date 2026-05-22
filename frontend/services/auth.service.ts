@@ -1,3 +1,4 @@
+import { RoleEnum } from "@/types/user";
 import { api } from "./api.instance"
 
 export const loginService = async (data: { email: string; password: string }) => {
@@ -7,7 +8,7 @@ export const loginService = async (data: { email: string; password: string }) =>
   }
   return res
 }
-export const signupService = async (data: { email: string; password: string; name: string }) => {
+export const signupService = async (data: { email: string; password: string; name: string, role: RoleEnum }) => {
   const res = await api.post('/auth/signup', data)
   return res
 }

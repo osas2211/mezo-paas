@@ -24,6 +24,7 @@ export class UserService {
         id: true,
         createdAt: true,
         updatedAt: true,
+        role: true
       },
     });
 

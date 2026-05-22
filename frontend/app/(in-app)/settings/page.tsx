@@ -46,6 +46,11 @@ const SettingsPage = () => {
                       <dt className="text-white/60 w-30">Name</dt>
                       <dd className="text-white/90">{data?.user?.name}</dd>
                     </div>
+
+                    <div className="flex gap-2">
+                      <dt className="text-white/60 w-30">Role</dt>
+                      <dd className="text-white/90">{data?.user?.role || "-"}</dd>
+                    </div>
                   </dl>
                 </div>
               </div>

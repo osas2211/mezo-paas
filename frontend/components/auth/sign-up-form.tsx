@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
 "use client"
 import React from "react"
-import { Button, Form, Input } from "antd"
+import { Button, Form, Input, Select } from "antd"
 import { useForm } from "antd/es/form/Form"
 import { MdMailOutline } from "react-icons/md"
 import { BiLockAlt } from "react-icons/bi"
@@ -10,14 +10,16 @@ import { LoadingOutlined } from "@ant-design/icons"
 import Link from "next/link"
 import { User } from "lucide-react"
 import { useSignup } from "@/hooks/use-auth"
+import { RoleEnum } from "@/types/user"
 
 export const SignupForm = () => {
-  const [form] = useForm<{ password: string; email: string; name: string }>()
+  const [form] = useForm<{ password: string; email: string; name: string; role: RoleEnum }>()
   const { mutate: signup, isPending } = useSignup()
   const handleSubmit = async (data: {
     password: string
     email: string
     name: string
+    role: RoleEnum
   }) => {
     signup(data)
   }
@@ -70,6 +72,21 @@ export const SignupForm = () => {
               placeholder="Enter Password"
               prefix={<BiLockAlt size={18} />}
               autoComplete=""
+            />
+          </Form.Item>
+          
+          <Form.Item
+            name={"role"}
+            label="Account Type"
+            rules={[{ required: true, message: "Please select an account type" }]}
+            initialValue={RoleEnum.REGULAR_DEVELOPER}
+          >
+            <Select
+              className="h-[40px] w-full"
+              options={[
+                { value: RoleEnum.REGULAR_DEVELOPER, label: "Regular Developer" },
+                { value: RoleEnum.PRO_DEVELOPER, label: "Pro Developer" },
+              ]}
             />
           </Form.Item>
 

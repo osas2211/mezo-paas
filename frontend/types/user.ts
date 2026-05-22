@@ -7,6 +7,7 @@ export type UserI = {
     name: string
     createdAt: Date
     updatedAt: Date
+    role: RoleEnum;
   }
   message: string
 }
@@ -34,6 +35,11 @@ export type TransactionI = {
   title: string
   createdAt: Date
   updatedAt: Date
+}
+
+export enum RoleEnum {
+  REGULAR_DEVELOPER = "REGULAR_DEVELOPER",
+  PRO_DEVELOPER = "PRO_DEVELOPER",
 }
 
 export enum TransactionType {

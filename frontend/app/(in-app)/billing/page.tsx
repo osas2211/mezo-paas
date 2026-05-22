@@ -9,6 +9,7 @@ import React from "react"
 import { FundWalletButton } from "@/components/billing/fund-wallet"
 import { TransferCredit } from "@/components/billing/transfer-credit"
 import { TopUpButton } from "@/components/billing/top-up"
+import { LockCollateralButton } from "@/components/billing/lock-collateral"
 import { TransactionHistory } from "@/components/transactions/transaction-history"
 import { convertCreditsToUSD } from "@/lib/convert-credit-to-usd"
 import moment from "moment"
@@ -89,7 +90,11 @@ const BillingPage = () => {
 
                 <div className="flex items-center gap-3">
                   {/* <FundWalletButton /> */}
-                  <TopUpButton />
+                  {data?.user?.role === "PRO_DEVELOPER" ? (
+                    <LockCollateralButton />
+                  ) : (
+                    <TopUpButton />
+                  )}
                   <TransferCredit />
                 </div>
               </div>
@@ -101,8 +106,11 @@ const BillingPage = () => {
       <div className="grid md:grid-cols-2 gap-4">
         <div>
           <EmptyComponent
+            twHeight="min-h-90"
             icon={<Package size={30} className="text-white/60" />}
-            description={<p className="text-white/60">No billable services</p>}
+            description={<div className="">
+              <p className="text-white/60">No billable services</p>
+            </div>}
             title="Services"
           />
         </div>

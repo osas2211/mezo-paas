@@ -3,6 +3,7 @@ import { loginService, signupService } from "../services/auth.service"
 import { useRouter } from "next/navigation"
 import { useToastify } from "./use-toastify"
 import { removeCookie } from "@/services/api.instance"
+import { RoleEnum } from "@/types/user"
 
 export const useLogin = () => {
   const router = useRouter()
@@ -22,7 +23,7 @@ export const useSignup = () => {
   const router = useRouter()
   const { successToast, errorToast } = useToastify()
   return useMutation({
-    mutationFn: (data: { email: string, password: string, name: string }) => signupService(data),
+    mutationFn: (data: { email: string, password: string, name: string, role: RoleEnum }) => signupService(data),
     onSuccess: (data: any) => {
       successToast(data?.message || "Account created successfully", "bottom-right")
       router.push("/login")

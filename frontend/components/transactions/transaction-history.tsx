@@ -12,7 +12,7 @@ export const TransactionHistory = () => {
     return (
       <div className="">
         <div className="border border-white/10 bg-white/5 p-1">
-          <div className="border border-white/20 bg-dark p-6 min-h-50 space-y-5">
+          <div className="border border-white/20 bg-dark p-6 min-h-90 space-y-5">
             <div className="text-xl font-semibold font-sans">
               <h3 className="text-[16px] font-medium">Transaction History</h3>
 
@@ -29,13 +29,13 @@ export const TransactionHistory = () => {
   return (
     <div className="">
       <div className="border border-white/10 bg-white/5 p-1">
-        <div className="border border-white/20 bg-dark p-6 min-h-50 space-y-5">
+        <div className="border border-white/20 bg-dark p-6 min-h-90 space-y-5">
           <div className="text-xl font-semibold font-sans">
             <h3 className="text-[16px] font-medium">Transaction History</h3>
 
-            <div className="space-y-2 font-normal md:h-50 py-7 text-xs">
+            <div className="space-y-4 font-normal md:h-50 py-7 text-xs">
               {/* Transaction Record */}
-              {data?.slice(0, 4)?.map((transaction) => {
+              {data?.slice(0, 5)?.map((transaction) => {
                 return (
                   <div
                     className="flex items-center gap-4 justify-between"
@@ -60,7 +60,7 @@ export const TransactionHistory = () => {
                       </div>
                     </div>
 
-                    <div>
+                    <div className="text-end">
                       <p
                         className={`text-sm mb-0.5 ${transaction.type === TransactionType.CREDIT ? "text-green-500" : "text-red-500"}`}
                       >
