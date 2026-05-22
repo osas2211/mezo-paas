@@ -13,7 +13,7 @@ export function ConnectWalletView() {
                 <h3 className="text-white text-lg font-semibold">
                     Connect Your Wallet
                 </h3>
-                <p className="text-white/50 text-sm max-w-[300px]">
+                <p className="text-white/50 text-sm max-w-75">
                     Connect your Mezo wallet to purchase compute credits and power your
                     deployments.
                 </p>
