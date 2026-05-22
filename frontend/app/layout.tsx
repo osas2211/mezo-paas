@@ -42,7 +42,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <TanstackProvider>
           <AntProvider>{children}</AntProvider>
-          <ToastContainer aria-label={{}} />
+          <ToastContainer aria-label="Notifications" />
         </TanstackProvider>
       </body>
     </html>
