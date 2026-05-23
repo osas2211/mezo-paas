@@ -38,12 +38,12 @@ type statusType =
 
 const tabs = [
   { id: "overview", label: "Overview" },
-  { id: "deployments", label: "Deployments" },
-  { id: "logs", label: "Logs" },
-  { id: "domains", label: "Domains" },
+  // { id: "deployments", label: "Deployments" },
+  // { id: "logs", label: "Logs" },
+  // { id: "domains", label: "Domains" },
   { id: "env", label: "Env Variables" },
   { id: "running-time", label: "Running Time" },
-  { id: "credits", label: "Credit Consumption" },
+  // { id: "credits", label: "Credit Consumption" },
 ]
 
 export default function ProjectDetailsPage() {

@@ -5,6 +5,7 @@ import Sidebar from "@/components/utilities/sidebar"
 import { usePathname } from "next/navigation"
 import { useUser } from "@/hooks/use-user"
 import { PageLoading } from "@/components/utilities/page-loading"
+import { useDeploymentStats } from "@/hooks/use-project"
 
 export default function InAppLayout({
   children,
@@ -13,6 +14,7 @@ export default function InAppLayout({
 }) {
   const pathname = usePathname()
   const { isLoading } = useUser()
+  const {isLoading: isLoadingDeploymentStats} = useDeploymentStats()
   const isAuthPage =
     pathname === "/login" || pathname === "/register" || pathname === "/sign-up"
 
@@ -20,7 +22,7 @@ export default function InAppLayout({
     return <>{children}</>
   }
 
-  if (isLoading) {
+  if (isLoading || isLoadingDeploymentStats) {
     return (
       <div className="min-h-screen bg-dark flex items-center justify-center">
         <PageLoading />
