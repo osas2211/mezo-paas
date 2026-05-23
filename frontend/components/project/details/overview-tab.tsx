@@ -4,6 +4,7 @@ import { ExternalLink, Activity, ShieldCheck, BarChart3 } from "lucide-react"
 import { GithubOutlined } from "@ant-design/icons"
 import DeploymentTracker from "../deployment-tracker"
 import { IoIosGitBranch } from "react-icons/io"
+import Link from "next/link"
 
 type statusType =
   | "PENDING_DEPLOYMENT"
@@ -54,15 +55,27 @@ export default function OverviewTab({
             </div>
 
             {/* Placeholder Preview Image / Text */}
+                
+
+            {
+              project.deployment?.url?.includes("lvh") ? (
             <div className="text-center mt-8">
               <h1 className="text-6xl font-light text-white tracking-tighter mix-blend-screen opacity-80">
                 {project.name.substring(0, 3).toUpperCase()}
               </h1>
             </div>
+            ) : project.deployment?.url ? <img src={`https://api.microlink.io/?url=${project.deployment?.url}&screenshot=true&meta=false&embed=screenshot.url`} alt="" />: (
+            <div className="text-center mt-8">
+              <h1 className="text-2xl font-light text-white tracking-tighter mix-blend-screen opacity-80">
+                Preview will be available after deployment
+              </h1>
+            </div>
+              )
+            }
 
             {/* View Overlay */}
             {project.deployment?.url && (
-              <a
+              <Link
                 href={`${project.deployment.url}`}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -71,7 +84,7 @@ export default function OverviewTab({
                 <div className="flex items-center gap-2 bg-white/10 border border-white/20 text-white px-4 py-2 rounded-full font-medium shadow-xl">
                   Visit Site <ExternalLink size={16} />
                 </div>
-              </a>
+              </Link>
             )}
           </div>
 
