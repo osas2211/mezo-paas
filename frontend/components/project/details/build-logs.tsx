@@ -70,6 +70,7 @@ export function BuildLogs({ folderName, buildLogs }: TerminalProps) {
         {logs.map((log, index) => {
           let textColor = "text-gray-300";
           if (log.includes("[System]")) textColor = "text-blue-400 font-bold";
+          if (log.includes("Step")) textColor = "text-yellow-400 font-medium";
           if (log.includes("[Error]") || log.toLowerCase().includes("warn")) textColor = "text-red-400";
           if (log.includes("✅") || log.includes("Success")) textColor = "text-green-400 font-bold";
 
