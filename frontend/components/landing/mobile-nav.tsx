@@ -75,7 +75,7 @@ export default function MobileNav() {
               Console
             </Link>
             <Link
-              href="/signup"
+              href="/sign-up"
               onClick={() => setIsOpen(false)}
               className="flex items-center justify-center px-5 py-3 text-sm font-medium text-black bg-primary rounded-full transition-all duration-200 hover:brightness-110"
             >
