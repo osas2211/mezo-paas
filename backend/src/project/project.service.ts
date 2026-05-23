@@ -210,6 +210,9 @@ export class ProjectService {
     return this.prismaService.project.findMany({
       where: { userId },
       select,
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
   }
 
@@ -252,11 +255,17 @@ export class ProjectService {
       return await this.prismaService.deployment.findMany({
         where: { project: { userId } },
         select,
+        orderBy: {
+          createdAt: 'desc',
+        },
       });
     }
     return await this.prismaService.deployment.findMany({
       where: { status: status, project: { userId } },
       select,
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
   }
 
