@@ -93,6 +93,7 @@ export class ProjectController {
       body.status,
       body.liveUrl,
       body.url_port,
+      body.logs,
     );
   }
 

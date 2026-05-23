@@ -1,61 +1,87 @@
-import React, { useEffect, useState, useRef } from "react"
-import { io, Socket } from "socket.io-client"
+import { Loader2 } from 'lucide-react';
+import { useEffect, useState, useRef } from 'react';
 
-const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:8000"
+interface TerminalProps {
+  folderName: string; // Pass the folder_name of the project being deployed
+  buildLogs?: string; // The massive string from your Prisma DB (if historical)
+}
 
-export default function BuildLogs({ projectId }: { projectId: string }) {
-  const [logs, setLogs] = useState<string[]>([])
-  // We use this ref to anchor to the bottom of the log list
-  const bottomRef = useRef<HTMLDivElement>(null)
+export function BuildLogs({ folderName, buildLogs }: TerminalProps) {
+  const [logs, setLogs] = useState<string[]>([]);
+  const terminalEndRef = useRef<HTMLDivElement>(null);
 
+  // HYDRATE HISTORICAL LOGS
+  // If the parent component fetches old logs from the DB, load them instantly.
   useEffect(() => {
-    const socket: Socket = io(`${SOCKET_URL}/deployments`)
+    if (buildLogs) {
+      setLogs(buildLogs.split('\n'));
+    }
+  }, [buildLogs]);
 
-    socket.on("connect", () => {
-      socket.emit("join-project-room", projectId)
-    })
+  // THE LIVE STREAM LISTENER
+  useEffect(() => {
+    if (!folderName) return;
+    
+    
+    if (buildLogs && buildLogs.length > 0) return;
 
-    // Listen for the live chunks of text from 'spawn'
-    socket.on("build-log", (newLogChunk: string) => {
-      // Add the new chunk to our array of logs
-      setLogs((prevLogs) => [...prevLogs, newLogChunk])
-    })
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    const eventSource = new EventSource(`${API_URL}/api/v1/logs/${folderName}`);
+
+    eventSource.onmessage = (event) => {
+      setLogs((prevLogs) => [...prevLogs, event.data]);
+    };
+
+    eventSource.onerror = (error) => {
+      console.log("Log stream ended or disconnected.");
+      eventSource.close();
+    };
 
     return () => {
-      socket.disconnect()
-    }
-  }, [projectId])
+      eventSource.close();
+    };
+  }, [folderName, buildLogs]);
 
-  // --- THE AUTO-SCROLL TRICK ---
   useEffect(() => {
-    // Every time the 'logs' array changes, instantly scroll the dummy div into view
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [logs])
+    if (terminalEndRef.current) {
+      terminalEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [logs]);
 
   return (
-    <div className="w-full max-w-3xl rounded-lg overflow-hidden border border-gray-700 bg-[#0d1117] shadow-xl">
-      {/* Mac Window Header */}
-      <div className="flex items-center px-4 py-2 bg-gray-800 border-b border-gray-700">
-        <div className="flex space-x-2">
-          <div className="w-3 h-3 rounded-full bg-red-500"></div>
-          <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-          <div className="w-3 h-3 rounded-full bg-green-500"></div>
-        </div>
+    <div className="w-full max-w-full mx-auto overflow-hidden border border-dark-alt shadow-2xl ">
+      <div className="bg-dark-alt px-4 py-4 flex items-center gap-2 border-b border-dark-alt">
+        <div className="w-3 h-3 rounded-full bg-red-500"></div>
+        <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+        <div className="w-3 h-3 rounded-full bg-green-500"></div>
         <span className="ml-4 text-xs text-gray-400 font-mono">
-          Build Logs: {projectId}
+          {buildLogs ? `Historical Logs: ${folderName}` : `Live Build: ${folderName}`}
         </span>
       </div>
 
-      {/* The actual terminal window */}
-      <div className="h-96 overflow-y-auto p-4 font-mono text-sm text-green-400 whitespace-pre-wrap">
-        {logs.length === 0 ? (
-          <span className="text-gray-500">Waiting for build to start...</span>
-        ) : (
-          logs.map((log, index) => <span key={index}>{log}</span>)
-        )}
-        {/* This invisible div sits at the very bottom and pulls the scrollbar down */}
-        <div ref={bottomRef} />
+      <div className="p-4 h-150 overflow-y-auto font-mono text-sm">
+        {logs.length === 0 && !buildLogs ? (
+         <div className="flex items-center gap-2">
+           <Loader2 className="animate-spin text-gray-500" />
+           <p className="text-gray-500 animate-pulse">Loading build logs...</p>
+         </div>
+        ) : null}
+        
+        {logs.map((log, index) => {
+          let textColor = "text-gray-300";
+          if (log.includes("[System]")) textColor = "text-blue-400 font-bold";
+          if (log.includes("[Error]") || log.toLowerCase().includes("warn")) textColor = "text-red-400";
+          if (log.includes("✅") || log.includes("Success")) textColor = "text-green-400 font-bold";
+
+          return (
+            <div key={index} className={`mb-1 ${textColor} whitespace-pre-wrap`}>
+              {log}
+            </div>
+          );
+        })}
+        
+        <div ref={terminalEndRef} />
       </div>
     </div>
-  )
+  );
 }

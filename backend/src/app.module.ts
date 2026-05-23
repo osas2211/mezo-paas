@@ -18,6 +18,7 @@ import { ProjectModule } from './project/project.module'
 import { BillingModule } from './billing/billing.module';
 import { ScheduleModule } from '@nestjs/schedule'
 import { BlockchainListenerService } from './blockchain-listener/blockchain-listener.service';
+import { LogsController } from './logs/logs.controller';
 
 
 @Module({
@@ -37,7 +38,7 @@ import { BlockchainListenerService } from './blockchain-listener/blockchain-list
     ProjectModule,
     BillingModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, LogsController],
   providers: [
     AppService,
     WalletService,

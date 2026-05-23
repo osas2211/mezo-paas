@@ -24,6 +24,7 @@ import CreditTab from "@/components/project/details/credit-tab"
 import { useEffect, useState } from "react"
 import { io, Socket } from "socket.io-client"
 import { Button } from "antd"
+import { BuildLogs } from "@/components/project/details/build-logs"
 
 const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:8000"
 
@@ -39,7 +40,7 @@ type statusType =
 const tabs = [
   { id: "overview", label: "Overview" },
   // { id: "deployments", label: "Deployments" },
-  // { id: "logs", label: "Logs" },
+  { id: "logs", label: "Logs" },
   // { id: "domains", label: "Domains" },
   { id: "env", label: "Env Variables" },
   { id: "running-time", label: "Running Time" },
@@ -231,7 +232,8 @@ export default function ProjectDetailsPage() {
           />
         )}
         {activeTab === "deployments" && <DeploymentsTab project={project} />}
-        {activeTab === "logs" && <LogsTab project={project} />}
+        {/* {activeTab === "logs" && <LogsTab project={project} />} */}
+        {activeTab === "logs" && <BuildLogs folderName={`${project.name}-${project.id}`} buildLogs={project.deployment?.buildLogs} />}
         {activeTab === "domains" && <DomainsTab project={project} />}
         {activeTab === "env" && <EnvVarsTab project={project} />}
         {activeTab === "running-time" && <RunningTimeTab project={project} />}

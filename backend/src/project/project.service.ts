@@ -79,11 +79,43 @@ export class ProjectService {
       JSON.stringify(environmentVariables),
     );
 
-    const isUniqueName = await this.prismaService.project.findFirst({
+    const projectWithName = await this.prismaService.project.findFirst({
       where: {
         name: repoName,
       },
     });
+
+    const isUniqueName = projectWithName
+      ? false
+      : repoName === 'app'
+        ? false
+        : repoName === 'blog'
+          ? false
+          : repoName === 'docs'
+            ? false
+            : repoName === 'dashboard'
+              ? false
+              : repoName === 'mezo'
+                ? false
+                : repoName === 'portal'
+                  ? false
+                  : repoName === 'landing'
+                    ? false
+                    : repoName === 'wallet'
+                      ? false
+                      : repoName === 'api'
+                        ? false
+                        : repoName === 'redis'
+                          ? false
+                          : repoName === 'worker'
+                            ? false
+                            : repoName === 'www'
+                              ? false
+                              : repoName === 'gateway'
+                                ? false
+                                : repoName === 'infra'
+                                  ? false
+                                  : true;
 
     // const dailyCreditCost = analysis.framework === "node" || analysis.framework === "nestjs" ? "10" : "5"
     const project = await this.prismaService.project.create({
@@ -129,7 +161,7 @@ export class ProjectService {
       githubRepo.owner.login,
       project.id,
       encryptedEnvironmentVariables,
-      isUniqueName ? false : true,
+      isUniqueName,
     );
     this.buildGateway.broadcastStatus(
       project.id,
@@ -140,9 +172,44 @@ export class ProjectService {
   }
 
   async getProjects(userId: string) {
+    const select = {
+      id: true,
+      name: true,
+      description: true,
+      framework: true,
+      nodeVersion: true,
+      buildCommand: true,
+      installCommand: true,
+      outputDirectory: true,
+      devCommand: true,
+      gitRepositoryName: true,
+      gitRepositoryOwner: true,
+      gitRepositoryType: true,
+      createdAt: true,
+      updatedAt: true,
+      userId: true,
+      environmentVariables: true,
+      active: true,
+      dailyCreditCost: true,
+      creditUsedThisMonth: true,
+      deployment: {
+        select: {
+          id: true,
+          projectId: true,
+          status: true,
+          url: true,
+          port: true,
+          name: true,
+          createdAt: true,
+          updatedAt: true,
+          deploymentStartedAt: true,
+          deploymentFinishedAt: true,
+        },
+      },
+    };
     return this.prismaService.project.findMany({
       where: { userId },
-      include: { deployment: true },
+      select,
     });
   }
 
@@ -249,6 +316,7 @@ export class ProjectService {
     status: DeploymentStatus,
     liveUrl?: string,
     url_port?: string,
+    logs?: string,
   ) {
     if (workerSecret !== this.configService.get<string>('WORKER_SECRET')) {
       throw new UnauthorizedException('Invalid Worker Secret');
@@ -270,6 +338,7 @@ export class ProjectService {
           status: status,
           port: url_port,
           deploymentFinishedAt: new Date().toISOString(),
+          buildLogs: logs || '',
         },
       });
     } else if (status === DeploymentStatus.BUILDING) {

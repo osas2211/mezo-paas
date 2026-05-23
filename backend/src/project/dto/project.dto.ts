@@ -10,6 +10,10 @@ export class UpdateDeploymentStatusDto {
   @IsOptional()
   url_port?: string;
 
+  @IsString()
+  @IsOptional()
+  logs?: string;
+
   @IsEnum(DeploymentStatus)
   status: DeploymentStatus;
 }
