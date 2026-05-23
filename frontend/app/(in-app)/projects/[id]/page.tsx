@@ -2,6 +2,7 @@
 
 import { useParams, useSearchParams, useRouter } from "next/navigation"
 import {
+  useGetEnvVariables,
   useProject,
   useRestartProject,
   useStopProject,
@@ -55,6 +56,7 @@ export default function ProjectDetailsPage() {
   const activeTab = searchParams.get("tab") || "overview"
 
   const { data: project, isLoading, isError, refetch } = useProject(projectId)
+  const { data: envVariables, isLoading: isLoadingEnvVariables } = useGetEnvVariables(projectId)
 
   const [status, setStatus] = useState<statusType>(
     (project?.deployment?.status as statusType) || "PENDING_DEPLOYMENT",
@@ -126,7 +128,7 @@ export default function ProjectDetailsPage() {
     await restartProject(projectId)
   }
 
-  if (isLoading) {
+  if (isLoading || isLoadingEnvVariables) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
         <PageLoading />
@@ -235,7 +237,7 @@ export default function ProjectDetailsPage() {
         {/* {activeTab === "logs" && <LogsTab project={project} />} */}
         {activeTab === "logs" && <BuildLogs folderName={`${project.name}-${project.id}`} buildLogs={project.deployment?.buildLogs} />}
         {activeTab === "domains" && <DomainsTab project={project} />}
-        {activeTab === "env" && <EnvVarsTab project={project} />}
+        {activeTab === "env" && <EnvVarsTab project={project} envVariables={envVariables} />}
         {activeTab === "running-time" && <RunningTimeTab project={project} />}
         {activeTab === "credits" && <CreditTab project={project} />}
       </div>

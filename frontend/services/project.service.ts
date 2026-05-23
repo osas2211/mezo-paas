@@ -54,6 +54,11 @@ export const getDeployments = async (status?: string) => {
   }[];
 };
 
+export const getEnvVariables = async (projectId: string) => {
+  const response = await api.get(`/project/${projectId}/env-variables`);
+  return response.data as Record<string, string>;
+};
+
 export const stopProject = async (projectId: string) => {
   const response = await api.patch(`/project/${projectId}/stop`);
   return response.data as { message: string; success: boolean };

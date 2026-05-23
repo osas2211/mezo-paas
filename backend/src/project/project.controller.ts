@@ -81,6 +81,18 @@ export class ProjectController {
     return this.projectService.getProject(projectId);
   }
 
+  @UseGuards(AuthGuard)
+  @Get(':projectId/env-variables')
+  async getEnvVariables(
+    @Req() req: express.Request,
+    @Param('projectId') projectId: string,
+  ) {
+    return this.projectService.getEnvVariables(
+      projectId,
+      req['user']?.userId as string,
+    );
+  }
+
   @Patch(':projectId/deployment-status')
   async handleDeploymentStatus(
     @Param('projectId') projectId: string,

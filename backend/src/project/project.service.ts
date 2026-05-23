@@ -231,6 +231,21 @@ export class ProjectService {
     return {};
   }
 
+  async getEnvVariables(projectId: string, userId: string) {
+    const project = await this.prismaService.project.findUnique({
+      where: { id: projectId, userId: userId },
+      select: { environmentVariables: true },
+    });
+
+    if (!project || !project.environmentVariables) {
+      throw new Error('Project or environment variables not found');
+    }
+    const decryptedVariables = await this.encryptionService.decrypt(
+      project.environmentVariables,
+    );
+    return JSON.parse(decryptedVariables) as Record<string, string>;
+  }
+
   async getDeployments(userId: string, status?: DeploymentStatus) {
     const select = {
       id: true,

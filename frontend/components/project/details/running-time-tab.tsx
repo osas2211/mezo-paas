@@ -1,8 +1,17 @@
 import React from "react"
 import { ProjectI } from "@/types/project"
 import { Clock, Activity, ArrowUpRight } from "lucide-react"
+import moment from "moment";
 
 export default function RunningTimeTab({ project }: { project: ProjectI }) {
+  const duration = project.deployment?.deploymentFinishedAt
+            ? moment(new Date().toISOString()).diff(
+                moment(project.deployment?.deploymentFinishedAt),
+                "seconds",
+              )
+            : 0
+  const hours = Math.floor(duration / 3600);
+  const minutes = Math.floor((duration % 3600) / 60);
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -26,7 +35,7 @@ export default function RunningTimeTab({ project }: { project: ProjectI }) {
             <Clock size={16} /> <span className="text-sm font-medium">Total Execution Time</span>
           </div>
           <div className="flex items-end gap-3">
-            <span className="text-4xl font-light text-white tracking-tight">142<span className="text-2xl text-white/50">h</span> 15<span className="text-2xl text-white/50">m</span></span>
+            <span className="text-4xl font-light text-white tracking-tight">{hours}<span className="text-2xl text-white/50">h</span> {minutes}<span className="text-2xl text-white/50">m</span></span>
           </div>
           <p className="text-xs text-emerald-400 mt-3 flex items-center gap-1"><ArrowUpRight size={12} /> 12% vs last week</p>
         </div>
@@ -36,9 +45,9 @@ export default function RunningTimeTab({ project }: { project: ProjectI }) {
             <Activity size={16} /> <span className="text-sm font-medium">Cold Starts</span>
           </div>
           <div className="flex items-end gap-3">
-            <span className="text-4xl font-light text-white tracking-tight">24</span>
+            <span className="text-4xl font-light text-white tracking-tight">0</span>
           </div>
-          <p className="text-xs text-red-400 mt-3 flex items-center gap-1"><ArrowUpRight size={12} /> 5% vs last week</p>
+          <p className="text-xs text-red-400 mt-3 flex items-center gap-1"><ArrowUpRight size={12} /> 0% vs last week</p>
         </div>
         
         <div className="bg-[#0a0a0a] border border-white/10 rounded-xl p-6 flex flex-col justify-between">
@@ -56,7 +65,7 @@ export default function RunningTimeTab({ project }: { project: ProjectI }) {
         <div className="flex-1 flex items-end justify-between gap-2 border-b border-white/5 pb-2">
           {/* Generate some random bars for a fake chart */}
           {Array.from({ length: 30 }).map((_, i) => {
-            const height = 20 + Math.random() * 80
+            const height = 20 + Math.random() * 0
             return (
               <div key={i} className="w-full bg-primary/20 hover:bg-primary/40 transition-colors rounded-t-sm relative group cursor-pointer" style={{ height: `${height}%` }}>
                 {/* Tooltip mock */}
@@ -68,9 +77,9 @@ export default function RunningTimeTab({ project }: { project: ProjectI }) {
           })}
         </div>
         <div className="flex justify-between mt-3 text-[10px] text-white/30 uppercase tracking-wider font-semibold">
-          <span>May 1</span>
-          <span>May 15</span>
-          <span>May 30</span>
+          <span>{moment(new Date().toISOString()).format("MMM")} 1</span>
+          <span>{moment(new Date().toISOString()).format("MMM")} 15</span>
+          <span>{moment(new Date().toISOString()).format("MMM")} 30</span>
         </div>
       </div>
     </div>

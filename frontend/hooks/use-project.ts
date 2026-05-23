@@ -3,6 +3,7 @@ import {
   createProject,
   deploymentStats,
   getDeployments,
+  getEnvVariables,
   getProject,
   getProjects,
   restartProject,
@@ -46,6 +47,13 @@ export const useProject = (projectId: string) => {
   return useQuery({
     queryKey: ["project", projectId],
     queryFn: () => getProject(projectId),
+  });
+};
+
+export const useGetEnvVariables = (projectId: string) => {
+  return useQuery({
+    queryKey: ["env-variables", projectId],
+    queryFn: () => getEnvVariables(projectId),
   });
 };
 
