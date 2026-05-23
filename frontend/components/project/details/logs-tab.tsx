@@ -6,7 +6,7 @@ export default function LogsTab({ project }: { project: ProjectI }) {
   // Mock logs
   const logs = [
     { ts: "12:04:01", level: "info", msg: "Starting deployment for a1b2c3d..." },
-    { ts: "12:04:03", level: "info", msg: "Cloning repository MezoDeploy..." },
+    { ts: "12:04:03", level: "info", msg: "Cloning repository MezoHost..." },
     { ts: "12:04:05", level: "info", msg: "Installing dependencies using npm..." },
     { ts: "12:04:15", level: "info", msg: "added 124 packages, and audited 125 packages in 10s" },
     { ts: "12:04:16", level: "warn", msg: "1 moderate severity vulnerability found. Run `npm audit` for details." },

@@ -15,7 +15,7 @@ export const UserLogin = () => {
         className="w-full h-screen md:p-[3rem] p-[1.5rem]"
       >
         <div className="md:mb-[0] mb-[4rem]">
-          <p>Mezo Deploy</p>
+          <p>Mezo Host</p>
         </div>
         <div className="h-full md:flex md:flex-col md:items-center md:justify-center">
           <LoginForm />

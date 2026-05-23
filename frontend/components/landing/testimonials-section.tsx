@@ -18,7 +18,7 @@ export default function TestimonialsSection() {
             Loved by developers worldwide
           </h2>
           <p className="text-lg text-zinc-400 leading-relaxed">
-            Join thousands of teams who trust MezoDeploy for their deployment needs.
+            Join thousands of teams who trust MezoHost for their deployment needs.
           </p>
         </div>
 

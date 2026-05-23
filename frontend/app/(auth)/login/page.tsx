@@ -1,7 +1,7 @@
 import { UserLogin } from "@/components/auth/login"
 
 export const metadata = {
-  title: "Login | Mezo Deploy",
+  title: "Login | Mezo Host",
 }
 
 const LoginPage = () => {

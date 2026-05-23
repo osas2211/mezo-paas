@@ -12,7 +12,7 @@ export default function HeaderActions() {
         Console
       </Link>
       <Link
-        href="/signup"
+        href="/sign-up"
         className="px-5 py-2 text-sm font-medium text-black bg-white rounded-full transition-all duration-200 hover:brightness-110"
       >
         Get Started

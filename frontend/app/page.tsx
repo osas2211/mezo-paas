@@ -1,17 +1,22 @@
+import SmoothScroll from "@/components/landing/smooth-scroll";
+import GsapHero from "@/components/landing/gsap-hero";
+import GsapArchitecture from "@/components/landing/gsap-architecture";
+import GsapFeatures from "@/components/landing/gsap-features";
+import GsapFooter from "@/components/landing/gsap-footer";
 import LandingHeader from "@/components/landing/landing-header";
-import HeroSection from "@/components/landing/hero-section";
-import ObservableSection from "@/components/landing/observable-section";
-import TestimonialsSection from "@/components/landing/testimonials-section";
-import FeaturesSection from "@/components/landing/features-section";
 
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen bg-black font-sans">
-      <LandingHeader />
-      <HeroSection />
-      <ObservableSection />
-      <TestimonialsSection />
-      <FeaturesSection />
-    </div>
+    <SmoothScroll>
+      <div className="flex flex-col min-h-screen bg-black font-sans text-white selection:bg-primary/30 selection:text-white">
+        <LandingHeader />
+        <main>
+          <GsapHero />
+          <GsapArchitecture />
+          <GsapFeatures />
+        </main>
+        <GsapFooter />
+      </div>
+    </SmoothScroll>
   );
 }

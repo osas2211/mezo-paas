@@ -2,7 +2,7 @@ import { Signup } from "@/components/auth/sign-up"
 import React from "react"
 
 export const metadata = {
-  title: "Signup | Mezo Deploy",
+  title: "Signup | Mezo Host",
 }
 
 const SignUpPage = () => {

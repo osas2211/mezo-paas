@@ -19,7 +19,7 @@ export default function Logo() {
           letterSpacing: "-0.05em",
         }}
       >
-        Mezo<span className="text-gray-300">Deploy</span>
+        Mezo<span className="text-gray-300">Host</span>
       </span>
     </a>
   )

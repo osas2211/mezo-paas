@@ -120,7 +120,7 @@ const LETTERS: Record<string, number[][]> = {
   ],
 }
 
-const WORD = "Mezo Deploy"
+const WORD = "Mezo Host"
 const LETTER_GAP = 2 // tight gap
 const ROWS = 11
 
@@ -202,7 +202,7 @@ export default function HeroPixelText() {
           width: "min(95%, 1100px)",
           aspectRatio: `${totalCols} / ${ROWS}`,
         }}
-        aria-label="Mezo Deploy pixel art text"
+        aria-label="Mezo Host pixel art text"
         role="img"
         className="2xl:scale-125"
       >

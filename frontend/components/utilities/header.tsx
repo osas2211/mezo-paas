@@ -10,7 +10,7 @@ export default function Header() {
         <div className="absolute top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] w-full h-px bg-white/10"></div>
 
         <div className="flex items-center gap-2 ">
-          <h1 className="bg-dark relative font-thin text-lg">Mezo deploy</h1>
+          <h1 className="bg-dark relative font-thin text-lg">Mezo Host</h1>
         </div>
         <div className="flex items-center gap-2 text-sm px-4 py-2 border border-white/10 bg-dark! relative">
           <div className="flex items-center gap-3">
