@@ -19,7 +19,7 @@ export function generateDockerfile(projectPath: string, envVars: Record<string, 
             FROM node:20-alpine
             WORKDIR /app
             COPY package*.json ./
-            RUN npm install
+            RUN npm install --legacy-peer-deps --no-audit --no-fund || npm install --force --no-audit --no-fund
             COPY . .
             ${argLines}
             RUN npm run build --if-present
