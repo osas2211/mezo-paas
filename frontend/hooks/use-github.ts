@@ -1,5 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { getGithubRepos, getGithubUser, importRepo, installGithubApp, uninstallGithubApp } from "@/services/github.service"
+import {
+  getGithubRepos,
+  getGithubUser,
+  importRepo,
+  installGithubApp,
+  uninstallGithubApp,
+} from "@/services/github.service"
 import { useToastify } from "./use-toastify"
 
 export const useInstallGithubApp = () => {
@@ -13,17 +19,19 @@ export const useInstallGithubApp = () => {
       successToast("Github App installation initiated", "bottom-right")
     },
     onError: (error: any) => {
-      errorToast(error?.response?.data?.message || "Something went wrong", "bottom-right")
+      errorToast(
+        error?.response?.data?.message || "Something went wrong",
+        "bottom-right",
+      )
     },
   })
-
-
 }
 
 export const useGetGithubRepos = (search?: string, limit?: number) => {
   return useQuery({
     queryKey: ["github-repos", search, limit],
     queryFn: () => getGithubRepos(search, limit),
+    retry: 1,
   })
 }
 
@@ -50,7 +58,10 @@ export const useUninstallGithubApp = () => {
       successToast("Github App uninstalled successfully", "bottom-right")
     },
     onError: (error: any) => {
-      errorToast(error?.response?.data?.message || "Something went wrong", "bottom-right")
+      errorToast(
+        error?.response?.data?.message || "Something went wrong",
+        "bottom-right",
+      )
     },
   })
 }
@@ -66,7 +77,10 @@ export const useImportRepo = () => {
       successToast("Repo imported successfully", "bottom-right")
     },
     onError: (error: any) => {
-      errorToast(error?.response?.data?.message || "Something went wrong", "bottom-right")
+      errorToast(
+        error?.response?.data?.message || "Something went wrong",
+        "bottom-right",
+      )
     },
   })
 }
