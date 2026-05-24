@@ -1,90 +1,114 @@
-import { Injectable, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common'
-import { firstValueFrom } from 'rxjs'
-import { HttpService } from '@nestjs/axios'
-import { GithubRepoDto } from './dto/github.dto'
-import { PrismaService } from 'src/prisma/prisma.service'
-import { UploadService } from 'src/upload/upload.service'
-import { App as OctokitApp } from 'octokit'
-import { ConfigService } from '@nestjs/config'
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { firstValueFrom } from 'rxjs';
+import { HttpService } from '@nestjs/axios';
+import { GithubRepoDto } from './dto/github.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { UploadService } from 'src/upload/upload.service';
+import { App as OctokitApp } from 'octokit';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class GithubService {
-  private readonly logger = new Logger(GithubService.name)
-  private readonly githubApp: OctokitApp
+  private readonly logger = new Logger(GithubService.name);
+  private readonly githubApp: OctokitApp;
 
-  constructor(private readonly httpService: HttpService,
+  constructor(
+    private readonly httpService: HttpService,
     private readonly prismaService: PrismaService,
     private readonly uploadService: UploadService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
   ) {
-    const appId = this.configService.get<string>('GITHUB_APP_ID')
-    const privateKey = this.configService.get<string>('GITHUB_PRIVATE_KEY')?.replace(/\\n/g, '\n')
+    const appId = this.configService.get<string>('GITHUB_APP_ID');
+    const privateKey = this.configService
+      .get<string>('GITHUB_PRIVATE_KEY')
+      ?.replace(/\\n/g, '\n');
 
     if (!appId || !privateKey) {
-      throw new Error('GitHub App credentials are not fully configured in the environment.')
+      throw new Error(
+        'GitHub App credentials are not fully configured in the environment.',
+      );
     }
 
     this.githubApp = new OctokitApp({
       appId,
       privateKey,
-    })
+    });
   }
 
   async fetchInstallationRepos(
     installationId: string,
     access_Token: string,
     search?: string,
-    limit?: number
+    limit?: number,
+    owner?: string,
   ): Promise<GithubRepoDto[]> {
+    // const url = `https://api.github.com/users/${owner}/repos?sort=updated&direction=asc&per_page=100&page=2`;
     try {
-      const reposResponse = await firstValueFrom(
-        this.httpService.get(
-          `https://api.github.com/user/installations/${installationId}/repositories?per_page=${100}&page=2`,
-          {
-            headers: {
-              Authorization: `token ${access_Token}`,
-              Accept: 'application/vnd.github.v3+json',
+      const getRepo = async (
+        page: number,
+      ): Promise<{ repositories: GithubRepoDto[]; total_count: number }> => {
+        const reposResponse = await firstValueFrom(
+          this.httpService.get(
+            `https://api.github.com/user/installations/${installationId}/repositories?per_page=${100}&page=${page}`,
+            // url,
+            {
+              headers: {
+                Authorization: `token ${access_Token}`,
+                Accept: 'application/vnd.github.v3+json',
+              },
             },
-          },
-        ),
-      )
+          ),
+        );
+        return reposResponse.data;
+      };
+      const { total_count } = await getRepo(1);
+      const { repositories } = await getRepo(Math.ceil(total_count / 100));
 
-      let repos: GithubRepoDto[] = reposResponse.data.repositories.reverse()
+      let repos: GithubRepoDto[] = repositories.reverse();
 
       if (search) {
-        const lowerSearch = search.toLowerCase()
-        repos = repos.filter(repo => repo.name.toLowerCase().includes(lowerSearch))
+        const lowerSearch = search.toLowerCase();
+        repos = repos.filter((repo) =>
+          repo.name.toLowerCase().includes(lowerSearch),
+        );
       }
 
       if (limit) {
-        repos = repos.slice(0, limit)
+        repos = repos.slice(0, limit);
       }
 
-      return repos
+      return repos;
     } catch (error) {
-      this.logger.error('GitHub API Error', error.response?.data || error.message)
-      throw new UnauthorizedException('Could not connect to GitHub')
+      this.logger.error(
+        'GitHub API Error',
+        error.response?.data || error.message,
+      );
+      throw new UnauthorizedException('Could not connect to GitHub');
     }
-
   }
 
   async getGithubUser(token: string): Promise<any> {
     try {
       const reposResponse = await firstValueFrom(
-        this.httpService.get(
-          `https://api.github.com/user`,
-          {
-            headers: {
-              Authorization: `token ${token}`,
-              Accept: 'application/vnd.github.v3+json',
-            },
+        this.httpService.get(`https://api.github.com/user`, {
+          headers: {
+            Authorization: `token ${token}`,
+            Accept: 'application/vnd.github.v3+json',
           },
-        ),
-      )
-      return reposResponse.data
+        }),
+      );
+      return reposResponse.data;
     } catch (error) {
-      this.logger.error('GitHub API Error', error.response?.data || error.message)
-      throw new UnauthorizedException('Could not connect to GitHub')
+      this.logger.error(
+        'GitHub API Error',
+        error.response?.data || error.message,
+      );
+      throw new UnauthorizedException('Could not connect to GitHub');
     }
   }
 
@@ -97,13 +121,16 @@ export class GithubService {
         data: {
           githubAccessToken: null,
           githubInstallationId: null,
-          githubUsername: null
+          githubUsername: null,
         },
-      })
-      return { success: true, message: 'GitHub app uninstalled successfully' }
+      });
+      return { success: true, message: 'GitHub app uninstalled successfully' };
     } catch (error) {
-      this.logger.error('GitHub API Error', error.response?.data || error.message)
-      throw new UnauthorizedException('Could not connect to GitHub')
+      this.logger.error(
+        'GitHub API Error',
+        error.response?.data || error.message,
+      );
+      throw new UnauthorizedException('Could not connect to GitHub');
     }
   }
 
@@ -116,12 +143,18 @@ export class GithubService {
         githubAccessToken: true,
         githubInstallationId: true,
         githubUsername: true,
-      }
-    })
-    if (!userData?.githubAccessToken || !userData?.githubInstallationId || !userData?.githubUsername) {
-      throw new UnauthorizedException('You are not authorized to perform this action')
+      },
+    });
+    if (
+      !userData?.githubAccessToken ||
+      !userData?.githubInstallationId ||
+      !userData?.githubUsername
+    ) {
+      throw new UnauthorizedException(
+        'You are not authorized to perform this action',
+      );
     }
-    const token = userData?.githubAccessToken
+    const token = userData?.githubAccessToken;
     try {
       const response = await firstValueFrom(
         this.httpService.get(
@@ -133,16 +166,33 @@ export class GithubService {
             },
           },
         ),
-      )
-      return response.data as GithubRepoDto
+      );
+      return response.data as GithubRepoDto;
     } catch (error) {
-      this.logger.error('GitHub API Error', error.response?.data || error.message)
-      throw new UnauthorizedException('Could not connect to GitHub')
+      this.logger.error(
+        'GitHub API Error',
+        error.response?.data || error.message,
+      );
+      throw new UnauthorizedException('Could not connect to GitHub');
     }
   }
 
-  async importRepo(repoName: string, branch: string, accessToken: string, githubUsername: string, projectId: string, encryptedEnvironmentVariables?: string, uniqueProjectName?: boolean) {
-    const cloneUrl = `https://x-access-token:${accessToken}@github.com/${githubUsername}/${repoName}.git`
-    return await this.uploadService.uploadRepo(cloneUrl, branch, projectId, encryptedEnvironmentVariables, uniqueProjectName)
+  async importRepo(
+    repoName: string,
+    branch: string,
+    accessToken: string,
+    githubUsername: string,
+    projectId: string,
+    encryptedEnvironmentVariables?: string,
+    uniqueProjectName?: boolean,
+  ) {
+    const cloneUrl = `https://x-access-token:${accessToken}@github.com/${githubUsername}/${repoName}.git`;
+    return await this.uploadService.uploadRepo(
+      cloneUrl,
+      branch,
+      projectId,
+      encryptedEnvironmentVariables,
+      uniqueProjectName,
+    );
   }
 }
