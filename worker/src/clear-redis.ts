@@ -4,7 +4,6 @@ import "dotenv/config";
 const redisUrl = process.env.REDIS_URL || "";
 const isProduction = process.env.NODE_ENV === "production";
 
-// 1. Queue Listener Client
 const client = isProduction
   ? createCluster({
       rootNodes: [{ url: redisUrl }],
@@ -15,14 +14,30 @@ const client = isProduction
 async function run() {
   await client.connect();
   console.log("Connected to Redis...");
+
   const allKeys = await client.hKeys("routing");
   console.log(allKeys);
 
-  // The nuclear option: Wipes every single key in the database
-  await client.flushAll();
-  console.log(allKeys);
+  if (isProduction) {
+    try {
+      const masters = client.masters;
+      console.log(`Found ${masters.length} master nodes. Arming warheads...`);
 
-  console.log("BOOM! Redis has been completely reset.");
+      for (const master of masters) {
+        await master.client.flushAll();
+        console.log(`- Dropped bomb on node: ${master.id}`);
+      }
+
+      console.log("BOOM! The entire cluster has been completely reset.");
+    } catch (error) {
+      console.error("Failed to nuke cluster:", error);
+    }
+  } else {
+    await client.flushAll();
+
+    console.log("BOOM! Redis has been completely reset.");
+  }
+
   await client.quit();
 }
 
