@@ -100,39 +100,37 @@ export class ProjectService {
 
     const nameInRedis = await redisClient.hGet('routing', repoName);
 
-    const isUniqueName = projectWithName
+    const isUniqueName = nameInRedis
       ? false
-      : nameInRedis
+      : repoName === 'app'
         ? false
-        : repoName === 'app'
+        : repoName === 'blog'
           ? false
-          : repoName === 'blog'
+          : repoName === 'docs'
             ? false
-            : repoName === 'docs'
+            : repoName === 'dashboard'
               ? false
-              : repoName === 'dashboard'
+              : repoName === 'mezo'
                 ? false
-                : repoName === 'mezo'
+                : repoName === 'portal'
                   ? false
-                  : repoName === 'portal'
+                  : repoName === 'landing'
                     ? false
-                    : repoName === 'landing'
+                    : repoName === 'wallet'
                       ? false
-                      : repoName === 'wallet'
+                      : repoName === 'api'
                         ? false
-                        : repoName === 'api'
+                        : repoName === 'redis'
                           ? false
-                          : repoName === 'redis'
+                          : repoName === 'worker'
                             ? false
-                            : repoName === 'worker'
+                            : repoName === 'www'
                               ? false
-                              : repoName === 'www'
+                              : repoName === 'gateway'
                                 ? false
-                                : repoName === 'gateway'
+                                : repoName === 'infra'
                                   ? false
-                                  : repoName === 'infra'
-                                    ? false
-                                    : true;
+                                  : true;
 
     // const dailyCreditCost = analysis.framework === "node" || analysis.framework === "nestjs" ? "10" : "5"
     const project = await this.prismaService.project.create({
