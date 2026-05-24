@@ -55,6 +55,19 @@ export class ProjectService {
     userToken: string,
     environmentVariables: Record<string, string> = {},
   ) {
+    const redisClient = this.isProduction
+      ? createCluster({
+          rootNodes: [{ url: this.redisUrl }],
+          defaults: {
+            socket: {
+              tls: this.redisUrl.startsWith('rediss'),
+            },
+          },
+        })
+      : createClient({
+          url: this.redisUrl,
+        });
+    await redisClient.connect();
     const githubRepo = await this.githubService.fetchSingleRepoDatails(
       userId,
       repoName,
@@ -85,37 +98,41 @@ export class ProjectService {
       },
     });
 
+    const nameInRedis = await redisClient.hGet('routing', repoName);
+
     const isUniqueName = projectWithName
       ? false
-      : repoName === 'app'
+      : nameInRedis
         ? false
-        : repoName === 'blog'
+        : repoName === 'app'
           ? false
-          : repoName === 'docs'
+          : repoName === 'blog'
             ? false
-            : repoName === 'dashboard'
+            : repoName === 'docs'
               ? false
-              : repoName === 'mezo'
+              : repoName === 'dashboard'
                 ? false
-                : repoName === 'portal'
+                : repoName === 'mezo'
                   ? false
-                  : repoName === 'landing'
+                  : repoName === 'portal'
                     ? false
-                    : repoName === 'wallet'
+                    : repoName === 'landing'
                       ? false
-                      : repoName === 'api'
+                      : repoName === 'wallet'
                         ? false
-                        : repoName === 'redis'
+                        : repoName === 'api'
                           ? false
-                          : repoName === 'worker'
+                          : repoName === 'redis'
                             ? false
-                            : repoName === 'www'
+                            : repoName === 'worker'
                               ? false
-                              : repoName === 'gateway'
+                              : repoName === 'www'
                                 ? false
-                                : repoName === 'infra'
+                                : repoName === 'gateway'
                                   ? false
-                                  : true;
+                                  : repoName === 'infra'
+                                    ? false
+                                    : true;
 
     // const dailyCreditCost = analysis.framework === "node" || analysis.framework === "nestjs" ? "10" : "5"
     const project = await this.prismaService.project.create({
