@@ -396,6 +396,7 @@ export class ProjectService {
         data: {
           status: status,
           deploymentFinishedAt: new Date().toISOString(),
+          buildLogs: logs || '',
         },
       });
     }
