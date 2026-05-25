@@ -1,8 +1,8 @@
 export const CREDIT_PACKAGES = [
-    { label: "Starter", amount: "0.001", credits: "50", popular: false },
-    { label: "Builder", amount: "0.005", credits: "250", popular: true },
-    { label: "Pro", amount: "0.01", credits: "500", popular: false },
-    { label: "Scale", amount: "0.05", credits: "2,500", popular: false },
-]
+  { label: "Starter", amount: "5", credits: `${5 * 135}`, popular: false },
+  { label: "Builder", amount: "25", credits: `${25 * 135}`, popular: true },
+  { label: "Pro", amount: "50", credits: `${50 * 135}`, popular: false },
+  { label: "Scale", amount: "250", credits: `${250 * 135}`, popular: false },
+];
 
-export type TopUpStep = "input" | "approving" | "topup" | "success"
+export type TopUpStep = "input" | "approving" | "topup" | "success";

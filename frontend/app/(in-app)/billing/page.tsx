@@ -32,10 +32,9 @@ const BillingPage = () => {
         />
 
         <InfoCard
-          title="Monthly costs"
-          subtitle="0 total services"
-          icon={<Package className="text-primary" size={20} />}
-          value={"$0.00"}
+          title="Staked Balance"
+subtitle={`~${convertCreditsToUSD(data?.user?.wallet?.stakedBalance ?? "")} billable credits in MUSD`}          icon={<Package className="text-primary" size={20} />}
+          value={`${Number(data?.user?.wallet?.stakedBalance).toFixed(2)} MHCredit`}
         />
 
         <InfoCard

@@ -22,7 +22,7 @@ export function SuccessView({ amount, title, message, onDone }: SuccessViewProps
                     {message || (
                         <>
                             You have successfully locked{" "}
-                            <span className="text-primary font-semibold">{amount} mBTC</span>{" "}
+                            <span className="text-primary font-semibold">{amount} MUSD</span>{" "}
                             as collateral.
                         </>
                     )}

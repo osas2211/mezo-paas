@@ -41,7 +41,7 @@ export function InputView({
                         Token Balance
                     </p>
                     <p className="text-white font-semibold text-base font-mono">
-                        {formattedBalance} mBTC
+                        {formattedBalance} MUSD
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -84,7 +84,7 @@ export function InputView({
                                 {pkg.label}
                             </p>
                             <p className="text-white/80 text-xs font-mono">
-                                {pkg.amount} mBTC
+                                {pkg.amount} MUSD
                             </p>
                             <p className="text-white/40 text-[10px] mt-1">
                                 ~{pkg.credits} credits
@@ -117,7 +117,7 @@ export function InputView({
                             }}
                             className="w-full! h-[45px] flex items-center bg-white/5 border-white/10 text-white! rounded-lg hover:border-primary/50 focus:border-primary/50! transition-all"
                             suffix={
-                                <span className="text-white/30 text-xs font-mono">mBTC</span>
+                                <span className="text-white/30 text-xs font-mono">MUSD</span>
                             }
                         />
                     </Form.Item>
@@ -129,7 +129,7 @@ export function InputView({
                 <Zap className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                 <div>
                     <span className="font-semibold text-primary">
-                        {amount} mBTC
+                        {amount} MUSD
                     </span>{" "}
                     will be converted to compute credits. Credits are used automatically
                     for hosting and deployments.
@@ -155,7 +155,7 @@ export function InputView({
                 className="w-full py-3.5 text-sm font-semibold bg-primary text-dark hover:bg-primary/90 rounded-lg cursor-pointer transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
             >
                 <Zap className="h-4 w-4" />
-                <span>Purchase {amount} mBTC in Credits</span>
+                <span>Purchase {amount} MUSD in Credits</span>
                 <ArrowRight className="h-4 w-4" />
             </button>
             <button

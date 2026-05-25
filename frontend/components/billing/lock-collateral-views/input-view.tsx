@@ -38,7 +38,7 @@ export function InputView({
                         Token Balance
                     </p>
                     <p className="text-white font-semibold text-base font-mono">
-                        {formattedBalance} mBTC
+                        {formattedBalance} MUSD
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -73,7 +73,7 @@ export function InputView({
                             }}
                             className="w-full! h-[45px] flex items-center bg-white/5 border-white/10 text-white! rounded-lg hover:border-primary/50 focus:border-primary/50! transition-all"
                             suffix={
-                                <span className="text-white/30 text-xs font-mono">mBTC</span>
+                                <span className="text-white/30 text-xs font-mono">MUSD</span>
                             }
                         />
                     </Form.Item>
@@ -101,7 +101,7 @@ export function InputView({
                 <Lock className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                 <div>
                     <span className="font-semibold text-primary">
-                        {amount || "0"} mBTC
+                        {amount || "0"} MUSD
                     </span>{" "}
                     will be locked as collateral. You will receive staked compute capacity permanently while locked.
                 </div>
@@ -124,7 +124,7 @@ export function InputView({
                 className="w-full py-3.5 text-sm font-semibold bg-primary text-dark hover:bg-primary/90 rounded-lg cursor-pointer transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
             >
                 <Lock className="h-4 w-4" />
-                <span>Lock {amount || "0"} mBTC</span>
+                <span>Lock {amount || "0"} MUSD</span>
                 <ArrowRight className="h-4 w-4" />
             </button>
             <button

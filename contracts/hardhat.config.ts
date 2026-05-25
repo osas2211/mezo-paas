@@ -1,7 +1,7 @@
-import hardhatToolboxViemPlugin from "@nomicfoundation/hardhat-toolbox-viem"
-import { configVariable, defineConfig } from "hardhat/config"
-import hardhatEthers from "@nomicfoundation/hardhat-ethers"
-import "dotenv/config"
+import hardhatToolboxViemPlugin from "@nomicfoundation/hardhat-toolbox-viem";
+import { configVariable, defineConfig } from "hardhat/config";
+import hardhatEthers from "@nomicfoundation/hardhat-ethers";
+import "dotenv/config";
 
 export default defineConfig({
   plugins: [hardhatEthers, hardhatToolboxViemPlugin],
@@ -30,18 +30,15 @@ export default defineConfig({
       type: "edr-simulated",
       chainType: "op",
     },
-    sepolia: {
-      type: "http",
-      chainType: "l1",
-      url: configVariable("SEPOLIA_RPC_URL"),
-      accounts: [configVariable("SEPOLIA_PRIVATE_KEY")],
-    },
     mezoTestnet: {
       type: "http",
       chainType: "l1",
       chainId: 31611,
       url: configVariable("MEZO_RPC_URL"),
-      accounts: [configVariable("MEZO_PRIVATE_KEY"), configVariable("MEZO_PRIVATE_KEY")],
+      accounts: [
+        configVariable("MEZO_PRIVATE_KEY"),
+        configVariable("MEZO_PRIVATE_KEY"),
+      ],
     },
   },
-})
+});

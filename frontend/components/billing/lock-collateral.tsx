@@ -6,6 +6,7 @@ import { useAccount, useWriteContract, useReadContract, useDisconnect } from "wa
 import { MezoBillingABI } from "@/abis/BillingABI"
 import { BILLING_CONTRACT_ADDRESS, TOKEN_ADDRESS } from "@/lib/constants"
 import { TokenABI } from "@/abis/TokenABI"
+import {MUSDTokenABI} from "@/abis/MUSDTokenABI"
 import { parseUnits, formatUnits } from "ethers"
 import { useToastify } from "@/hooks/use-toastify"
 import { Lock } from "lucide-react"
@@ -52,7 +53,7 @@ export function LockCollateralButton() {
     // Read token balance for the connected wallet
     const { data: tokenBalance } = useReadContract({
         address: TOKEN_ADDRESS as `0x${string}`,
-        abi: TokenABI.abi,
+        abi: MUSDTokenABI.abi,
         functionName: "balanceOf",
         args: address ? [address] : undefined,
         query: { enabled: !!address },
@@ -88,7 +89,7 @@ export function LockCollateralButton() {
             // Step 1: Approve token spending
             await writeApprove({
                 address: TOKEN_ADDRESS as `0x${string}`,
-                abi: TokenABI.abi,
+                abi: MUSDTokenABI.abi,
                 functionName: "approve",
                 args: [BILLING_CONTRACT_ADDRESS, amountInWei],
             })

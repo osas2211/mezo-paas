@@ -27,7 +27,7 @@ export function ActiveVaultView({
                         Active Vault Balance
                     </p>
                     <p className="text-primary font-bold text-xl font-mono">
-                        {lockedAmount} mBTC
+                        {lockedAmount} MUSD
                     </p>
                 </div>
                 <div className="h-10 w-10 bg-primary/20 rounded-full flex items-center justify-center">

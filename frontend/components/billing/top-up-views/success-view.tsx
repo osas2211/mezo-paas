@@ -18,7 +18,7 @@ export function SuccessView({ amount, onDone }: SuccessViewProps) {
                 </h3>
                 <p className="text-white/50 text-sm max-w-[300px]">
                     Your account has been topped up with{" "}
-                    <span className="text-primary font-semibold">{amount} mBTC</span>{" "}
+                    <span className="text-primary font-semibold">{amount} MUSD</span>{" "}
                     worth of compute credits.
                 </p>
             </div>

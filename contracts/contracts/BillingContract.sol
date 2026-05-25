@@ -29,6 +29,8 @@ contract MezoHostBilling is ReentrancyGuard, Ownable {
     event CollateralLocked(address indexed whale, uint256 amount, uint256 unlockTime);
     event CollateralWithdrawn(address indexed whale, uint256 amount, bool wasSlashed);
     event TreasuryUpdated(address newTreasury);
+    event YieldHarvested(address indexed developer, uint256 yieldAmount);
+
 
     // Pass the Mezo MockBTC address and your Treasury Wallet on deployment
     constructor(address _token, address _treasury) Ownable(msg.sender) {
@@ -129,5 +131,13 @@ contract MezoHostBilling is ReentrancyGuard, Ownable {
         require(_newTreasury != address(0), "Invalid address");
         treasury = _newTreasury;
         emit TreasuryUpdated(_newTreasury);
+    }
+
+    function harvestYield(address developer, uint256 yieldAmount) external {
+        require(msg.sender == treasury, "Only platform can harvest");
+        
+        // In a mainnet production environment, this would integrate with Mezo Earn 
+        // to route real DeFi yield (veBTC/MUSD) into the platform treasury.
+        emit YieldHarvested(developer, yieldAmount);
     }
 }
