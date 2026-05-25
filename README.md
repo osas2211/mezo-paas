@@ -5,8 +5,9 @@ A decentralized deployment platform (PaaS) built on the **Mezo Chain**, enabling
 ## 🚀 Overview
 
 The platform caters to two distinct types of users:
+
 - **Pro Developers**: Lock funds in a smart contract vault. The yield generated from these staked funds pays for their application hosting, effectively allowing them to run services for free.
-- **Regular Developers**: Deposit tokens that are converted to MHCredits (1 credit = $0.001). These credits are consumed daily as their applications run. If credits run out, their services are automatically suspended.
+- **Regular Developers**: Deposit tokens that are converted to MHCredits (1 credit = $0.0074). These credits are consumed daily as their applications run. If credits run out, their services are automatically suspended.
 
 ## 🛠️ Tech Stack
 
@@ -30,7 +31,9 @@ The platform operates through 5 core components working in tandem:
 ## 📊 System Workflows
 
 ### 1. Upload & Deploy Pipeline
+
 When a developer creates a project, the source code is securely fetched, stored, and sent to a background worker to be built into a container.
+
 ```mermaid
 sequenceDiagram
     participant U as Developer
@@ -59,7 +62,9 @@ sequenceDiagram
 ```
 
 ### 2. Request Handling (Dynamic Routing)
+
 Incoming traffic to the platform's wildcard domain is dynamically routed in real-time without needing an Nginx reload.
+
 ```mermaid
 flowchart LR
     Client([Client Browser])
@@ -74,7 +79,9 @@ flowchart LR
 ```
 
 ### 3. Billing & Suspension
+
 A decentralized financial engine powers the PaaS. If credits are exhausted, services are systematically suspended.
+
 ```mermaid
 sequenceDiagram
     participant SC as Smart Contracts
@@ -101,6 +108,7 @@ sequenceDiagram
 ## 🏁 Getting Started
 
 ### Prerequisites
+
 - Node.js (v20+)
 - pnpm
 - Docker
@@ -110,6 +118,7 @@ sequenceDiagram
 ### Installation
 
 1. **Clone the repository:**
+
    ```bash
    git clone https://github.com/osas2211/mezo-paas.git
    cd mezo-paas
@@ -117,6 +126,7 @@ sequenceDiagram
 
 2. **Install dependencies:**
    This project uses `pnpm` workspaces. Install dependencies from the root:
+
    ```bash
    pnpm install
    ```
@@ -132,4 +142,5 @@ sequenceDiagram
    - **Proxy**: `cd proxy && pnpm dev`
 
 ## 📄 License
+
 MIT
