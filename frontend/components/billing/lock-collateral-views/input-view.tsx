@@ -1,6 +1,8 @@
 import React from "react"
 import { Form, InputNumber, Select } from "antd"
-import { Shield, ArrowRight, Coins, Lock } from "lucide-react"
+import { Shield, ArrowRight, Coins, Lock, TrendingUp } from "lucide-react"
+import { LOCK_DURATION_OPTIONS } from "./constants"
+import { ANNUAL_YIELD_BPS } from "@/lib/constants"
 
 interface InputViewProps {
     formattedBalance: string
@@ -86,15 +88,43 @@ export function InputView({
                             value={duration}
                             onChange={setDuration}
                             className="w-full! h-[45px]"
-                            options={[
-                                { value: 2592000, label: "30 Days" },
-                                { value: 7776000, label: "90 Days" },
-                                { value: 31536000, label: "365 Days" },
-                            ]}
+                            options={LOCK_DURATION_OPTIONS.map(opt => ({
+                                value: opt.value,
+                                label: `${opt.label} - ${opt.description}`,
+                            }))}
                         />
                     </Form.Item>
                 </Form>
             </div>
+
+            {/* Yield Info */}
+            {amount && parseFloat(amount) > 0 && (
+                <div className="bg-emerald-500/10 border border-emerald-500/20 p-3 rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                        <TrendingUp className="h-4 w-4 text-emerald-400" />
+                        <span className="text-emerald-400 text-xs font-semibold uppercase tracking-wider">
+                            Estimated Yield
+                        </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 text-xs">
+                        <div>
+                            <p className="text-emerald-400/60">Daily Yield</p>
+                            <p className="text-emerald-400 font-mono font-semibold">
+                                {(parseFloat(amount) * (ANNUAL_YIELD_BPS / 10000) / 365).toFixed(6)} MUSD
+                            </p>
+                        </div>
+                        <div>
+                            <p className="text-emerald-400/60">Lock Period Yield</p>
+                            <p className="text-emerald-400 font-mono font-semibold">
+                                {(parseFloat(amount) * (ANNUAL_YIELD_BPS / 10000) * (duration / (365 * 24 * 60 * 60))).toFixed(4)} MUSD
+                            </p>
+                        </div>
+                    </div>
+                    <p className="text-emerald-400/50 text-[10px] mt-2">
+                        Based on {ANNUAL_YIELD_BPS / 100}% APY - actual returns may vary
+                    </p>
+                </div>
+            )}
 
             {/* Conversion Info */}
             <div className="bg-primary/5 border border-primary/10 p-3 rounded-lg flex gap-3 text-xs text-primary/80 leading-normal">
@@ -103,7 +133,7 @@ export function InputView({
                     <span className="font-semibold text-primary">
                         {amount || "0"} MUSD
                     </span>{" "}
-                    will be locked as collateral. You will receive staked compute capacity permanently while locked.
+                    will be locked as collateral. Your locked funds generate yield to cover compute costs.
                 </div>
             </div>
 

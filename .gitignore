@@ -25,6 +25,9 @@ node_modules
 .DS_Store
 *.pem
 
+# deployment config (contains EC2 hosts)
+scripts/deploy.config
+
 # debug
 npm-debug.log*
 yarn-debug.log*
@@ -40,3 +43,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+COST_ANALYSIS_AND_FEEDBACK.md
+YIELD_SOLUTION_PLAN.md

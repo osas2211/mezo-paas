@@ -1,0 +1,27 @@
+# Mezo PaaS Deployment Configuration
+# Copy this file to deploy.config and fill in your EC2 hosts
+#
+# Get your EC2 Public DNS from:
+#   AWS Console → EC2 → Instances → Select Instance → Public IPv4 DNS
+#
+# Example format:
+#   ec2-12-345-678-90.us-east-1.compute.amazonaws.com
+#   or just the IP: 12.345.678.90
+
+# Backend EC2 Host
+BACKEND_HOST=""
+
+# Worker EC2 Host
+WORKER_HOST=""
+
+# Proxy EC2 Host
+PROXY_HOST=""
+
+# SSH User (usually 'ubuntu' for Ubuntu AMIs, 'ec2-user' for Amazon Linux)
+SSH_USER="ubuntu"
+
+# Remote project directory on EC2
+REMOTE_DIR="~/mezo-deploy"
+
+# Git branch to deploy
+GIT_BRANCH="master"

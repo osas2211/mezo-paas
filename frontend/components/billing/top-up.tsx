@@ -3,10 +3,9 @@
 import React, { useState } from "react"
 import { Modal, Form } from "antd"
 import { useAccount, useWriteContract, useReadContract, useDisconnect } from "wagmi"
-import { MezoBillingABI } from "@/abis/BillingABI"
-import { BILLING_CONTRACT_ADDRESS, TOKEN_ADDRESS } from "@/lib/constants"
-import { TokenABI } from "@/abis/TokenABI"
-import {MUSDTokenABI} from "@/abis/MUSDTokenABI"
+import { MezoBillingV2ABI } from "@/abis/BillingV2ABI"
+import { BILLING_CONTRACT_V2_ADDRESS, TOKEN_ADDRESS } from "@/lib/constants"
+import { MUSDTokenABI } from "@/abis/MUSDTokenABI"
 import { parseUnits, formatUnits } from "ethers"
 import { useToastify } from "@/hooks/use-toastify"
 import { Zap } from "lucide-react"
@@ -79,20 +78,20 @@ export function TopUpButton() {
             const amountInWei = parseUnits(amount, 18)
             setStep("approving")
 
-            // Step 1: Approve token spending
+            // Step 1: Approve token spending for V2 contract
             await writeApprove({
                 address: TOKEN_ADDRESS as `0x${string}`,
                 abi: MUSDTokenABI.abi,
                 functionName: "approve",
-                args: [BILLING_CONTRACT_ADDRESS, amountInWei],
+                args: [BILLING_CONTRACT_V2_ADDRESS, amountInWei],
             })
 
             setStep("topup")
 
-            // Step 2: Execute top-up on the billing contract
+            // Step 2: Execute top-up on the V2 billing contract
             await writeTopUp({
-                address: BILLING_CONTRACT_ADDRESS as `0x${string}`,
-                abi: MezoBillingABI.abi,
+                address: BILLING_CONTRACT_V2_ADDRESS as `0x${string}`,
+                abi: MezoBillingV2ABI.abi,
                 functionName: "topUpAccount",
                 args: [userData?.user.wallet?.address, amountInWei],
             })
@@ -178,7 +177,7 @@ export function TopUpButton() {
                 {/* Footer hint */}
                 {isConnected && step === "input" && (
                     <p className="text-[11px] text-white/25 text-center mt-2 pb-2">
-                        Powered by MezoHost Billing Contract on Mezo Testnet
+                        Powered by MezoHost Billing V2 on Mezo Testnet
                     </p>
                 )}
             </Modal>

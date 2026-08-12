@@ -14,19 +14,20 @@ datasource db {
 }
 
 model User {
-  id                   String        @id @default(uuid())
+  id                   String         @id @default(uuid())
   name                 String
-  email                String        @unique
+  email                String         @unique
   password             String
-  createdAt            DateTime      @default(now())
-  updatedAt            DateTime      @updatedAt
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
   wallet               Wallet?
   githubAccessToken    String?
   githubInstallationId String?
   githubUsername       String?
   projects             Project[]
-  role                 Role          @default(REGULAR_DEVELOPER)
+  role                 Role           @default(REGULAR_DEVELOPER)
   transactions         Transaction[]
+  yieldRecords         YieldRecord[]
 }
 
 model Wallet {
@@ -152,4 +153,42 @@ model Transaction {
   title     String
   createdAt DateTime          @default(now())
   updatedAt DateTime          @updatedAt
+}
+
+model YieldRecord {
+  id              String   @id @default(uuid())
+  user            User     @relation(fields: [userId], references: [id])
+  userId          String
+
+  lockedAmount    String   // Amount locked at time of calculation
+  yieldEarned     String   // Yield in tokens
+  creditsAwarded  String   // Yield converted to credits
+  computeCharged  String   // Compute cost deducted
+  netCredits      String   // Net change in credits
+
+  periodStart     DateTime // Start of yield period
+  periodEnd       DateTime // End of yield period
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId, createdAt])
+}
+
+model TreasuryOperation {
+  id          String         @id @default(uuid())
+  type        TreasuryOpType
+  amount      String
+  txHash      String?        // On-chain transaction hash
+  yieldSource String?        // "mezo_staking", "aave", etc.
+  notes       String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+enum TreasuryOpType {
+  MOVE_TO_YIELD
+  RETURN_FROM_YIELD
+  HARVEST_YIELD
+  EMERGENCY_WITHDRAW
 }

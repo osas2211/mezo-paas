@@ -16,6 +16,7 @@ import { GithubModule } from './github/github.module'
 import { UploadModule } from './upload/upload.module'
 import { ProjectModule } from './project/project.module'
 import { BillingModule } from './billing/billing.module';
+import { YieldModule } from './yield/yield.module';
 import { ScheduleModule } from '@nestjs/schedule'
 import { BlockchainListenerService } from './blockchain-listener/blockchain-listener.service';
 import { LogsController } from './logs/logs.controller';
@@ -37,6 +38,7 @@ import { LogsController } from './logs/logs.controller';
     UploadModule,
     ProjectModule,
     BillingModule,
+    YieldModule,
   ],
   controllers: [AppController, LogsController],
   providers: [

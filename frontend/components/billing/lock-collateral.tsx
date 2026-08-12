@@ -3,10 +3,9 @@
 import React, { useState } from "react"
 import { Modal, Form } from "antd"
 import { useAccount, useWriteContract, useReadContract, useDisconnect } from "wagmi"
-import { MezoBillingABI } from "@/abis/BillingABI"
-import { BILLING_CONTRACT_ADDRESS, TOKEN_ADDRESS } from "@/lib/constants"
-import { TokenABI } from "@/abis/TokenABI"
-import {MUSDTokenABI} from "@/abis/MUSDTokenABI"
+import { MezoBillingV2ABI } from "@/abis/BillingV2ABI"
+import { BILLING_CONTRACT_V2_ADDRESS, TOKEN_ADDRESS, ANNUAL_YIELD_BPS } from "@/lib/constants"
+import { MUSDTokenABI } from "@/abis/MUSDTokenABI"
 import { parseUnits, formatUnits } from "ethers"
 import { useToastify } from "@/hooks/use-toastify"
 import { Lock } from "lucide-react"
@@ -19,6 +18,7 @@ import { InputView } from "./lock-collateral-views/input-view"
 import { ProcessingView } from "./lock-collateral-views/processing-view"
 import { SuccessView } from "./lock-collateral-views/success-view"
 import { ActiveVaultView } from "./lock-collateral-views/active-vault-view"
+import { WithdrawalQueuedView } from "./lock-collateral-views/withdrawal-queued-view"
 
 export function LockCollateralButton() {
     const [isModalOpen, setIsModalOpen] = useState(false)
@@ -36,11 +36,29 @@ export function LockCollateralButton() {
     const { data: userData } = useUser()
     const queryClient = useQueryClient()
 
-    // Read lock status for the connected wallet
+    // Read lock status for the connected wallet (V2 returns 4 values: isActive, amount, unlockTimestamp, lockTimestamp)
     const { data: lockStatus, refetch: refetchLockStatus } = useReadContract({
-        address: BILLING_CONTRACT_ADDRESS as `0x${string}`,
-        abi: MezoBillingABI.abi,
+        address: BILLING_CONTRACT_V2_ADDRESS as `0x${string}`,
+        abi: MezoBillingV2ABI.abi,
         functionName: "getLockStatus",
+        args: address ? [address] : undefined,
+        query: { enabled: !!address },
+    })
+
+    // Read yield stats for the connected wallet
+    const { data: yieldStats, refetch: refetchYieldStats } = useReadContract({
+        address: BILLING_CONTRACT_V2_ADDRESS as `0x${string}`,
+        abi: MezoBillingV2ABI.abi,
+        functionName: "getYieldStats",
+        args: address ? [address] : undefined,
+        query: { enabled: !!address },
+    })
+
+    // Read withdrawal request status
+    const { data: withdrawalRequest, refetch: refetchWithdrawalRequest } = useReadContract({
+        address: BILLING_CONTRACT_V2_ADDRESS as `0x${string}`,
+        abi: MezoBillingV2ABI.abi,
+        functionName: "getWithdrawalRequest",
         args: address ? [address] : undefined,
         query: { enabled: !!address },
     })
@@ -49,6 +67,16 @@ export function LockCollateralButton() {
     const lockedAmountWei = lockStatus ? (lockStatus as any)[1] : BigInt(0)
     const lockedAmount = parseFloat(formatUnits(lockedAmountWei, 18)).toFixed(4)
     const unlockTimestamp = lockStatus ? Number((lockStatus as any)[2]) : 0
+    const lockTimestamp = lockStatus ? Number((lockStatus as any)[3]) : 0
+
+    // Yield stats
+    const totalYieldCredited = yieldStats ? (yieldStats as any)[0] : BigInt(0)
+    const lastYieldCreditTime = yieldStats ? Number((yieldStats as any)[1]) : 0
+    const lockDurationRemaining = yieldStats ? Number((yieldStats as any)[3]) : 0
+
+    // Withdrawal request
+    const withdrawalPending = withdrawalRequest ? (withdrawalRequest as any)[2] : false
+    const withdrawalAmount = withdrawalRequest ? (withdrawalRequest as any)[0] : BigInt(0)
 
     // Read token balance for the connected wallet
     const { data: tokenBalance } = useReadContract({
@@ -65,7 +93,14 @@ export function LockCollateralButton() {
 
     const showModal = () => {
         setIsModalOpen(true)
-        setStep(isActiveVault ? "active" : "input")
+        // Check for pending withdrawal first
+        if (withdrawalPending) {
+            setStep("withdrawal_queued")
+        } else if (isActiveVault) {
+            setStep("active")
+        } else {
+            setStep("input")
+        }
         setAmount("")
         setDuration(2592000)
     }
@@ -73,7 +108,13 @@ export function LockCollateralButton() {
     const handleCancel = () => {
         if (isApproving || isLocking || step === "withdrawing") return
         setIsModalOpen(false)
-        setStep(isActiveVault ? "active" : "input")
+        if (withdrawalPending) {
+            setStep("withdrawal_queued")
+        } else if (isActiveVault) {
+            setStep("active")
+        } else {
+            setStep("input")
+        }
     }
 
     const handleLock = async () => {
@@ -86,20 +127,20 @@ export function LockCollateralButton() {
             const amountInWei = parseUnits(amount, 18)
             setStep("approving")
 
-            // Step 1: Approve token spending
+            // Step 1: Approve token spending for V2 contract
             await writeApprove({
                 address: TOKEN_ADDRESS as `0x${string}`,
                 abi: MUSDTokenABI.abi,
                 functionName: "approve",
-                args: [BILLING_CONTRACT_ADDRESS, amountInWei],
+                args: [BILLING_CONTRACT_V2_ADDRESS, amountInWei],
             })
 
             setStep("locking")
 
-            // Step 2: Execute lock on the billing contract
+            // Step 2: Execute lock on the V2 billing contract
             await writeLock({
-                address: BILLING_CONTRACT_ADDRESS as `0x${string}`,
-                abi: MezoBillingABI.abi,
+                address: BILLING_CONTRACT_V2_ADDRESS as `0x${string}`,
+                abi: MezoBillingV2ABI.abi,
                 functionName: "lockCollateral",
                 args: [userData?.user?.wallet?.address || address, amountInWei, duration],
             })
@@ -107,8 +148,9 @@ export function LockCollateralButton() {
             await queryClient.invalidateQueries({ queryKey: ["user"] })
             await queryClient.invalidateQueries({ queryKey: ["tx-history", address] })
             await refetchLockStatus()
+            await refetchYieldStats()
             setStep("success")
-            successToast("Collateral locked successfully!", "bottom-right")
+            successToast("Collateral locked successfully! Yield generation has started.", "bottom-right")
 
         } catch (error: any) {
             console.error("Lock collateral error:", error)
@@ -126,16 +168,26 @@ export function LockCollateralButton() {
         try {
             setStep("withdrawing")
             await writeWithdraw({
-                address: BILLING_CONTRACT_ADDRESS as `0x${string}`,
-                abi: MezoBillingABI.abi,
+                address: BILLING_CONTRACT_V2_ADDRESS as `0x${string}`,
+                abi: MezoBillingV2ABI.abi,
                 functionName: "withdrawCollateral",
                 args: [userData?.user?.wallet?.address]
             })
             await queryClient.invalidateQueries({ queryKey: ["user"] })
             await queryClient.invalidateQueries({ queryKey: ["tx-history", address] })
             await refetchLockStatus()
-            setStep("success_withdraw")
-            successToast("Collateral withdrawn successfully!", "bottom-right")
+            await refetchYieldStats()
+            await refetchWithdrawalRequest()
+
+            // Check if withdrawal was queued (funds are in treasury)
+            const updatedRequest = await refetchWithdrawalRequest()
+            if (updatedRequest?.data && (updatedRequest.data as any)[2]) {
+                setStep("withdrawal_queued")
+                successToast("Withdrawal queued! Funds will be available shortly.", "bottom-right")
+            } else {
+                setStep("success_withdraw")
+                successToast("Collateral withdrawn successfully!", "bottom-right")
+            }
         } catch (error: any) {
             console.error("Withdraw collateral error:", error)
             errorToast(
@@ -174,9 +226,21 @@ export function LockCollateralButton() {
                 <ActiveVaultView
                     lockedAmount={lockedAmount}
                     unlockTimestamp={unlockTimestamp}
+                    lockTimestamp={lockTimestamp}
+                    totalYieldCredited={formatUnits(totalYieldCredited, 18)}
+                    lastYieldCreditTime={lastYieldCreditTime}
+                    annualYieldBps={ANNUAL_YIELD_BPS}
                     isWithdrawing={isWithdrawing}
                     handleWithdraw={handleWithdraw}
                     handleDisconnect={handleDisconnect}
+                />
+            )
+        }
+        if (step === "withdrawal_queued") {
+            return (
+                <WithdrawalQueuedView
+                    amount={formatUnits(withdrawalAmount, 18)}
+                    onDone={handleCancel}
                 />
             )
         }
@@ -222,14 +286,14 @@ export function LockCollateralButton() {
                         backdropFilter: "blur(6px)",
                     },
                 }}
-                closable={step === "input" || step === "active" || step === "success" || step === "success_withdraw" || !isConnected}
+                closable={step === "input" || step === "active" || step === "success" || step === "success_withdraw" || step === "withdrawal_queued" || !isConnected}
             >
                 {renderModalContent()}
 
                 {/* Footer hint */}
                 {isConnected && step === "input" && (
                     <p className="text-[11px] text-white/25 text-center mt-2 pb-2">
-                        Powered by MezoHost Billing Contract on Mezo Testnet
+                        Powered by MezoHost Billing V2 with Yield Generation
                     </p>
                 )}
             </Modal>
