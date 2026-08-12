@@ -17,3 +17,7 @@ export const BILLING_CONTRACT_V2_ADDRESS =
 // Yield configuration
 export const ANNUAL_YIELD_BPS = 800; // 8% APY in basis points
 export const RESERVE_RATIO_BPS = 2000; // 20% reserve ratio
+
+// Credit conversion rates
+export const CREDITS_PER_MUSD = 135; // Regular top-up: 1 MUSD = 135 credits
+export const STAKED_CREDITS_PER_MUSD = 1350; // Locked collateral: 1 MUSD = 1350 credits (10x)

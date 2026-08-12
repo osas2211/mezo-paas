@@ -204,7 +204,7 @@ export class BlockchainListenerService implements OnModuleInit {
               create: {
                 amount: stakedCredits.toString(),
                 type: TransactionType.CREDIT,
-                action: TransactionAction.Transfer,
+                action: TransactionAction.Stake,
                 title: 'Staked capacity via collateral lock',
               },
             },
@@ -297,7 +297,7 @@ export class BlockchainListenerService implements OnModuleInit {
               create: {
                 amount: stakedCredits.toString(),
                 type: TransactionType.CREDIT,
-                action: TransactionAction.Transfer,
+                action: TransactionAction.Stake,
                 title: `Staked capacity via V2 collateral lock (${amountLocked.toFixed(4)} MUSD)`,
               },
             },
@@ -346,8 +346,8 @@ export class BlockchainListenerService implements OnModuleInit {
               create: {
                 amount: creditAmount.toString(),
                 type: TransactionType.CREDIT,
-                action: TransactionAction.Transfer,
-                title: `On-chain yield credit: ${creditAmount.toFixed(2)} credits`,
+                action: TransactionAction.Stake,
+                title: `Yield credit: ${creditAmount.toFixed(2)} credits`,
               },
             },
           },

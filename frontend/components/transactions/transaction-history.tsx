@@ -3,8 +3,8 @@ import React from "react"
 import { useGetTransactionHistory } from "@/hooks/use-user"
 import { LoadingOutlined } from "@ant-design/icons"
 import moment from "moment"
-import { TransactionType } from "@/types/user"
-import { convertCreditsToUSD } from "@/lib/convert-credit-to-usd"
+import { TransactionAction, TransactionType } from "@/types/user"
+import { convertCreditsToUSD, convertStakedCreditsToUSD } from "@/lib/convert-credit-to-usd"
 
 export const TransactionHistory = () => {
   const { data, isLoading } = useGetTransactionHistory()
@@ -70,7 +70,9 @@ export const TransactionHistory = () => {
                         {Number(transaction.amount).toFixed(2)} MHCredit
                       </p>
                       <p className="text-white/60 text-end">
-                        ~{convertCreditsToUSD(transaction.amount)}
+                        ~{transaction.action === TransactionAction.Stake
+                          ? convertStakedCreditsToUSD(transaction.amount)
+                          : convertCreditsToUSD(transaction.amount)}
                       </p>
                     </div>
                   </div>

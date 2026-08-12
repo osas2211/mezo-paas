@@ -140,6 +140,7 @@ enum TransactionAction {
   Deposit
   Withdraw
   Billing
+  Stake
 }
 
 model Transaction {

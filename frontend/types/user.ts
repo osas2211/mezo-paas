@@ -56,4 +56,5 @@ export enum TransactionAction {
   Deposit = "Deposit",
   Withdraw = "Withdraw",
   Billing = "Billing",
+  Stake = "Stake",
 }

@@ -11,7 +11,7 @@ import { TransferCredit } from "@/components/billing/transfer-credit"
 import { TopUpButton } from "@/components/billing/top-up"
 import { LockCollateralButton } from "@/components/billing/lock-collateral"
 import { TransactionHistory } from "@/components/transactions/transaction-history"
-import { convertCreditsToUSD } from "@/lib/convert-credit-to-usd"
+import { convertCreditsToUSD, convertStakedCreditsToUSD } from "@/lib/convert-credit-to-usd"
 import moment from "moment"
 
 const BillingPage = () => {
@@ -26,15 +26,16 @@ const BillingPage = () => {
       <div className="grid md:grid-cols-3 gap-4">
         <InfoCard
           title="Credit Balance"
-          subtitle={`~${convertCreditsToUSD(data?.user?.wallet?.creditBalance ?? "")} billable credits in MUSD`}
+          subtitle={`Worth ~${convertCreditsToUSD(data?.user?.wallet?.creditBalance ?? "")} USD`}
           icon={<CreditCard className="text-primary" size={20} />}
-          value={`${Number(data?.user?.wallet?.creditBalance).toFixed(2)} MHCredit`}
+          value={`${Number(data?.user?.wallet?.creditBalance || 0).toFixed(2)} MHCredit`}
         />
 
         <InfoCard
           title="Staked Balance"
-subtitle={`~${convertCreditsToUSD(data?.user?.wallet?.stakedBalance ?? "")} billable credits in MUSD`}          icon={<Package className="text-primary" size={20} />}
-          value={`${Number(data?.user?.wallet?.stakedBalance).toFixed(2)} MHCredit`}
+          subtitle={`Worth ~${convertStakedCreditsToUSD(data?.user?.wallet?.stakedBalance ?? "")} USD`}
+          icon={<Package className="text-primary" size={20} />}
+          value={`${Number(data?.user?.wallet?.stakedBalance || 0).toFixed(2)} MHCredit`}
         />
 
         <InfoCard
