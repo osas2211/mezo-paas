@@ -4,6 +4,7 @@ import { WalletService } from '../wallet/wallet.service';
 import {
   TransactionType,
   TransactionAction,
+  DeploymentStatus,
 } from '../../generated/prisma/enums';
 
 @Injectable()
@@ -124,5 +125,116 @@ export class UserService {
     });
 
     return { transactions, message: 'Transactions retrieved successfully' };
+  }
+
+  async getAdminAnalytics() {
+    const users = await this.prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+        wallet: {
+          select: {
+            address: true,
+            creditBalance: true,
+            stakedBalance: true,
+          },
+        },
+        projects: {
+          select: {
+            id: true,
+            name: true,
+            framework: true,
+            active: true,
+            dailyCreditCost: true,
+            creditUsedThisMonth: true,
+            createdAt: true,
+            deployment: {
+              select: {
+                status: true,
+                url: true,
+              },
+            },
+          },
+        },
+        _count: {
+          select: {
+            projects: true,
+            transactions: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    // Calculate summary stats
+    const totalUsers = users.length;
+    const proUsers = users.filter((u) => u.role === 'PRO_DEVELOPER').length;
+    const regularUsers = users.filter(
+      (u) => u.role === 'REGULAR_DEVELOPER',
+    ).length;
+
+    const totalProjects = users.reduce((acc, u) => acc + u._count.projects, 0);
+    const activeProjects = users.reduce(
+      (acc, u) => acc + u.projects.filter((p) => p.active).length,
+      0,
+    );
+
+    const totalCredits = users.reduce(
+      (acc, u) => acc + Number(u.wallet?.creditBalance || 0),
+      0,
+    );
+    const totalStaked = users.reduce(
+      (acc, u) => acc + Number(u.wallet?.stakedBalance || 0),
+      0,
+    );
+
+    // Format user data for response
+    const formattedUsers = users.map((user) => ({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      createdAt: user.createdAt,
+      wallet: user.wallet
+        ? {
+            address: user.wallet.address,
+            creditBalance: user.wallet.creditBalance,
+            stakedBalance: user.wallet.stakedBalance,
+          }
+        : null,
+      projectCount: user._count.projects,
+      transactionCount: user._count.transactions,
+      activeProjectCount: user.projects.filter((p) => p.active).length,
+      projects: user.projects.map((p) => ({
+        id: p.id,
+        name: p.name,
+        framework: p.framework,
+        active: p.active,
+        dailyCreditCost: p.dailyCreditCost,
+        creditUsedThisMonth: p.creditUsedThisMonth,
+        createdAt: p.createdAt,
+        deploymentStatus: p.deployment?.status || null,
+        deploymentUrl: p.deployment?.url || null,
+      })),
+    }));
+
+    return {
+      summary: {
+        totalUsers,
+        proUsers,
+        regularUsers,
+        totalProjects,
+        activeProjects,
+        inactiveProjects: totalProjects - activeProjects,
+        totalCredits: totalCredits.toFixed(2),
+        totalStaked: totalStaked.toFixed(2),
+      },
+      users: formattedUsers,
+      message: 'Admin analytics retrieved successfully',
+    };
   }
 }

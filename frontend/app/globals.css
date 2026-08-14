@@ -35,3 +35,40 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* Admin page table styles */
+.admin-table .ant-table {
+  background: transparent !important;
+}
+
+.admin-table .ant-table-thead > tr > th {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: rgba(255, 255, 255, 0.6) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.admin-table .ant-table-tbody > tr > td {
+  background: transparent !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.admin-table .ant-table-tbody > tr:hover > td {
+  background: rgba(255, 255, 255, 0.02) !important;
+}
+
+.admin-collapse .ant-collapse-header {
+  color: rgba(255, 255, 255, 0.8) !important;
+  padding: 8px 0 !important;
+}
+
+.admin-collapse .ant-collapse-content {
+  background: transparent !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.admin-collapse .ant-collapse-content-box {
+  padding: 12px 0 !important;
+}
+
