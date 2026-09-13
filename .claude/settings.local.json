@@ -4,7 +4,17 @@
       "Bash(npx tsc:*)",
       "Bash(npx hardhat compile)",
       "Bash(npx hardhat ignition deploy:*)",
-      "Bash(npx prisma:*)"
+      "Bash(npx prisma:*)",
+      "Bash(cat:*)",
+      "WebFetch(domain:v12.sh)",
+      "Bash(pnpm install:*)",
+      "Bash(pnpm build:*)",
+      "Bash(ls:*)",
+      "Bash(pnpm add:*)",
+      "WebFetch(domain:explorer.test.mezo.org)",
+      "WebSearch",
+      "WebFetch(domain:docs.blockscout.com)",
+      "Bash(git checkout:*)"
     ]
   }
 }

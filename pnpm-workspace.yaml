@@ -1,4 +1,7 @@
 packages:
   - "apps/*"
-  - "frontend/*"
-  - "contracts/*"
+  - "frontend"
+  - "backend"
+  - "contracts"
+  - "worker"
+  - "proxy"

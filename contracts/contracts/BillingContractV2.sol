@@ -168,6 +168,7 @@ contract MezoHostBillingV2 is ReentrancyGuard, Ownable, Pausable {
      * @param userAppWallet The user's app wallet address (for event tracking)
      * @param _amount Amount to lock
      * @param _durationInSeconds Lock duration in seconds
+     * @dev Uses balance-before-after pattern to support fee-on-transfer tokens
      */
     function lockCollateral(
         address userAppWallet,
@@ -179,29 +180,37 @@ contract MezoHostBillingV2 is ReentrancyGuard, Ownable, Pausable {
         require(_durationInSeconds >= 7 days, "Minimum lock: 7 days");
         require(userAppWallet != address(0), "Invalid wallet address");
 
+        // Measure balance before transfer to handle fee-on-transfer tokens
+        uint256 balanceBefore = token.balanceOf(address(this));
+
         require(
             token.transferFrom(msg.sender, address(this), _amount),
             "Transfer failed"
         );
 
+        // Calculate actual amount received (handles fee-on-transfer tokens)
+        uint256 actualReceived = token.balanceOf(address(this)) - balanceBefore;
+        require(actualReceived > 0, "No tokens received");
+
         uint256 unlockTime = block.timestamp + _durationInSeconds;
 
         lockedVaults[msg.sender] = LockRecord({
-            amount: _amount,
+            amount: actualReceived,
             unlockTimestamp: unlockTime,
             lockTimestamp: block.timestamp,
             isActive: true
         });
 
-        totalLockedCollateral += _amount;
+        totalLockedCollateral += actualReceived;
 
-        emit CollateralLocked(userAppWallet, _amount, unlockTime, block.timestamp);
+        emit CollateralLocked(userAppWallet, actualReceived, unlockTime, block.timestamp);
     }
 
     /**
      * @notice Withdraw locked collateral
      * @param userAppWallet The user's app wallet address (for event tracking)
      * @dev Early withdrawal incurs 5% penalty
+     * @dev Lock record is deactivated immediately to prevent double-payout
      */
     function withdrawCollateral(
         address userAppWallet
@@ -209,8 +218,16 @@ contract MezoHostBillingV2 is ReentrancyGuard, Ownable, Pausable {
         LockRecord storage record = lockedVaults[msg.sender];
         require(record.isActive, "No active vault");
 
-        uint256 amountToReturn = record.amount;
+        uint256 originalAmount = record.amount;
+        uint256 amountToReturn = originalAmount;
         bool isEarly = block.timestamp < record.unlockTimestamp;
+
+        // Deactivate lock record immediately to prevent double-payout
+        totalLockedCollateral -= originalAmount;
+        record.isActive = false;
+        record.amount = 0;
+        record.unlockTimestamp = 0;
+        record.lockTimestamp = 0;
 
         // Calculate penalty if early withdrawal
         if (isEarly) {
@@ -229,6 +246,7 @@ contract MezoHostBillingV2 is ReentrancyGuard, Ownable, Pausable {
 
         if (contractBalance < amountToReturn) {
             // Queue the withdrawal - funds are in treasury
+            // Lock record already deactivated above to prevent double-payout
             withdrawalRequests[msg.sender] = WithdrawalRequest({
                 amount: amountToReturn,
                 requestTimestamp: block.timestamp,
@@ -238,13 +256,6 @@ contract MezoHostBillingV2 is ReentrancyGuard, Ownable, Pausable {
             emit WithdrawalQueued(msg.sender, amountToReturn, block.timestamp);
             return;
         }
-
-        // Update state before transfer (reentrancy protection)
-        totalLockedCollateral -= record.amount;
-        record.isActive = false;
-        record.amount = 0;
-        record.unlockTimestamp = 0;
-        record.lockTimestamp = 0;
 
         // Transfer to user
         require(
@@ -259,6 +270,7 @@ contract MezoHostBillingV2 is ReentrancyGuard, Ownable, Pausable {
      * @notice Process a queued withdrawal after funds returned from treasury
      * @param whale The whale's address
      * @param userAppWallet The user's app wallet address
+     * @dev Lock record was already deactivated during withdrawCollateral()
      */
     function processQueuedWithdrawal(
         address whale,
@@ -266,8 +278,8 @@ contract MezoHostBillingV2 is ReentrancyGuard, Ownable, Pausable {
     ) external onlyOwner nonReentrant {
         WithdrawalRequest storage request = withdrawalRequests[whale];
         require(request.isPending, "No pending withdrawal");
+        require(request.amount > 0, "Invalid withdrawal amount");
 
-        LockRecord storage record = lockedVaults[whale];
         uint256 contractBalance = token.balanceOf(address(this));
 
         require(
@@ -275,13 +287,9 @@ contract MezoHostBillingV2 is ReentrancyGuard, Ownable, Pausable {
             "Insufficient funds - return from treasury first"
         );
 
-        // Update state
-        totalLockedCollateral -= record.amount;
-        record.isActive = false;
-        record.amount = 0;
-        request.isPending = false;
-
+        // Update state - lock record already deactivated in withdrawCollateral()
         uint256 amountToSend = request.amount;
+        request.isPending = false;
         request.amount = 0;
 
         // Transfer to whale

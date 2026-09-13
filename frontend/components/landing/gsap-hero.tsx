@@ -1,103 +1,208 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useRef } from "react"
 import Link from "next/link"
 import gsap from "gsap"
 import { useGSAP } from "@gsap/react"
+import { ArrowRight } from "lucide-react"
 
 gsap.registerPlugin(useGSAP)
 
 export default function GsapHero() {
   const container = useRef<HTMLDivElement>(null)
-  
-  useGSAP(() => {
-    const tl = gsap.timeline()
-    
-    // Animate the main headline words
-    tl.from(".hero-word", {
-      y: 100,
-      opacity: 0,
-      rotateZ: 5,
-      duration: 1,
-      stagger: 0.1,
-      ease: "power4.out",
-      delay: 0.2
-    })
-    
-    // Fade in the subtitle
-    tl.from(".hero-subtitle", {
-      y: 20,
-      opacity: 0,
-      duration: 0.8,
-      ease: "power2.out"
-    }, "-=0.6")
-    
-    // Brutalist reveal for buttons
-    tl.from(".hero-btn", {
-      scale: 0.9,
-      opacity: 0,
-      duration: 0.5,
-      stagger: 0.1,
-      ease: "back.out(1.7)"
-    }, "-=0.4")
-    
-  }, { scope: container })
+
+  useGSAP(
+    () => {
+      const tl = gsap.timeline({ defaults: { ease: "power3.out" } })
+
+      tl.from(".hero-line", {
+        y: 120,
+        opacity: 0,
+        duration: 1.2,
+        stagger: 0.15,
+      })
+        .from(
+          ".hero-sub",
+          {
+            y: 30,
+            opacity: 0,
+            duration: 0.8,
+          },
+          "-=0.5",
+        )
+        .from(
+          ".hero-cta",
+          {
+            y: 20,
+            opacity: 0,
+            duration: 0.6,
+          },
+          "-=0.4",
+        )
+        .from(
+          ".hero-ide",
+          {
+            y: 80,
+            opacity: 0,
+            duration: 1.2,
+            ease: "power2.out",
+          },
+          "-=0.4",
+        )
+
+      gsap.to(".cursor", {
+        opacity: 0,
+        duration: 0.53,
+        repeat: -1,
+        yoyo: true,
+        ease: "steps(1)",
+      })
+    },
+    { scope: container },
+  )
 
   return (
-    <section ref={container} className="relative min-h-[90vh] flex flex-col items-center justify-center bg-[#0a0a0a] pt-20 overflow-hidden px-6">
-      
-      {/* Background brutalist accents */}
-      <div className="absolute top-0 right-0 w-[40vw] h-[40vw] bg-white/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/3 pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-[30vw] h-[30vw] bg-primary/10 rounded-full blur-[100px] translate-y-1/3 -translate-x-1/3 pointer-events-none" />
-      
-      <div className="max-w-6xl w-full flex flex-col items-center text-center z-10">
-        
-        {/* Monospace pre-header */}
-        <div className="hero-subtitle overflow-hidden mb-6">
-          <p className="font-mono text-xs md:text-sm text-primary tracking-widest uppercase border border-primary/30 bg-primary/5 px-4 py-1.5 rounded-full">
-            Mezo Decentralized PaaS
+    <section
+      ref={container}
+      className="relative min-h-screen bg-black pt-32 pb-24 px-6 overflow-hidden"
+    >
+      <div className="max-w-6xl mx-auto relative z-10">
+        {/* Typography Hero */}
+        <div className="text-center mb-20">
+          <div className="overflow-hidden">
+            <h1 className="hero-line text-[clamp(3rem,10vw,8rem)] font-bold tracking-[-0.04em] text-white leading-[0.95]">
+              Write. Deploy.
+            </h1>
+          </div>
+          <div className="overflow-hidden">
+            <h1 className="hero-line text-[clamp(3rem,10vw,8rem)] font-bold tracking-[-0.04em] leading-[0.95]">
+              <span className="text-white/15">Ship on </span>
+              <span className="text-primary">Bitcoin.</span>
+            </h1>
+          </div>
+
+          <p className="hero-sub text-xl text-white/40 max-w-md mx-auto mt-10 font-light">
+            The complete Developer environment for Mezo. Browser-native. Zero
+            setup.
           </p>
+
+          <div className="hero-cta flex gap-4 justify-center items-center mt-12">
+            <Link
+              href="/ide"
+              className="group inline-flex items-center gap-3 px-8 py-4 bg-white text-black font-medium rounded-full transition-transform hover:scale-[1.02] active:scale-[0.98]"
+            >
+              Open IDE
+              <ArrowRight
+                size={18}
+                className="transition-transform group-hover:translate-x-1"
+              />
+            </Link>
+            <Link
+              href="#features"
+              className="px-8 py-4 text-white/40 font-medium transition-colors hover:text-white"
+            >
+              Learn more
+            </Link>
+          </div>
         </div>
 
-        {/* Main Headline */}
-        <h1 className=" text-5xl md:text-8xl lg:text-9xl font-semibold tracking-tighter text-white leading-[0.9] flex flex-wrap justify-center gap-x-4 gap-y-2 mb-8">
-          <span className="hero-word font-sans!">DEPLOY.</span>
-          <span className="hero-word font-sans!">EARN.</span>
-          <span className="hero-word font-sans! text-white/50">SCALE.</span>
-        </h1>
+        {/* Minimal IDE Preview */}
+        <div className="hero-ide max-w-4xl mx-auto">
+          <div className="relative">
+            <div className="absolute -inset-px bg-gradient-to-b from-white/[0.08] to-transparent rounded-2xl" />
 
-        {/* Subtitle */}
-        <p className="hero-subtitle text-lg md:text-2xl text-white/60 max-w-2xl mb-12 font-light">
-          Run your services without giving up your BTC. The first "Yield for Compute" platform built natively on the Mezo Chain.
-        </p>
+            <div className="relative bg-black border border-white/[0.08] rounded-2xl overflow-hidden">
+              {/* Tab Bar */}
+              <div className="flex items-center px-4 h-10 border-b border-white/[0.06]">
+                <div className="flex items-center gap-2 px-3 py-1 -mb-px border-b border-white/20">
+                  <span className="text-[13px] text-white/70">Token.sol</span>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1 -mb-px">
+                  <span className="text-[13px] text-white/30">Staking.sol</span>
+                </div>
+              </div>
 
-        {/* Actions */}
-        <div className="flex flex-col sm:flex-row gap-4 items-center">
-          <Link 
-            href="/sign-up"
-            className="hero-btn group relative inline-flex items-center justify-center px-8 py-4 bg-white text-black font-semibold uppercase tracking-wider text-sm transition-transform hover:scale-105 active:scale-95"
-            style={{ clipPath: "polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px)" }}
-          >
-            Start Deploying Free
-          </Link>
-          
-          <Link 
-            href="/login"
-            className="hero-btn relative inline-flex items-center justify-center px-8 py-4 bg-transparent text-white font-semibold uppercase tracking-wider text-sm border border-white/20 transition-colors hover:bg-white/10"
-            style={{ clipPath: "polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px)" }}
-          >
-            Access Dashboard
-          </Link>
+              {/* Editor */}
+              <div className="flex">
+                {/* Line Numbers */}
+                <div className="py-5 pl-5 pr-4 text-right select-none border-r border-white/[0.04]">
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((n) => (
+                    <div
+                      key={n}
+                      className="text-[13px] leading-6 text-white/20 font-mono"
+                    >
+                      {n}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Code */}
+                <div className="flex-1 py-5 pl-5 pr-8 font-mono text-[13px] leading-6 overflow-x-auto">
+                  <div className="text-white/25">
+                    // SPDX-License-Identifier: MIT
+                  </div>
+                  <div>
+                    <span className="text-white/50">pragma solidity</span>{" "}
+                    <span className="text-white/30">^0.8.28;</span>
+                  </div>
+                  <div className="h-6" />
+                  <div>
+                    <span className="text-white/50">import</span>{" "}
+                    <span className="text-white/70">
+                      "@openzeppelin/contracts/token/ERC20/ERC20.sol"
+                    </span>
+                    <span className="text-white/30">;</span>
+                  </div>
+                  <div className="h-6" />
+                  <div>
+                    <span className="text-white/50">contract</span>{" "}
+                    <span className="text-white">MezoToken</span>{" "}
+                    <span className="text-white/50">is</span>{" "}
+                    <span className="text-white/70">ERC20</span>{" "}
+                    <span className="text-white/30">{"{"}</span>
+                  </div>
+                  <div className="pl-6">
+                    <span className="text-white/50">constructor</span>
+                    <span className="text-white/30">()</span>{" "}
+                    <span className="text-white/70">ERC20</span>
+                    <span className="text-white/30">(</span>
+                    <span className="text-primary/70">"Mezo"</span>
+                    <span className="text-white/30">,</span>{" "}
+                    <span className="text-primary/70">"MZO"</span>
+                    <span className="text-white/30">) {"{"}</span>
+                  </div>
+                  <div className="pl-12">
+                    <span className="text-white/70">_mint</span>
+                    <span className="text-white/30">(msg.sender,</span>{" "}
+                    <span className="text-white/50">1_000_000e18</span>
+                    <span className="text-white/30">);</span>
+                  </div>
+                  <div className="pl-6">
+                    <span className="text-white/30">{"}"}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <span className="text-white/30">{"}"}</span>
+                    <span className="cursor w-[2px] h-5 bg-primary ml-1" />
+                  </div>
+                  <div className="h-6" />
+                </div>
+              </div>
+
+              {/* Status Bar */}
+              <div className="flex items-center justify-between px-5 h-8 border-t border-white/[0.06] text-[11px]">
+                <div className="flex items-center gap-6">
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                    <span className="text-white/40">Compiled</span>
+                  </span>
+                  <span className="text-white/25">Solidity 0.8.28</span>
+                </div>
+                <span className="text-white/25">UTF-8</span>
+              </div>
+            </div>
+          </div>
         </div>
-        
       </div>
-      
-      {/* Brutalist scroll indicator */}
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-50 hero-subtitle">
-        <span className="font-mono text-[10px] uppercase tracking-widest text-white/50">Scroll</span>
-        <div className="w-px h-12 bg-gradient-to-b from-white/50 to-transparent" />
-      </div>
-      
     </section>
   )
 }

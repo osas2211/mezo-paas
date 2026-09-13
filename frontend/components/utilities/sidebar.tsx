@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation"
 import Link from "next/link"
 import {
   BookOpen,
+  Code,
   CreditCard,
   FolderKanban,
   Globe,
@@ -60,6 +61,16 @@ const navItems: navItem[] = [
         label: "Integrations",
         href: "/integrations",
         icon: <Plug size={20} className="text-white/60" />,
+      },
+    ],
+  },
+  {
+    group: "Developer",
+    items: [
+      {
+        label: "IDE",
+        href: "/ide",
+        icon: <Code size={20} className="text-white/60" />,
       },
     ],
   },

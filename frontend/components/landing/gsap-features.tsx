@@ -1,116 +1,238 @@
 "use client"
 
 import { useRef } from "react"
+import Link from "next/link"
 import gsap from "gsap"
 import { useGSAP } from "@gsap/react"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
-import { Bitcoin, CreditCard } from "lucide-react"
+import { ArrowRight, Code2, Rocket, Shield, Zap } from "lucide-react"
 
 gsap.registerPlugin(useGSAP, ScrollTrigger)
 
 export default function GsapFeatures() {
   const container = useRef<HTMLDivElement>(null)
-  
+
   useGSAP(() => {
-    const cards = gsap.utils.toArray<HTMLElement>(".feature-card")
-    
-    cards.forEach((card, i) => {
-      gsap.from(card, {
+    const cards = container.current?.querySelectorAll(".pricing-card")
+    if (cards) {
+      gsap.set(cards, { opacity: 1, y: 0 })
+      gsap.from(cards, {
         scrollTrigger: {
-          trigger: card,
-          start: "top 85%",
-          toggleActions: "play none none reverse"
+          trigger: container.current,
+          start: "top 75%",
         },
-        y: 100,
+        y: 50,
         opacity: 0,
-        rotateX: -15,
-        duration: 1,
+        duration: 0.7,
+        stagger: 0.12,
         ease: "power3.out",
-        delay: i * 0.1
       })
-    })
+    }
 
-    // Subtitle reveal
-    gsap.from(".feature-heading", {
+    gsap.from(".flow-item", {
       scrollTrigger: {
-        trigger: ".feature-heading",
-        start: "top 80%"
+        trigger: ".flow-container",
+        start: "top 85%",
       },
+      scale: 0.95,
       opacity: 0,
-      y: 30,
-      stagger: 0.1,
-      duration: 0.8
+      duration: 0.5,
+      stagger: 0.08,
+      ease: "power2.out",
     })
 
+    gsap.from(".env-card", {
+      scrollTrigger: {
+        trigger: ".env-section",
+        start: "top 80%",
+      },
+      y: 30,
+      opacity: 0,
+      duration: 0.6,
+      stagger: 0.1,
+      ease: "power2.out",
+    })
   }, { scope: container })
 
   return (
-    <section ref={container} className="relative bg-black py-32 px-6 overflow-hidden perspective-1000">
-      
-      {/* Background brutalist accents */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[1px] bg-white/5 pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[80vh] w-[1px] bg-white/5 pointer-events-none" />
-      
-      <div className="max-w-6xl mx-auto z-10 relative">
-        <div className="text-center mb-24">
-          <div className="font-mono text-sm text-white/40 mb-4 tracking-widest uppercase feature-heading">
-            Blockchain Economics
+    <section ref={container} id="pricing" className="relative bg-black py-32 px-6">
+      <div className="max-w-6xl mx-auto">
+        {/* Developer Environment Section */}
+        <div className="env-section mb-32">
+          <div className="mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-4">
+              Built for Mezo builders
+            </h2>
+            <p className="text-lg text-white/40 max-w-2xl">
+              A complete development environment purpose-built for the Mezo ecosystem.
+              Write Solidity, deploy to Mezo, and interact with Bitcoin DeFi protocols — all from your browser.
+            </p>
           </div>
-          <h2 className="text-4xl md:text-7xl font-semibold tracking-tighter text-white feature-heading">
-            Yield for <span className="text-white/50">Compute.</span>
-          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              {
+                icon: Code2,
+                title: "Browser-Native IDE",
+                desc: "Full Solidity editor with syntax highlighting, auto-completion, and real-time error detection. No extensions needed.",
+              },
+              {
+                icon: Rocket,
+                title: "Instant Deployment",
+                desc: "One-click deploy to Mezo Testnet or Mainnet. Automatic constructor argument handling and gas estimation.",
+              },
+              {
+                icon: Shield,
+                title: "Auto-Verification",
+                desc: "Contracts are automatically verified on Mezo Explorer after deployment. Source code publicly readable.",
+              },
+              {
+                icon: Zap,
+                title: "Protocol Integration",
+                desc: "Browse deployed Mezo protocols, import ABIs, and generate TypeScript interfaces for your dApps.",
+              },
+            ].map((item, i) => (
+              <div key={i} className="env-card p-6 rounded-xl border border-white/[0.06] bg-white/[0.02]">
+                <item.icon size={20} className="text-white/40 mb-4" />
+                <h3 className="text-white font-medium mb-2">{item.title}</h3>
+                <p className="text-sm text-white/40 leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
-          
-          {/* Pro Developer Card */}
-          <div 
-            className="feature-card bg-[#0a0a0c] border border-white/10 p-10 md:p-14 relative flex flex-col justify-between min-h-[400px] group hover:border-white/20 transition-colors"
-            style={{ clipPath: "polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 0 100%)" }}
-          >
-            <div className="absolute top-0 right-0 p-6">
-              <Bitcoin size={48} className="text-white/10 group-hover:text-primary transition-colors" />
-            </div>
-            
-            <div>
-              <div className="font-mono text-xs uppercase tracking-widest text-primary mb-4 bg-primary/10 inline-block px-3 py-1 rounded-sm border border-primary/20">
-                Tier 01: Pro Developer
-              </div>
-              <h3 className="text-3xl font-semibold text-white mb-6">Zero Sunk Cost.</h3>
-              <p className="text-white/60 font-light leading-relaxed">
-                Lock your stablecoins or native Mezo tokens into a Smart Contract Vault. The yield generated by your locked tokens pays for your server compute.
-              </p>
-            </div>
+        {/* Yield for Compute Section */}
+        <div className="mb-20">
+          <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-4">
+            Yield for compute
+          </h2>
+          <p className="text-lg text-white/40 max-w-2xl">
+            A novel payment model for decentralized infrastructure. Lock BTC or stablecoins in a smart vault —
+            the yield generated pays for your compute costs. Your principal remains intact and withdrawable anytime.
+          </p>
+        </div>
 
-            <div className="mt-12 pt-6 border-t border-white/10">
-              <p className="font-mono text-sm text-white/80">When you're done, unlock your initial deposit. You ran your servers for free.</p>
+        {/* How It Works */}
+        <div className="mb-16 p-8 rounded-2xl border border-white/[0.06] bg-white/[0.02]">
+          <div className="text-xs text-white/30 uppercase tracking-wider mb-8">How it works</div>
+          <div className="flow-container grid grid-cols-1 md:grid-cols-4 gap-8">
+            {[
+              {
+                step: "01",
+                label: "Lock Assets",
+                desc: "Deposit BTC, stBTC, or stablecoins into the Mezo yield vault smart contract."
+              },
+              {
+                step: "02",
+                label: "Generate Yield",
+                desc: "Your locked assets earn yield through Mezo's DeFi integrations automatically."
+              },
+              {
+                step: "03",
+                label: "Pay for Compute",
+                desc: "Yield is directed to pay for container hosting, storage, and bandwidth."
+              },
+              {
+                step: "04",
+                label: "Withdraw Anytime",
+                desc: "Your full principal is always available. No lock-ups, no penalties."
+              },
+            ].map((item, i) => (
+              <div key={i} className="flow-item">
+                <div className="text-2xl font-bold text-white/10 mb-3">{item.step}</div>
+                <div className="text-white font-medium mb-2">{item.label}</div>
+                <div className="text-sm text-white/40 leading-relaxed">{item.desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Pricing Cards */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Yield Vault */}
+          <div className="pricing-card relative">
+            <div className="absolute inset-0 bg-gradient-to-b from-white/[0.03] to-transparent rounded-2xl" />
+            <div className="relative border border-white/[0.08] rounded-2xl p-10">
+              <div className="flex items-center justify-between mb-8">
+                <div className="text-sm text-white/30 uppercase tracking-wider">Recommended</div>
+                <div className="px-3 py-1 bg-primary/10 text-primary text-xs rounded-full">Zero Cost</div>
+              </div>
+
+              <h3 className="text-2xl font-bold text-white mb-3">
+                Yield Vault
+              </h3>
+              <p className="text-white/40 mb-8 leading-relaxed">
+                Lock any amount of BTC or stablecoins. The yield generated pays for your compute costs.
+                Zero out-of-pocket expenses — your deposit works for you.
+              </p>
+
+              <div className="space-y-3 mb-10">
+                {[
+                  "No minimum deposit required",
+                  "Yield auto-directed to compute",
+                  "Full principal withdrawable anytime",
+                  "Supports BTC, stBTC, USDC",
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center gap-3 text-sm">
+                    <div className="w-1 h-1 bg-primary rounded-full" />
+                    <span className="text-white/60">{item}</span>
+                  </div>
+                ))}
+              </div>
+
+              <Link
+                href="/ide"
+                className="block w-full py-4 bg-white text-black font-medium rounded-full hover:bg-white/90 transition-colors text-center"
+              >
+                Start Building
+              </Link>
             </div>
           </div>
 
-          {/* Regular Developer Card */}
-          <div 
-            className="feature-card bg-[#0a0a0c] border border-white/10 p-10 md:p-14 relative flex flex-col justify-between min-h-[400px] group hover:border-white/20 transition-colors"
-            style={{ clipPath: "polygon(24px 0, 100% 0, 100% 100%, 0 100%, 0 24px)" }}
-          >
-            <div className="absolute top-0 right-0 p-6">
-              <CreditCard size={48} className="text-white/10 group-hover:text-white/50 transition-colors" />
-            </div>
-            
-            <div>
-              <div className="font-mono text-xs uppercase tracking-widest text-white/40 mb-4 border border-white/10 inline-block px-3 py-1 rounded-sm">
-                Tier 02: Regular Developer
+          {/* Prepaid Credits */}
+          <div className="pricing-card relative">
+            <div className="relative border border-white/[0.06] rounded-2xl p-10">
+              <div className="mb-8">
+                <div className="text-sm text-white/30 uppercase tracking-wider">Alternative</div>
               </div>
-              <h3 className="text-3xl font-semibold text-white mb-6">Prepaid Credits.</h3>
-              <p className="text-white/60 font-light leading-relaxed">
-                Don't want to lock capital? Deposit tokens directly to mint MHCredits. Credits act as prepaid gas for running your containers.
-              </p>
-            </div>
 
-            <div className="mt-12 pt-6 border-t border-white/10">
-              <p className="font-mono text-sm text-white/80">Decentralized, programmatic billing. Container sleeps when credits run out.</p>
+              <h3 className="text-2xl font-bold text-white mb-3">
+                Prepaid Credits
+              </h3>
+              <p className="text-white/40 mb-8 leading-relaxed">
+                Prefer not to lock capital? Purchase compute credits directly.
+                Credits are consumed as you use resources — per-second billing with no waste.
+              </p>
+
+              <div className="space-y-3 mb-10">
+                {[
+                  "Pay only for what you use",
+                  "No capital lockup required",
+                  "Per-second granular billing",
+                  "Top up anytime",
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center gap-3 text-sm">
+                    <div className="w-1 h-1 bg-white/30 rounded-full" />
+                    <span className="text-white/60">{item}</span>
+                  </div>
+                ))}
+              </div>
+
+              <button className="w-full py-4 bg-white/5 border border-white/10 text-white font-medium rounded-full hover:bg-white/10 transition-colors">
+                Buy Credits
+              </button>
             </div>
           </div>
+        </div>
 
+        {/* Bottom CTA */}
+        <div className="mt-16 text-center">
+          <p className="text-white/30 text-sm">
+            Questions about yield vaults or compute pricing?{" "}
+            <a href="https://mezo.org" target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-white transition-colors">
+              Read the docs <ArrowRight size={12} className="inline" />
+            </a>
+          </p>
         </div>
       </div>
     </section>

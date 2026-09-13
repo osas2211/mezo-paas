@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <defs>
+    <linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF004D"/>
+      <stop offset="100%" style="stop-color:#CC003D"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="100" height="100" rx="20" fill="#0D0D0D"/>
+
+  <!-- Minimalist M + Server Stack -->
+  <g transform="translate(50, 50)">
+    <!-- Three stacked server bars forming abstract M -->
+    <rect x="-30" y="-25" width="60" height="12" rx="3" fill="url(#brandGrad)"/>
+    <rect x="-30" y="-8" width="60" height="12" rx="3" fill="url(#brandGrad)"/>
+    <rect x="-30" y="9" width="60" height="12" rx="3" fill="url(#brandGrad)"/>
+
+    <!-- M cutout in middle bar -->
+    <polygon points="-15,-8 -8,-8 0,4 8,-8 15,-8 15,4 8,4 0,-4 -8,4 -15,4" fill="#0D0D0D"/>
+
+    <!-- Status lights -->
+    <circle cx="22" cy="-19" r="3" fill="#10B981"/>
+    <circle cx="22" cy="-2" r="3" fill="#10B981"/>
+    <circle cx="22" cy="15" r="3" fill="#10B981"/>
+  </g>
+</svg>

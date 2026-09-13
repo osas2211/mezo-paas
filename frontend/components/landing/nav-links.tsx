@@ -1,10 +1,9 @@
 "use client";
 
 const links = [
+  { label: "Features", href: "#features" },
   { label: "Pricing", href: "#pricing" },
-  { label: "Customers", href: "#customers" },
-  { label: "Resources", href: "#resources" },
-  { label: "Support", href: "#support" },
+  { label: "Infrastructure", href: "#resources" },
 ];
 
 export default function NavLinks() {

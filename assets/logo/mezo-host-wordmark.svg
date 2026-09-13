@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 100" width="400" height="100">
+  <defs>
+    <linearGradient id="brandGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#FF004D"/>
+      <stop offset="100%" style="stop-color:#CC003D"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Icon -->
+  <g transform="translate(10, 10)">
+    <rect width="80" height="80" rx="16" fill="#0D0D0D"/>
+
+    <g transform="translate(40, 40)">
+      <!-- Three stacked bars -->
+      <rect x="-25" y="-22" width="50" height="10" rx="2" fill="url(#brandGradient)"/>
+      <rect x="-25" y="-7" width="50" height="10" rx="2" fill="url(#brandGradient)"/>
+      <rect x="-25" y="8" width="50" height="10" rx="2" fill="url(#brandGradient)"/>
+
+      <!-- Status lights -->
+      <circle cx="18" cy="-17" r="2.5" fill="#10B981"/>
+      <circle cx="18" cy="-2" r="2.5" fill="#10B981"/>
+      <circle cx="18" cy="13" r="2.5" fill="#10B981"/>
+    </g>
+  </g>
+
+  <!-- Text: MEZO -->
+  <text x="110" y="62" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="42" font-weight="700" fill="#FF004D">MEZO</text>
+
+  <!-- Text: HOST -->
+  <text x="248" y="62" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="42" font-weight="300" fill="#FFFFFF">HOST</text>
+</svg>
