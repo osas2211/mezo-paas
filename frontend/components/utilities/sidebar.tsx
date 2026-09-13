@@ -4,6 +4,8 @@ import { usePathname } from "next/navigation"
 import Link from "next/link"
 import {
   BookOpen,
+  ChevronLeft,
+  ChevronRight,
   Code,
   CreditCard,
   FolderKanban,
@@ -30,7 +32,7 @@ const navItems: navItem[] = [
       {
         label: "Dashboard",
         href: "/dashboard",
-        icon: <LayoutDashboard size={20} className="text-white/60" />,
+        icon: <LayoutDashboard size={20} />,
       },
     ],
   },
@@ -38,19 +40,19 @@ const navItems: navItem[] = [
     group: "Infrastructure",
     items: [
       {
-        label: "projects",
+        label: "Projects",
         href: "/projects",
-        icon: <FolderKanban size={20} className="text-white/60" />,
+        icon: <FolderKanban size={20} />,
       },
       {
-        label: "deployments",
+        label: "Deployments",
         href: "/deployments",
-        icon: <Rocket size={20} className="text-white/60" />,
+        icon: <Rocket size={20} />,
       },
       {
-        label: "domains",
+        label: "Domains",
         href: "/domains",
-        icon: <Globe size={20} className="text-white/60" />,
+        icon: <Globe size={20} />,
       },
     ],
   },
@@ -60,7 +62,7 @@ const navItems: navItem[] = [
       {
         label: "Integrations",
         href: "/integrations",
-        icon: <Plug size={20} className="text-white/60" />,
+        icon: <Plug size={20} />,
       },
     ],
   },
@@ -70,30 +72,33 @@ const navItems: navItem[] = [
       {
         label: "IDE",
         href: "/ide",
-        icon: <Code size={20} className="text-white/60" />,
+        icon: <Code size={20} />,
       },
     ],
   },
-
   {
     group: "Account",
     items: [
       {
         label: "Billing",
         href: "/billing",
-        icon: <CreditCard size={20} className="text-white/60" />,
+        icon: <CreditCard size={20} />,
       },
-
       {
         label: "Settings",
         href: "/settings",
-        icon: <Settings size={20} className="text-white/60" />,
+        icon: <Settings size={20} />,
       },
     ],
   },
 ]
 
-export default function Sidebar() {
+interface SidebarProps {
+  collapsed: boolean
+  onToggle: () => void
+}
+
+export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const pathname = usePathname()
   const isAuthPage = pathname === "/login" || pathname === "/register"
 
@@ -102,13 +107,28 @@ export default function Sidebar() {
   }
 
   return (
-    <nav className="">
-      <ul className="flex flex-col gap-8">
+    <nav className="h-full flex flex-col">
+      {/* Toggle Button */}
+      <button
+        onClick={onToggle}
+        className="absolute -right-3 top-6 z-10 flex h-6 w-6 items-center justify-center rounded-full border border-white/10 bg-dark hover:bg-white/5 transition-colors"
+        title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+      >
+        {collapsed ? (
+          <ChevronRight size={14} className="text-white/60" />
+        ) : (
+          <ChevronLeft size={14} className="text-white/60" />
+        )}
+      </button>
+
+      <ul className="flex flex-col gap-6 flex-1">
         {navItems.map((navItem) => (
           <li key={navItem.group}>
-            <h2 className="text-xs mb-2 text-white/70 uppercase">
-              {navItem.group}
-            </h2>
+            {!collapsed && (
+              <h2 className="text-xs mb-2 text-white/40 uppercase tracking-wider">
+                {navItem.group}
+              </h2>
+            )}
             <ul className="space-y-1">
               {navItem.items.map((item, index) => {
                 const isActive =
@@ -117,9 +137,17 @@ export default function Sidebar() {
                   <li key={index}>
                     <Link
                       href={item.href}
-                      className={`capitalize flex items-center gap-3 px-3 py-2 text-sm transition-colors text-white ${isActive ? "bg-violet-50/5 *:text-primary! text-primary!" : ""}`}
+                      className={`flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors ${
+                        isActive
+                          ? "bg-primary/10 text-primary"
+                          : "text-white/60 hover:text-white hover:bg-white/5"
+                      } ${collapsed ? "justify-center px-2" : ""}`}
+                      title={collapsed ? item.label : undefined}
                     >
-                      {item.icon} {item.label}
+                      <span className={isActive ? "text-primary" : "text-white/60"}>
+                        {item.icon}
+                      </span>
+                      {!collapsed && <span>{item.label}</span>}
                     </Link>
                   </li>
                 )
@@ -129,18 +157,20 @@ export default function Sidebar() {
         ))}
       </ul>
 
-      <div className="fixed bottom-0 left-0 w-[290px] h-[50px] border-t border-white/15 px-4 md:px-10 py-2">
-        <div className="flex flex-col gap-2 h-full justify-center text-sm text-white">
-          <Link
-            href={""}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2"
-          >
-            <BookOpen size={20} className="text-white/60" />
-            <span>Docs</span>
-          </Link>
-        </div>
+      {/* Docs Link */}
+      <div className={`border-t border-white/10 pt-4 mt-4 ${collapsed ? "px-1" : ""}`}>
+        <Link
+          href="https://docs.mezo.org"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`flex items-center gap-3 px-3 py-2 text-sm text-white/60 hover:text-white transition-colors rounded-lg hover:bg-white/5 ${
+            collapsed ? "justify-center px-2" : ""
+          }`}
+          title={collapsed ? "Documentation" : undefined}
+        >
+          <BookOpen size={20} />
+          {!collapsed && <span>Docs</span>}
+        </Link>
       </div>
     </nav>
   )
