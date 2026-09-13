@@ -38,7 +38,7 @@ export default function IDEContainer() {
   const [deployedContracts, setDeployedContracts] = useState<DeployedContract[]>([])
   const [rightPanelTab, setRightPanelTab] = useState<"compile" | "deploy" | "interact">("compile")
   const [consoleHeight, setConsoleHeight] = useState(150)
-  const [selectedNetwork, setSelectedNetwork] = useState<"testnet" | "mainnet">("testnet")
+  const [selectedNetwork, setSelectedNetwork] = useState<"testnet" | "mainnet">("mainnet")
 
   // Load deployed contracts
   useEffect(() => {

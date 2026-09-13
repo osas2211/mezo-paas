@@ -54,7 +54,7 @@ export default function DeployPanel({
   const { data: walletClient } = useWalletClient()
   const publicClient = usePublicClient()
 
-  const [selectedNetwork, setSelectedNetwork] = useState<"testnet" | "mainnet">("testnet")
+  const [selectedNetwork, setSelectedNetwork] = useState<"testnet" | "mainnet">("mainnet")
   const [constructorArgs, setConstructorArgs] = useState<Record<string, string>>({})
   const [deploymentStatus, setDeploymentStatus] = useState<DeploymentStatus>("idle")
   const [txHash, setTxHash] = useState<string | null>(null)
