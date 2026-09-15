@@ -51,14 +51,25 @@ export default function MobileNav() {
           {/* Nav links */}
           <nav className="flex flex-col gap-1" aria-label="Mobile navigation">
             {links.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                onClick={() => setIsOpen(false)}
-                className="px-4 py-3 text-base text-zinc-400 rounded-lg transition-colors duration-200 hover:text-white hover:bg-white/5"
-              >
-                {link.label}
-              </a>
+              link.href.startsWith("#") ? (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  onClick={() => setIsOpen(false)}
+                  className="px-4 py-3 text-base text-zinc-400 rounded-lg transition-colors duration-200 hover:text-white hover:bg-white/5"
+                >
+                  {link.label}
+                </a>
+              ) : (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  onClick={() => setIsOpen(false)}
+                  className="px-4 py-3 text-base text-zinc-400 rounded-lg transition-colors duration-200 hover:text-white hover:bg-white/5"
+                >
+                  {link.label}
+                </Link>
+              )
             ))}
           </nav>
 

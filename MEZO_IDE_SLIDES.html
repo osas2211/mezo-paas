@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mezo IDE - Pitch Deck</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #000;
+      color: #fff;
+      overflow: hidden;
+    }
+
+    .deck {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+    }
+
+    .slide {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 60px 100px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+
+    .slide.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .slide-content {
+      max-width: 1000px;
+      width: 100%;
+    }
+
+    h1 {
+      font-size: 4rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin-bottom: 1.5rem;
+      line-height: 1.1;
+    }
+
+    h2 {
+      font-size: 2.5rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      margin-bottom: 2rem;
+    }
+
+    h3 {
+      font-size: 1.5rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    p {
+      font-size: 1.5rem;
+      color: rgba(255,255,255,0.7);
+      line-height: 1.6;
+      margin-bottom: 1rem;
+    }
+
+    .highlight {
+      color: #b3ec11;
+    }
+
+    .dim {
+      color: rgba(255,255,255,0.3);
+    }
+
+    ul {
+      list-style: none;
+      font-size: 1.4rem;
+      color: rgba(255,255,255,0.7);
+    }
+
+    ul li {
+      padding: 0.75rem 0;
+      padding-left: 2rem;
+      position: relative;
+    }
+
+    ul li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 8px;
+      height: 8px;
+      background: #b3ec11;
+      border-radius: 50%;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 2rem;
+    }
+
+    .card h4 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      color: #fff;
+    }
+
+    .card p {
+      font-size: 1.1rem;
+      margin: 0;
+    }
+
+    .flow {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 3rem;
+      gap: 1rem;
+    }
+
+    .flow-step {
+      text-align: center;
+      flex: 1;
+    }
+
+    .flow-step .number {
+      font-size: 1rem;
+      color: rgba(255,255,255,0.3);
+      margin-bottom: 0.5rem;
+    }
+
+    .flow-step .label {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 0.25rem;
+    }
+
+    .flow-step .desc {
+      font-size: 0.95rem;
+      color: rgba(255,255,255,0.5);
+    }
+
+    .flow-arrow {
+      color: rgba(255,255,255,0.2);
+      font-size: 1.5rem;
+    }
+
+    .big-number {
+      font-size: 5rem;
+      font-weight: 700;
+      color: #b3ec11;
+      line-height: 1;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 3rem;
+      margin-top: 3rem;
+      text-align: center;
+    }
+
+    .stat .value {
+      font-size: 3rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .stat .label {
+      font-size: 1rem;
+      color: rgba(255,255,255,0.4);
+      margin-top: 0.5rem;
+    }
+
+    .quote {
+      font-size: 2rem;
+      font-style: italic;
+      color: rgba(255,255,255,0.8);
+      border-left: 4px solid #b3ec11;
+      padding-left: 2rem;
+      margin: 2rem 0;
+    }
+
+    .cta {
+      display: inline-block;
+      background: #b3ec11;
+      color: #000;
+      font-size: 1.3rem;
+      font-weight: 600;
+      padding: 1rem 2.5rem;
+      border-radius: 100px;
+      margin-top: 2rem;
+      text-decoration: none;
+    }
+
+    .comparison {
+      width: 100%;
+      margin-top: 2rem;
+    }
+
+    .comparison-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1rem;
+      padding: 1rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .comparison-row.header {
+      font-weight: 600;
+      color: rgba(255,255,255,0.5);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .comparison-row .feature {
+      color: rgba(255,255,255,0.7);
+    }
+
+    .comparison-row .old {
+      color: rgba(255,255,255,0.3);
+    }
+
+    .comparison-row .new {
+      color: #b3ec11;
+      font-weight: 500;
+    }
+
+    /* Navigation */
+    .nav {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 8px;
+      z-index: 100;
+    }
+
+    .nav-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .nav-dot.active {
+      background: #b3ec11;
+      transform: scale(1.2);
+    }
+
+    .nav-dot:hover {
+      background: rgba(255,255,255,0.4);
+    }
+
+    .slide-counter {
+      position: fixed;
+      bottom: 30px;
+      right: 40px;
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.3);
+    }
+
+    .controls-hint {
+      position: fixed;
+      bottom: 30px;
+      left: 40px;
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.2);
+    }
+
+    /* Title slide special */
+    .title-slide h1 {
+      font-size: 5rem;
+    }
+
+    .title-slide .tagline {
+      font-size: 1.8rem;
+      color: rgba(255,255,255,0.5);
+      margin-top: 1rem;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #b3ec11;
+      margin-bottom: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="deck">
+
+    <!-- Slide 1: Title -->
+    <div class="slide active title-slide">
+      <div class="slide-content" style="text-align: center;">
+        <div class="logo">MEZO</div>
+        <h1>Mezo IDE</h1>
+        <p class="tagline">The complete developer environment for Bitcoin DeFi</p>
+        <p style="margin-top: 3rem; font-size: 1.1rem; color: rgba(255,255,255,0.3);">
+          Write. Deploy. Ship on Bitcoin.
+        </p>
+      </div>
+    </div>
+
+    <!-- Slide 2: Problem -->
+    <div class="slide">
+      <div class="slide-content">
+        <h3>The Problem</h3>
+        <h2>Building on Mezo today is <span class="highlight">fragmented</span></h2>
+        <ul style="margin-top: 2rem;">
+          <li>Local Solidity setup & tooling configuration</li>
+          <li>Manual RPC and wallet connections</li>
+          <li>Multi-step deployment process</li>
+          <li>Separate contract verification</li>
+          <li>No easy protocol discovery</li>
+        </ul>
+        <p style="margin-top: 2rem; color: rgba(255,255,255,0.4);">
+          This friction slows builders and raises the barrier to entry.
+        </p>
+      </div>
+    </div>
+
+    <!-- Slide 3: Solution -->
+    <div class="slide">
+      <div class="slide-content">
+        <h3>The Solution</h3>
+        <h2>One environment. <span class="highlight">Zero friction.</span></h2>
+        <p>Browser-native IDE purpose-built for Mezo builders.</p>
+        <div class="flow">
+          <div class="flow-step">
+            <div class="number">01</div>
+            <div class="label">Write</div>
+            <div class="desc">Solidity + OpenZeppelin</div>
+          </div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-step">
+            <div class="number">02</div>
+            <div class="label">Compile</div>
+            <div class="desc">Instant feedback</div>
+          </div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-step">
+            <div class="number">03</div>
+            <div class="label">Deploy</div>
+            <div class="desc">One click</div>
+          </div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-step">
+            <div class="number">04</div>
+            <div class="label">Verify</div>
+            <div class="desc">Automatic</div>
+          </div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-step">
+            <div class="number">05</div>
+            <div class="label">Ship</div>
+            <div class="desc">Export dApp</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 4: Features -->
+    <div class="slide">
+      <div class="slide-content">
+        <h3>Features</h3>
+        <h2>Everything you need to build</h2>
+        <div class="grid">
+          <div class="card">
+            <h4>Smart Templates</h4>
+            <p>ERC-20, NFTs, Staking, DEX, Governance — production-ready code to start from.</p>
+          </div>
+          <div class="card">
+            <h4>Protocol Registry</h4>
+            <p>Browse live Mezo protocols, view ABIs, generate TypeScript interfaces.</p>
+          </div>
+          <div class="card">
+            <h4>Transaction Simulator</h4>
+            <p>Preview outcomes before spending gas. See state changes and events.</p>
+          </div>
+          <div class="card">
+            <h4>dApp Generator</h4>
+            <p>Export Next.js + wagmi project with your contract pre-configured.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 5: Comparison -->
+    <div class="slide">
+      <div class="slide-content">
+        <h3>Before & After</h3>
+        <h2>From <span class="dim">30 minutes</span> to <span class="highlight">30 seconds</span></h2>
+        <div class="comparison">
+          <div class="comparison-row header">
+            <div>Step</div>
+            <div>Traditional</div>
+            <div>Mezo IDE</div>
+          </div>
+          <div class="comparison-row">
+            <div class="feature">Environment setup</div>
+            <div class="old">30+ minutes</div>
+            <div class="new">0 minutes</div>
+          </div>
+          <div class="comparison-row">
+            <div class="feature">Deploy contract</div>
+            <div class="old">CLI + scripts</div>
+            <div class="new">One click</div>
+          </div>
+          <div class="comparison-row">
+            <div class="feature">Verification</div>
+            <div class="old">Manual submission</div>
+            <div class="new">Automatic</div>
+          </div>
+          <div class="comparison-row">
+            <div class="feature">Protocol discovery</div>
+            <div class="old">Docs hunting</div>
+            <div class="new">Built-in registry</div>
+          </div>
+          <div class="comparison-row">
+            <div class="feature">Frontend scaffold</div>
+            <div class="old">Manual setup</div>
+            <div class="new">Generated instantly</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slide 6: Yield for Compute -->
+    <div class="slide">
+      <div class="slide-content">
+        <h3>Coming Soon</h3>
+        <h2>Yield for Compute</h2>
+        <p>A novel payment model for decentralized infrastructure.</p>
+        <div class="flow" style="margin-top: 3rem;">
+          <div class="flow-step">
+            <div class="number">01</div>
+            <div class="label">Lock</div>
+            <div class="desc">BTC or stablecoins</div>
+          </div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-step">
+            <div class="number">02</div>
+            <div class="label">Earn</div>
+            <div class="desc">Yield auto-generated</div>
+          </div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-step">
+            <div class="number">03</div>
+            <div class="label">Pay</div>
+            <div class="desc">Yield covers compute</div>
+          </div>
+          <div class="flow-arrow">&rarr;</div>
+          <div class="flow-step">
+            <div class="number">04</div>
+            <div class="label">Withdraw</div>
+            <div class="desc">Full principal anytime</div>
+          </div>
+        </div>
+        <p style="margin-top: 3rem; text-align: center; color: #b3ec11; font-weight: 500;">
+          Zero out-of-pocket costs for builders.
+        </p>
+      </div>
+    </div>
+
+    <!-- Slide 7: Why It Matters -->
+    <div class="slide">
+      <div class="slide-content">
+        <h3>For the Ecosystem</h3>
+        <h2>Why this matters for <span class="highlight">Mezo</span></h2>
+        <ul style="margin-top: 2rem;">
+          <li><strong>Lower barrier</strong> — Anyone can deploy in under 2 minutes</li>
+          <li><strong>Faster experimentation</strong> — More prototypes, more innovation</li>
+          <li><strong>Better discoverability</strong> — Protocol registry strengthens ecosystem</li>
+          <li><strong>Onboarding tool</strong> — Perfect for hackathons and workshops</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Slide 8: CTA -->
+    <div class="slide">
+      <div class="slide-content" style="text-align: center;">
+        <h2>Try it today</h2>
+        <p class="quote" style="border: none; padding: 0; text-align: center; font-style: normal;">
+          Deploy your first contract in <span class="highlight">under 2 minutes</span>.<br>
+          No setup. No friction. Just build.
+        </p>
+        <div class="stat-grid" style="margin-top: 4rem;">
+          <div class="stat">
+            <div class="value">0</div>
+            <div class="label">Setup time</div>
+          </div>
+          <div class="stat">
+            <div class="value">1</div>
+            <div class="label">Click to deploy</div>
+          </div>
+          <div class="stat">
+            <div class="value">&infin;</div>
+            <div class="label">Possibilities</div>
+          </div>
+        </div>
+        <a href="#" class="cta">Open Mezo IDE</a>
+      </div>
+    </div>
+
+    <!-- Slide 9: Thank You -->
+    <div class="slide">
+      <div class="slide-content" style="text-align: center;">
+        <div class="logo">MEZO</div>
+        <h1>Thank you</h1>
+        <p style="margin-top: 2rem;">Questions?</p>
+        <p style="margin-top: 3rem; font-size: 1rem; color: rgba(255,255,255,0.3);">
+          Built for the Mezo community
+        </p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Navigation -->
+  <div class="nav" id="nav"></div>
+  <div class="slide-counter" id="counter">1 / 9</div>
+  <div class="controls-hint">Use arrow keys or click to navigate</div>
+
+  <script>
+    const slides = document.querySelectorAll('.slide');
+    const nav = document.getElementById('nav');
+    const counter = document.getElementById('counter');
+    let current = 0;
+
+    // Create nav dots
+    slides.forEach((_, i) => {
+      const dot = document.createElement('div');
+      dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
+      dot.onclick = () => goTo(i);
+      nav.appendChild(dot);
+    });
+
+    function goTo(index) {
+      slides[current].classList.remove('active');
+      nav.children[current].classList.remove('active');
+
+      current = index;
+      if (current < 0) current = slides.length - 1;
+      if (current >= slides.length) current = 0;
+
+      slides[current].classList.add('active');
+      nav.children[current].classList.add('active');
+      counter.textContent = `${current + 1} / ${slides.length}`;
+    }
+
+    function next() { goTo(current + 1); }
+    function prev() { goTo(current - 1); }
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ') next();
+      if (e.key === 'ArrowLeft') prev();
+    });
+
+    // Click navigation
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('.nav') || e.target.closest('.cta')) return;
+      if (e.clientX > window.innerWidth / 2) next();
+      else prev();
+    });
+  </script>
+</body>
+</html>
