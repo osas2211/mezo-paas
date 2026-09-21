@@ -25,7 +25,9 @@ export function WithdrawalQueuedView({
         functionName: 'getContractStatus',
     })
 
-    const contractBalance = contractStatus ? parseFloat(formatUnits(contractStatus[2] as bigint, 18)) : 0
+    // contractStatus returns: [totalLocked, totalInTreasury, contractBalance, reserveRatio, availableToMove, totalPendingWithdrawals]
+    const statusArray = contractStatus as readonly bigint[] | undefined
+    const contractBalance = statusArray ? parseFloat(formatUnits(statusArray[2], 18)) : 0
     const pendingAmount = parseFloat(amount)
     const canClaim = contractBalance >= pendingAmount
 
