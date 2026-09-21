@@ -8,10 +8,10 @@ export default defineConfig({
   solidity: {
     profiles: {
       default: {
-        version: "0.8.28",
+        version: "0.8.20",
       },
       production: {
-        version: "0.8.28",
+        version: "0.8.20",
         settings: {
           optimizer: {
             enabled: true,
@@ -36,8 +36,8 @@ export default defineConfig({
       chainId: 31611,
       url: configVariable("MEZO_RPC_URL"),
       accounts: [
-        configVariable("MEZO_PRIVATE_KEY"),
-        configVariable("MEZO_PRIVATE_KEY"),
+        configVariable("MEZO_OWNER_PRIVATE_KEY"),
+        configVariable("MEZO_TREASURY_PRIVATE_KEY"),
       ],
     },
   },

@@ -436,6 +436,11 @@ export const MezoBillingV2ABI = {
           name: "_availableToMove",
           type: "uint256",
         },
+        {
+          internalType: "uint256",
+          name: "_totalPendingWithdrawals",
+          type: "uint256",
+        },
       ],
       stateMutability: "view",
       type: "function",
@@ -840,9 +845,105 @@ export const MezoBillingV2ABI = {
           type: "address",
         },
       ],
-      name: "updateTreasury",
+      name: "proposeTreasuryChange",
       outputs: [],
       stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "executeTreasuryChange",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "cancelTreasuryChange",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "claimQueuedWithdrawal",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "totalPendingWithdrawals",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "pendingTreasury",
+      outputs: [
+        {
+          internalType: "address",
+          name: "",
+          type: "address",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "treasuryChangeTimestamp",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "TREASURY_CHANGE_DELAY",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "getPendingTreasuryChange",
+      outputs: [
+        {
+          internalType: "address",
+          name: "_pendingTreasury",
+          type: "address",
+        },
+        {
+          internalType: "uint256",
+          name: "_effectiveTime",
+          type: "uint256",
+        },
+        {
+          internalType: "bool",
+          name: "_canExecute",
+          type: "bool",
+        },
+      ],
+      stateMutability: "view",
       type: "function",
     },
     {

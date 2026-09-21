@@ -1,7 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(npx hardhat compile)",
+      "Bash(npx hardhat test)",
+      "Bash(npm test:*)",
+      "Bash(npm run deploy:local:*)",
+      "Bash(TOKEN_ADDRESS= npm run deploy:local)"
     ]
   }
 }

@@ -9,6 +9,7 @@ export const BillingV2Abi = {
       stateMutability: 'nonpayable',
       type: 'constructor',
     },
+    // Events
     {
       anonymous: false,
       inputs: [
@@ -60,6 +61,32 @@ export const BillingV2Abi = {
     {
       anonymous: false,
       inputs: [
+        { indexed: true, internalType: 'address', name: 'newTreasury', type: 'address' },
+        { indexed: false, internalType: 'uint256', name: 'effectiveTime', type: 'uint256' },
+      ],
+      name: 'TreasuryChangeProposed',
+      type: 'event',
+    },
+    {
+      anonymous: false,
+      inputs: [
+        { indexed: true, internalType: 'address', name: 'oldTreasury', type: 'address' },
+        { indexed: true, internalType: 'address', name: 'newTreasury', type: 'address' },
+      ],
+      name: 'TreasuryUpdated',
+      type: 'event',
+    },
+    {
+      anonymous: false,
+      inputs: [
+        { indexed: true, internalType: 'address', name: 'cancelledTreasury', type: 'address' },
+      ],
+      name: 'TreasuryChangeCancelled',
+      type: 'event',
+    },
+    {
+      anonymous: false,
+      inputs: [
         { indexed: true, internalType: 'address', name: 'whale', type: 'address' },
         { indexed: false, internalType: 'uint256', name: 'amount', type: 'uint256' },
         { indexed: false, internalType: 'uint256', name: 'timestamp', type: 'uint256' },
@@ -72,7 +99,6 @@ export const BillingV2Abi = {
       inputs: [
         { indexed: true, internalType: 'address', name: 'whale', type: 'address' },
         { indexed: false, internalType: 'uint256', name: 'amount', type: 'uint256' },
-        { indexed: false, internalType: 'uint256', name: 'timestamp', type: 'uint256' },
       ],
       name: 'WithdrawalProcessed',
       type: 'event',
@@ -88,12 +114,89 @@ export const BillingV2Abi = {
       type: 'event',
     },
     {
+      anonymous: false,
+      inputs: [
+        { indexed: false, internalType: 'uint256', name: 'oldRatio', type: 'uint256' },
+        { indexed: false, internalType: 'uint256', name: 'newRatio', type: 'uint256' },
+      ],
+      name: 'ReserveRatioUpdated',
+      type: 'event',
+    },
+    {
+      anonymous: false,
+      inputs: [
+        { indexed: false, internalType: 'uint256', name: 'amount', type: 'uint256' },
+        { indexed: false, internalType: 'uint256', name: 'timestamp', type: 'uint256' },
+      ],
+      name: 'EmergencyExcessWithdrawn',
+      type: 'event',
+    },
+    // Constants
+    {
       inputs: [],
       name: 'PENALTY_PERCENT',
       outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
       stateMutability: 'view',
       type: 'function',
     },
+    {
+      inputs: [],
+      name: 'TREASURY_CHANGE_DELAY',
+      outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+      stateMutability: 'view',
+      type: 'function',
+    },
+    // State variables
+    {
+      inputs: [],
+      name: 'totalLockedCollateral',
+      outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+      stateMutability: 'view',
+      type: 'function',
+    },
+    {
+      inputs: [],
+      name: 'totalInTreasury',
+      outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+      stateMutability: 'view',
+      type: 'function',
+    },
+    {
+      inputs: [],
+      name: 'totalPendingWithdrawals',
+      outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+      stateMutability: 'view',
+      type: 'function',
+    },
+    {
+      inputs: [],
+      name: 'reserveRatioBps',
+      outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+      stateMutability: 'view',
+      type: 'function',
+    },
+    {
+      inputs: [],
+      name: 'pendingTreasury',
+      outputs: [{ internalType: 'address', name: '', type: 'address' }],
+      stateMutability: 'view',
+      type: 'function',
+    },
+    {
+      inputs: [],
+      name: 'treasuryChangeTimestamp',
+      outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+      stateMutability: 'view',
+      type: 'function',
+    },
+    {
+      inputs: [],
+      name: 'treasury',
+      outputs: [{ internalType: 'address', name: '', type: 'address' }],
+      stateMutability: 'view',
+      type: 'function',
+    },
+    // View functions
     {
       inputs: [{ internalType: 'address', name: '_whale', type: 'address' }],
       name: 'getLockStatus',
@@ -138,6 +241,18 @@ export const BillingV2Abi = {
         { internalType: 'uint256', name: '_contractBalance', type: 'uint256' },
         { internalType: 'uint256', name: '_reserveRatio', type: 'uint256' },
         { internalType: 'uint256', name: '_availableToMove', type: 'uint256' },
+        { internalType: 'uint256', name: '_totalPendingWithdrawals', type: 'uint256' },
+      ],
+      stateMutability: 'view',
+      type: 'function',
+    },
+    {
+      inputs: [],
+      name: 'getPendingTreasuryChange',
+      outputs: [
+        { internalType: 'address', name: '_pendingTreasury', type: 'address' },
+        { internalType: 'uint256', name: '_effectiveTime', type: 'uint256' },
+        { internalType: 'bool', name: '_canExecute', type: 'bool' },
       ],
       stateMutability: 'view',
       type: 'function',
@@ -162,27 +277,6 @@ export const BillingV2Abi = {
       type: 'function',
     },
     {
-      inputs: [],
-      name: 'totalLockedCollateral',
-      outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
-      stateMutability: 'view',
-      type: 'function',
-    },
-    {
-      inputs: [],
-      name: 'totalInTreasury',
-      outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
-      stateMutability: 'view',
-      type: 'function',
-    },
-    {
-      inputs: [],
-      name: 'reserveRatioBps',
-      outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
-      stateMutability: 'view',
-      type: 'function',
-    },
-    {
       inputs: [
         { internalType: 'uint256', name: 'lockedAmount', type: 'uint256' },
         { internalType: 'uint256', name: 'annualYieldBps', type: 'uint256' },
@@ -192,6 +286,43 @@ export const BillingV2Abi = {
       stateMutability: 'pure',
       type: 'function',
     },
+    // User functions
+    {
+      inputs: [
+        { internalType: 'address', name: 'userAppWallet', type: 'address' },
+        { internalType: 'uint256', name: '_amount', type: 'uint256' },
+      ],
+      name: 'topUpAccount',
+      outputs: [],
+      stateMutability: 'nonpayable',
+      type: 'function',
+    },
+    {
+      inputs: [
+        { internalType: 'address', name: 'userAppWallet', type: 'address' },
+        { internalType: 'uint256', name: '_amount', type: 'uint256' },
+        { internalType: 'uint256', name: '_durationInSeconds', type: 'uint256' },
+      ],
+      name: 'lockCollateral',
+      outputs: [],
+      stateMutability: 'nonpayable',
+      type: 'function',
+    },
+    {
+      inputs: [{ internalType: 'address', name: 'userAppWallet', type: 'address' }],
+      name: 'withdrawCollateral',
+      outputs: [],
+      stateMutability: 'nonpayable',
+      type: 'function',
+    },
+    {
+      inputs: [],
+      name: 'claimQueuedWithdrawal',
+      outputs: [],
+      stateMutability: 'nonpayable',
+      type: 'function',
+    },
+    // Admin functions
     {
       inputs: [
         { internalType: 'address', name: 'whale', type: 'address' },
@@ -208,6 +339,79 @@ export const BillingV2Abi = {
         { internalType: 'uint256[]', name: 'yieldAmounts', type: 'uint256[]' },
       ],
       name: 'batchCreditYield',
+      outputs: [],
+      stateMutability: 'nonpayable',
+      type: 'function',
+    },
+    {
+      inputs: [
+        { internalType: 'address', name: 'whale', type: 'address' },
+        { internalType: 'address', name: 'userAppWallet', type: 'address' },
+      ],
+      name: 'processQueuedWithdrawal',
+      outputs: [],
+      stateMutability: 'nonpayable',
+      type: 'function',
+    },
+    {
+      inputs: [{ internalType: 'uint256', name: '_amount', type: 'uint256' }],
+      name: 'moveCollateralToTreasury',
+      outputs: [],
+      stateMutability: 'nonpayable',
+      type: 'function',
+    },
+    {
+      inputs: [{ internalType: 'uint256', name: '_amount', type: 'uint256' }],
+      name: 'returnCollateralFromTreasury',
+      outputs: [],
+      stateMutability: 'nonpayable',
+      type: 'function',
+    },
+    {
+      inputs: [{ internalType: 'address', name: '_newTreasury', type: 'address' }],
+      name: 'proposeTreasuryChange',
+      outputs: [],
+      stateMutability: 'nonpayable',
+      type: 'function',
+    },
+    {
+      inputs: [],
+      name: 'executeTreasuryChange',
+      outputs: [],
+      stateMutability: 'nonpayable',
+      type: 'function',
+    },
+    {
+      inputs: [],
+      name: 'cancelTreasuryChange',
+      outputs: [],
+      stateMutability: 'nonpayable',
+      type: 'function',
+    },
+    {
+      inputs: [{ internalType: 'uint256', name: '_newRatioBps', type: 'uint256' }],
+      name: 'updateReserveRatio',
+      outputs: [],
+      stateMutability: 'nonpayable',
+      type: 'function',
+    },
+    {
+      inputs: [],
+      name: 'pause',
+      outputs: [],
+      stateMutability: 'nonpayable',
+      type: 'function',
+    },
+    {
+      inputs: [],
+      name: 'unpause',
+      outputs: [],
+      stateMutability: 'nonpayable',
+      type: 'function',
+    },
+    {
+      inputs: [],
+      name: 'emergencyWithdraw',
       outputs: [],
       stateMutability: 'nonpayable',
       type: 'function',

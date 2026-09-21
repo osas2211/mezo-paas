@@ -4,7 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "hardhat test",
+    "test:security": "hardhat test test/BillingContractV2.test.ts",
+    "compile": "hardhat compile",
+    "compile:production": "hardhat compile --profile production",
+    "clean": "hardhat clean",
+    "deploy:local": "hardhat run scripts/deploy-v2-testnet.ts --network hardhatMainnet",
+    "deploy:testnet": "hardhat run scripts/deploy-v2-testnet.ts --network mezoTestnet"
   },
   "keywords": [],
   "author": "",
