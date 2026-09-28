@@ -19,6 +19,7 @@ import { ProcessingView } from "./lock-collateral-views/processing-view"
 import { SuccessView } from "./lock-collateral-views/success-view"
 import { ActiveVaultView } from "./lock-collateral-views/active-vault-view"
 import { WithdrawalQueuedView } from "./lock-collateral-views/withdrawal-queued-view"
+import { ReserveDisclosure } from "./lock-collateral-views/reserve-disclosure"
 
 export function LockCollateralButton() {
     const [isModalOpen, setIsModalOpen] = useState(false)
@@ -289,6 +290,12 @@ export function LockCollateralButton() {
                 closable={step === "input" || step === "active" || step === "success" || step === "success_withdraw" || step === "withdrawal_queued" || !isConnected}
             >
                 {renderModalContent()}
+
+                {isConnected && (step === "input" || step === "active") && (
+                    <div className="mt-4">
+                        <ReserveDisclosure />
+                    </div>
+                )}
 
                 {/* Footer hint */}
                 {isConnected && step === "input" && (

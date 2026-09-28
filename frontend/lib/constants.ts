@@ -9,12 +9,12 @@ export const BILLING_CONTRACT_ADDRESS =
   "0x31435dCa932F66cf1754a54467dA34F29F52482a"
 
 // V2 Billing Contract with Treasury Management & Yield Support
-// Deployed to Mezo Testnet (Security Audit Fix - 2026-09-21)
+// Deployed to Mezo Testnet (2026-09-28)
 // Owner: 0x155c4e84d2936bebf3b90f667466e61b9655c92c
 // Treasury: 0x912718a6f4236dc171d9097199190690c132dcfa
 export const BILLING_CONTRACT_V2_ADDRESS =
   process.env.NEXT_PUBLIC_BILLING_CONTRACT_V2 ||
-  "0x6f0730cb0ed4939f447ec01970ec4351186ce5a2"
+  "0x1fdf42769cb6f9e662a52573684bfd53aecbac99"
 
 // Yield configuration
 export const ANNUAL_YIELD_BPS = 800 // 8% APY in basis points

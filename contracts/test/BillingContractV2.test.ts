@@ -36,6 +36,7 @@ describe("MezoHostBillingV2 Security Tests", async () => {
 
   const SEVEN_DAYS = 7n * 24n * 60n * 60n;
   const TWENTY_FOUR_HOURS = 24n * 60n * 60n;
+  const TREASURY_MOVE_DELAY = 48n * 60n * 60n;
 
   beforeEach(async () => {
     // Create fresh network connection for each test
@@ -110,6 +111,15 @@ describe("MezoHostBillingV2 Security Tests", async () => {
     await provider.send("evm_mine", []);
   }
 
+  // Helper to move collateral to treasury through the 48h timelock
+  async function moveToTreasury(amount: bigint) {
+    await billing.write.proposeTreasuryMove([amount], {
+      account: owner.account!,
+    });
+    await advanceTime(Number(TREASURY_MOVE_DELAY));
+    await billing.write.executeTreasuryMove({ account: owner.account! });
+  }
+
   // =========================================
   // Finding 1: Emergency Withdraw Tests
   // =========================================
@@ -153,9 +163,7 @@ describe("MezoHostBillingV2 Security Tests", async () => {
       await lockAs(user1, parseEther("100"));
 
       // Move 80 to treasury (within reserve ratio)
-      await billing.write.moveCollateralToTreasury([parseEther("80")], {
-        account: owner.account!,
-      });
+      await moveToTreasury(parseEther("80"));
 
       // Advance time past lock
       await advanceTime(Number(SEVEN_DAYS) + 1);
@@ -284,9 +292,7 @@ describe("MezoHostBillingV2 Security Tests", async () => {
       await lockAs(user1, parseEther("100"));
 
       // Move 80 to treasury
-      await billing.write.moveCollateralToTreasury([parseEther("80")], {
-        account: owner.account!,
-      });
+      await moveToTreasury(parseEther("80"));
 
       // Advance time past lock
       await advanceTime(Number(SEVEN_DAYS) + 1);
@@ -328,9 +334,7 @@ describe("MezoHostBillingV2 Security Tests", async () => {
       await lockAs(user1, parseEther("100"));
 
       // Move 80 to treasury
-      await billing.write.moveCollateralToTreasury([parseEther("80")], {
-        account: owner.account!,
-      });
+      await moveToTreasury(parseEther("80"));
 
       // Advance time
       await advanceTime(Number(SEVEN_DAYS) + 1);
@@ -358,9 +362,7 @@ describe("MezoHostBillingV2 Security Tests", async () => {
       await lockAs(user1, parseEther("100"));
 
       // Move to treasury to force queue
-      await billing.write.moveCollateralToTreasury([parseEther("80")], {
-        account: owner.account!,
-      });
+      await moveToTreasury(parseEther("80"));
 
       // Advance time
       await advanceTime(Number(SEVEN_DAYS) + 1);
@@ -382,9 +384,7 @@ describe("MezoHostBillingV2 Security Tests", async () => {
       await lockAs(user1, parseEther("100"));
 
       // Move to treasury
-      await billing.write.moveCollateralToTreasury([parseEther("80")], {
-        account: owner.account!,
-      });
+      await moveToTreasury(parseEther("80"));
 
       // Advance time
       await advanceTime(Number(SEVEN_DAYS) + 1);
@@ -430,9 +430,7 @@ describe("MezoHostBillingV2 Security Tests", async () => {
       await lockAs(user1, parseEther("100"));
 
       // Move to treasury
-      await billing.write.moveCollateralToTreasury([parseEther("80")], {
-        account: owner.account!,
-      });
+      await moveToTreasury(parseEther("80"));
 
       // Advance time
       await advanceTime(Number(SEVEN_DAYS) + 1);
@@ -448,9 +446,7 @@ describe("MezoHostBillingV2 Security Tests", async () => {
     it("should decrement totalPendingWithdrawals on claim", async () => {
       // Setup queued withdrawal
       await lockAs(user1, parseEther("100"));
-      await billing.write.moveCollateralToTreasury([parseEther("80")], {
-        account: owner.account!,
-      });
+      await moveToTreasury(parseEther("80"));
 
       await advanceTime(Number(SEVEN_DAYS) + 1);
 
@@ -484,9 +480,7 @@ describe("MezoHostBillingV2 Security Tests", async () => {
       await lockAs(user2, parseEther("100"));
 
       // Move 160 to treasury (200 * 80% = 160 available with 20% reserve)
-      await billing.write.moveCollateralToTreasury([parseEther("160")], {
-        account: owner.account!,
-      });
+      await moveToTreasury(parseEther("160"));
 
       // Advance time
       await advanceTime(Number(SEVEN_DAYS) + 1);
@@ -505,7 +499,7 @@ describe("MezoHostBillingV2 Security Tests", async () => {
       // Try to move more - should fail
       await assert.rejects(
         async () => {
-          await billing.write.moveCollateralToTreasury([parseEther("1")], {
+          await billing.write.proposeTreasuryMove([parseEther("1")], {
             account: owner.account!,
           });
         },
@@ -529,9 +523,7 @@ describe("MezoHostBillingV2 Security Tests", async () => {
       assert.strictEqual(status[5], 0n); // pending
 
       // Move to treasury and queue withdrawal
-      await billing.write.moveCollateralToTreasury([parseEther("80")], {
-        account: owner.account!,
-      });
+      await moveToTreasury(parseEther("80"));
 
       await advanceTime(Number(SEVEN_DAYS) + 1);
 
@@ -550,9 +542,7 @@ describe("MezoHostBillingV2 Security Tests", async () => {
     it("should not allow double withdrawal from queue", async () => {
       // Setup queued withdrawal
       await lockAs(user1, parseEther("100"));
-      await billing.write.moveCollateralToTreasury([parseEther("80")], {
-        account: owner.account!,
-      });
+      await moveToTreasury(parseEther("80"));
 
       await advanceTime(Number(SEVEN_DAYS) + 1);
 

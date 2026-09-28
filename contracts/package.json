@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "hardhat test",
-    "test:security": "hardhat test test/BillingContractV2.test.ts",
+    "test:security": "hardhat test test/BillingContractV2.test.ts test/BillingContractV2.round2.test.ts",
     "compile": "hardhat compile",
     "compile:production": "hardhat compile --profile production",
     "clean": "hardhat clean",

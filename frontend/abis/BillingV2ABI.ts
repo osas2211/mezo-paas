@@ -175,6 +175,44 @@ export const MezoBillingV2ABI = {
         {
           indexed: true,
           internalType: "address",
+          name: "whale",
+          type: "address",
+        },
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "penalty",
+          type: "uint256",
+        },
+      ],
+      name: "EarlyWithdrawalPenaltyPaid",
+      type: "event",
+    },
+    {
+      anonymous: false,
+      inputs: [
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "amount",
+          type: "uint256",
+        },
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "timestamp",
+          type: "uint256",
+        },
+      ],
+      name: "EmergencyExcessWithdrawn",
+      type: "event",
+    },
+    {
+      anonymous: false,
+      inputs: [
+        {
+          indexed: true,
+          internalType: "address",
           name: "previousOwner",
           type: "address",
         },
@@ -226,6 +264,76 @@ export const MezoBillingV2ABI = {
         {
           indexed: true,
           internalType: "address",
+          name: "cancelledTreasury",
+          type: "address",
+        },
+      ],
+      name: "TreasuryChangeCancelled",
+      type: "event",
+    },
+    {
+      anonymous: false,
+      inputs: [
+        {
+          indexed: true,
+          internalType: "address",
+          name: "newTreasury",
+          type: "address",
+        },
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "effectiveTime",
+          type: "uint256",
+        },
+      ],
+      name: "TreasuryChangeProposed",
+      type: "event",
+    },
+    {
+      anonymous: false,
+      inputs: [
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "amount",
+          type: "uint256",
+        },
+      ],
+      name: "TreasuryMoveCancelled",
+      type: "event",
+    },
+    {
+      anonymous: false,
+      inputs: [
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "amount",
+          type: "uint256",
+        },
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "executeAfter",
+          type: "uint256",
+        },
+        {
+          indexed: false,
+          internalType: "uint256",
+          name: "expiresAt",
+          type: "uint256",
+        },
+      ],
+      name: "TreasuryMoveProposed",
+      type: "event",
+    },
+    {
+      anonymous: false,
+      inputs: [
+        {
+          indexed: true,
+          internalType: "address",
           name: "oldTreasury",
           type: "address",
         },
@@ -265,12 +373,6 @@ export const MezoBillingV2ABI = {
           indexed: false,
           internalType: "uint256",
           name: "amount",
-          type: "uint256",
-        },
-        {
-          indexed: false,
-          internalType: "uint256",
-          name: "timestamp",
           type: "uint256",
         },
       ],
@@ -329,7 +431,72 @@ export const MezoBillingV2ABI = {
     },
     {
       inputs: [],
+      name: "MAX_RESERVE_RATIO_BPS",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "MIN_RESERVE_RATIO_BPS",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [],
       name: "PENALTY_PERCENT",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "TREASURY_CHANGE_DELAY",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "TREASURY_MOVE_DELAY",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "TREASURY_MOVE_EXECUTION_WINDOW",
       outputs: [
         {
           internalType: "uint256",
@@ -354,6 +521,27 @@ export const MezoBillingV2ABI = {
         },
       ],
       name: "batchCreditYield",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "cancelTreasuryChange",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "cancelTreasuryMove",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "claimQueuedWithdrawal",
       outputs: [],
       stateMutability: "nonpayable",
       type: "function",
@@ -409,6 +597,20 @@ export const MezoBillingV2ABI = {
     },
     {
       inputs: [],
+      name: "executeTreasuryChange",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "executeTreasuryMove",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [],
       name: "getContractStatus",
       outputs: [
         {
@@ -446,6 +648,44 @@ export const MezoBillingV2ABI = {
       type: "function",
     },
     {
+      inputs: [],
+      name: "getLiquidityStatus",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "contractBalance",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "totalLiabilities",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "liquidityBps",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "guaranteedReserveBps",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "pendingMove",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "pendingMoveExecuteAfter",
+          type: "uint256",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
       inputs: [
         {
           internalType: "address",
@@ -474,6 +714,96 @@ export const MezoBillingV2ABI = {
           internalType: "uint256",
           name: "lockTimestamp",
           type: "uint256",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "getPendingTreasuryChange",
+      outputs: [
+        {
+          internalType: "address",
+          name: "_pendingTreasury",
+          type: "address",
+        },
+        {
+          internalType: "uint256",
+          name: "_effectiveTime",
+          type: "uint256",
+        },
+        {
+          internalType: "bool",
+          name: "_canExecute",
+          type: "bool",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "getPendingTreasuryMove",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "_amount",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "_executeAfter",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "_expiresAt",
+          type: "uint256",
+        },
+        {
+          internalType: "bool",
+          name: "_canExecute",
+          type: "bool",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "_whale",
+          type: "address",
+        },
+      ],
+      name: "getQueuedWithdrawal",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "amount",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "penalty",
+          type: "uint256",
+        },
+        {
+          internalType: "uint256",
+          name: "requestTimestamp",
+          type: "uint256",
+        },
+        {
+          internalType: "bool",
+          name: "isPending",
+          type: "bool",
+        },
+        {
+          internalType: "bool",
+          name: "claimableNow",
+          type: "bool",
         },
       ],
       stateMutability: "view",
@@ -619,19 +949,6 @@ export const MezoBillingV2ABI = {
       type: "function",
     },
     {
-      inputs: [
-        {
-          internalType: "uint256",
-          name: "_amount",
-          type: "uint256",
-        },
-      ],
-      name: "moveCollateralToTreasury",
-      outputs: [],
-      stateMutability: "nonpayable",
-      type: "function",
-    },
-    {
       inputs: [],
       name: "owner",
       outputs: [
@@ -665,6 +982,45 @@ export const MezoBillingV2ABI = {
       type: "function",
     },
     {
+      inputs: [],
+      name: "pendingMoveAmount",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "pendingMoveTimestamp",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "pendingTreasury",
+      outputs: [
+        {
+          internalType: "address",
+          name: "",
+          type: "address",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
       inputs: [
         {
           internalType: "address",
@@ -678,6 +1034,32 @@ export const MezoBillingV2ABI = {
         },
       ],
       name: "processQueuedWithdrawal",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "_newTreasury",
+          type: "address",
+        },
+      ],
+      name: "proposeTreasuryChange",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [
+        {
+          internalType: "uint256",
+          name: "_amount",
+          type: "uint256",
+        },
+      ],
+      name: "proposeTreasuryMove",
       outputs: [],
       stateMutability: "nonpayable",
       type: "function",
@@ -773,6 +1155,19 @@ export const MezoBillingV2ABI = {
       type: "function",
     },
     {
+      inputs: [],
+      name: "totalPendingWithdrawals",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
       inputs: [
         {
           internalType: "address",
@@ -819,6 +1214,19 @@ export const MezoBillingV2ABI = {
     },
     {
       inputs: [],
+      name: "treasuryChangeTimestamp",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+    {
+      inputs: [],
       name: "unpause",
       outputs: [],
       stateMutability: "nonpayable",
@@ -835,115 +1243,6 @@ export const MezoBillingV2ABI = {
       name: "updateReserveRatio",
       outputs: [],
       stateMutability: "nonpayable",
-      type: "function",
-    },
-    {
-      inputs: [
-        {
-          internalType: "address",
-          name: "_newTreasury",
-          type: "address",
-        },
-      ],
-      name: "proposeTreasuryChange",
-      outputs: [],
-      stateMutability: "nonpayable",
-      type: "function",
-    },
-    {
-      inputs: [],
-      name: "executeTreasuryChange",
-      outputs: [],
-      stateMutability: "nonpayable",
-      type: "function",
-    },
-    {
-      inputs: [],
-      name: "cancelTreasuryChange",
-      outputs: [],
-      stateMutability: "nonpayable",
-      type: "function",
-    },
-    {
-      inputs: [],
-      name: "claimQueuedWithdrawal",
-      outputs: [],
-      stateMutability: "nonpayable",
-      type: "function",
-    },
-    {
-      inputs: [],
-      name: "totalPendingWithdrawals",
-      outputs: [
-        {
-          internalType: "uint256",
-          name: "",
-          type: "uint256",
-        },
-      ],
-      stateMutability: "view",
-      type: "function",
-    },
-    {
-      inputs: [],
-      name: "pendingTreasury",
-      outputs: [
-        {
-          internalType: "address",
-          name: "",
-          type: "address",
-        },
-      ],
-      stateMutability: "view",
-      type: "function",
-    },
-    {
-      inputs: [],
-      name: "treasuryChangeTimestamp",
-      outputs: [
-        {
-          internalType: "uint256",
-          name: "",
-          type: "uint256",
-        },
-      ],
-      stateMutability: "view",
-      type: "function",
-    },
-    {
-      inputs: [],
-      name: "TREASURY_CHANGE_DELAY",
-      outputs: [
-        {
-          internalType: "uint256",
-          name: "",
-          type: "uint256",
-        },
-      ],
-      stateMutability: "view",
-      type: "function",
-    },
-    {
-      inputs: [],
-      name: "getPendingTreasuryChange",
-      outputs: [
-        {
-          internalType: "address",
-          name: "_pendingTreasury",
-          type: "address",
-        },
-        {
-          internalType: "uint256",
-          name: "_effectiveTime",
-          type: "uint256",
-        },
-        {
-          internalType: "bool",
-          name: "_canExecute",
-          type: "bool",
-        },
-      ],
-      stateMutability: "view",
       type: "function",
     },
     {
@@ -983,6 +1282,11 @@ export const MezoBillingV2ABI = {
           internalType: "bool",
           name: "isPending",
           type: "bool",
+        },
+        {
+          internalType: "uint256",
+          name: "penalty",
+          type: "uint256",
         },
       ],
       stateMutability: "view",

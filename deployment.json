@@ -1,0 +1,11 @@
+{
+  "network": "mezoTestnet",
+  "chainId": 31611,
+  "owner": "0x155c4e84d2936bebf3b90f667466e61b9655c92c",
+  "treasury": "0x912718a6f4236dc171d9097199190690c132dcfa",
+  "tokenAddress": "0x118917a40FAF1CD7a13dB0Ef56C86De7973Ac503",
+  "billingAddress": "0x1fdf42769cb6f9e662a52573684bfd53aecbac99",
+  "tokenDeployed": false,
+  "timestamp": "2026-09-28T16:03:45.165Z",
+  "blockNumber": "15830795"
+}

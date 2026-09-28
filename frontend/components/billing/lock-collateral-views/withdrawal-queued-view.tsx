@@ -18,18 +18,32 @@ export function WithdrawalQueuedView({
     const [claimState, setClaimState] = useState<'idle' | 'claiming' | 'success' | 'error'>('idle')
     const [errorMessage, setErrorMessage] = useState<string>('')
 
-    // Read contract balance to check if claim is possible
+    // Read contract balance for display
     const { data: contractStatus, refetch: refetchStatus } = useReadContract({
         address: BILLING_CONTRACT_V2_ADDRESS as `0x${string}`,
         abi: MezoBillingV2ABI.abi,
         functionName: 'getContractStatus',
     })
 
+    // Queued request incl. deferred penalty; the contract decides claimability
+    // (balance must cover payout + penalty, which settle together)
+    const { data: queuedWithdrawal, refetch: refetchQueued } = useReadContract({
+        address: BILLING_CONTRACT_V2_ADDRESS as `0x${string}`,
+        abi: MezoBillingV2ABI.abi,
+        functionName: 'getQueuedWithdrawal',
+        args: address ? [address] : undefined,
+        query: { enabled: !!address },
+    })
+
     // contractStatus returns: [totalLocked, totalInTreasury, contractBalance, reserveRatio, availableToMove, totalPendingWithdrawals]
     const statusArray = contractStatus as readonly bigint[] | undefined
     const contractBalance = statusArray ? parseFloat(formatUnits(statusArray[2], 18)) : 0
+    // getQueuedWithdrawal returns: [amount, penalty, requestTimestamp, isPending, claimableNow]
+    const queued = queuedWithdrawal as readonly [bigint, bigint, bigint, boolean, boolean] | undefined
     const pendingAmount = parseFloat(amount)
-    const canClaim = contractBalance >= pendingAmount
+    const penaltyAmount = queued ? parseFloat(formatUnits(queued[1], 18)) : 0
+    const requiredBalance = pendingAmount + penaltyAmount
+    const canClaim = queued ? queued[4] : false
 
     const { writeContract, data: hash } = useWriteContract()
 
@@ -75,6 +89,7 @@ export function WithdrawalQueuedView({
 
     const handleRefresh = () => {
         refetchStatus()
+        refetchQueued()
     }
 
     if (claimState === 'success') {
@@ -129,8 +144,14 @@ export function WithdrawalQueuedView({
                     </span>
                 </div>
                 <p className="text-xs text-white/50 mt-2">
-                    Need: {pendingAmount.toFixed(4)} MUSD
+                    Need: {requiredBalance.toFixed(4)} MUSD
                 </p>
+                {penaltyAmount > 0 && (
+                    <p className="text-xs text-white/50 mt-1">
+                        Includes a {penaltyAmount.toFixed(4)} MUSD early-withdrawal penalty, charged only when your
+                        payout of {pendingAmount.toFixed(4)} MUSD is delivered.
+                    </p>
+                )}
             </div>
 
             {canClaim ? (
@@ -182,8 +203,9 @@ export function WithdrawalQueuedView({
 
             <div className="bg-white/5 border border-white/10 p-3 rounded-lg flex gap-3 text-[11px] text-white/50 leading-normal">
                 <span>
-                    This queue happens when contract reserves are low due to active yield generation.
-                    Your funds are secure and you can claim them once the balance is restored.
+                    This queue happens when contract reserves are low because collateral is held by the
+                    treasury for yield. Your claim is recorded on-chain and you can claim it yourself,
+                    even if the contract is paused, once the treasury returns funds.
                 </span>
             </div>
 

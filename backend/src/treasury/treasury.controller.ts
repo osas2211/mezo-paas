@@ -82,19 +82,68 @@ export class TreasuryController {
   }
 
   /**
-   * Move collateral to treasury for yield generation (Admin only)
+   * Get the pending treasury move, if any (public so users can see upcoming moves)
+   */
+  @Get('pending-move')
+  async getPendingMove() {
+    try {
+      return { pendingMove: await this.treasuryService.getPendingTreasuryMove() };
+    } catch (error) {
+      throw new HttpException(
+        `Failed to get pending treasury move: ${error.message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Propose moving collateral to treasury for yield generation (Admin only).
+   * Executable after the contract's 48h timelock via POST move-to-yield/execute.
    */
   @Post('move-to-yield')
   @UseGuards(AdminGuard)
   async moveToYield(@Body() dto: MoveCollateralDto) {
-    const result = await this.treasuryService.moveCollateralToTreasury(
-      dto.amount,
-      dto.notes,
-    );
+    const result = await this.treasuryService.proposeTreasuryMove(dto.amount);
 
     if (!result.success) {
       throw new HttpException(
-        result.error || 'Failed to move collateral',
+        result.error || 'Failed to propose treasury move',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    return result;
+  }
+
+  /**
+   * Execute the pending treasury move after its timelock (Admin only)
+   */
+  @Post('move-to-yield/execute')
+  @UseGuards(AdminGuard)
+  async executeMoveToYield(@Body() body: { notes?: string }) {
+    const result = await this.treasuryService.executeTreasuryMove(body?.notes);
+
+    if (!result.success) {
+      throw new HttpException(
+        result.error || 'Failed to execute treasury move',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    return result;
+  }
+
+  /**
+   * Cancel the pending treasury move (Admin only)
+   */
+  @Post('move-to-yield/cancel')
+  @UseGuards(AdminGuard)
+  async cancelMoveToYield() {
+    const result = await this.treasuryService.cancelTreasuryMove();
+
+    if (!result.success) {
+      throw new HttpException(
+        result.error || 'Failed to cancel treasury move',
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -173,10 +222,10 @@ export class TreasuryController {
   @Post('update-reserve-ratio')
   @UseGuards(AdminGuard)
   async updateReserveRatio(@Body() dto: UpdateReserveRatioDto) {
-    // Validate range (10% - 50%)
-    if (dto.newRatioBps < 1000 || dto.newRatioBps > 5000) {
+    // Validate range (20% - 50%), matching the contract's MIN/MAX_RESERVE_RATIO_BPS
+    if (dto.newRatioBps < 2000 || dto.newRatioBps > 5000) {
       throw new HttpException(
-        'Reserve ratio must be between 1000 (10%) and 5000 (50%) basis points',
+        'Reserve ratio must be between 2000 (20%) and 5000 (50%) basis points',
         HttpStatus.BAD_REQUEST,
       );
     }

@@ -14,6 +14,13 @@ export interface TreasuryStatus {
   activeVaults: number;
 }
 
+export interface PendingTreasuryMove {
+  amount: string;
+  executeAfter: string;
+  expiresAt: string;
+  canExecute: boolean;
+}
+
 export interface TreasuryOperationResult {
   success: boolean;
   txHash?: string;
@@ -93,12 +100,10 @@ export class TreasuryService {
   }
 
   /**
-   * Move collateral from contract to treasury for yield generation
+   * Propose moving collateral from contract to treasury (step 1 of 2).
+   * The contract enforces a 48h timelock so users can exit before the move executes.
    */
-  async moveCollateralToTreasury(
-    amount: string,
-    notes?: string,
-  ): Promise<TreasuryOperationResult> {
+  async proposeTreasuryMove(amount: string): Promise<TreasuryOperationResult> {
     if (!this.contractWithSigner) {
       return { success: false, error: 'Platform operator not configured' };
     }
@@ -106,12 +111,37 @@ export class TreasuryService {
     try {
       const amountWei = ethers.parseUnits(amount, 18);
 
-      this.logger.log(`Moving ${amount} tokens to treasury for yield generation`);
+      this.logger.log(`Proposing move of ${amount} tokens to treasury (48h timelock)`);
 
-      const tx = await this.contractWithSigner.moveCollateralToTreasury(amountWei);
+      const tx = await this.contractWithSigner.proposeTreasuryMove(amountWei);
       const receipt = await tx.wait();
 
-      // Record the operation
+      this.logger.log(`Treasury move proposed. TX: ${receipt.hash}`);
+
+      return { success: true, txHash: receipt.hash };
+    } catch (error) {
+      this.logger.error(`Failed to propose treasury move: ${error.message}`);
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Execute a proposed treasury move once its timelock has expired (step 2 of 2)
+   */
+  async executeTreasuryMove(notes?: string): Promise<TreasuryOperationResult> {
+    if (!this.contractWithSigner) {
+      return { success: false, error: 'Platform operator not configured' };
+    }
+
+    try {
+      const pending = await this.contract.getPendingTreasuryMove();
+      const amount = ethers.formatUnits(pending._amount, 18);
+
+      this.logger.log(`Executing treasury move of ${amount} tokens`);
+
+      const tx = await this.contractWithSigner.executeTreasuryMove();
+      const receipt = await tx.wait();
+
       await this.prisma.treasuryOperation.create({
         data: {
           type: TreasuryOpType.MOVE_TO_YIELD,
@@ -125,9 +155,46 @@ export class TreasuryService {
 
       return { success: true, txHash: receipt.hash };
     } catch (error) {
-      this.logger.error(`Failed to move collateral to treasury: ${error.message}`);
+      this.logger.error(`Failed to execute treasury move: ${error.message}`);
       return { success: false, error: error.message };
     }
+  }
+
+  /**
+   * Cancel a pending (or expired) treasury move
+   */
+  async cancelTreasuryMove(): Promise<TreasuryOperationResult> {
+    if (!this.contractWithSigner) {
+      return { success: false, error: 'Platform operator not configured' };
+    }
+
+    try {
+      const tx = await this.contractWithSigner.cancelTreasuryMove();
+      const receipt = await tx.wait();
+
+      this.logger.log(`Treasury move cancelled. TX: ${receipt.hash}`);
+
+      return { success: true, txHash: receipt.hash };
+    } catch (error) {
+      this.logger.error(`Failed to cancel treasury move: ${error.message}`);
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Get the pending treasury move, if any
+   */
+  async getPendingTreasuryMove(): Promise<PendingTreasuryMove | null> {
+    const pending = await this.contract.getPendingTreasuryMove();
+    if (pending._amount === 0n) {
+      return null;
+    }
+    return {
+      amount: ethers.formatUnits(pending._amount, 18),
+      executeAfter: new Date(Number(pending._executeAfter) * 1000).toISOString(),
+      expiresAt: new Date(Number(pending._expiresAt) * 1000).toISOString(),
+      canExecute: pending._canExecute,
+    };
   }
 
   /**

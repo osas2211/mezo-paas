@@ -13,6 +13,11 @@
  * - MEZO_OWNER_PRIVATE_KEY: Private key for owner/deployer
  * - MEZO_TREASURY_PRIVATE_KEY: Private key for treasury wallet
  * - TOKEN_ADDRESS: (Optional) ERC20 token address. If not set, deploys MockBTC
+ * - SKIP_CONFIG_UPDATE: (Optional) "true" to skip writing config files
+ *
+ * On non-local networks this writes <repo>/deployment.json and updates
+ * <repo>/frontend/lib/constants.ts. Backend .env files are NOT edited; the
+ * CONTRACT_ADDRESS_V2 line to set is printed at the end.
  *
  * Usage:
  *   npx hardhat run scripts/deploy-v2-testnet.ts --network mezoTestnet
@@ -21,8 +26,22 @@
  *   npx hardhat run scripts/deploy-v2-testnet.ts --network hardhatMainnet
  */
 
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { network } from "hardhat";
 import { formatEther, type Address } from "viem";
+import {
+  backendEnvLine,
+  renderDeploymentJson,
+  writeDeploymentConfig,
+} from "./lib/update-deployment-config.js";
+
+const REPO_ROOT = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "..",
+  ".."
+);
+const LOCAL_CHAIN_ID = 31337;
 
 interface DeploymentResult {
   network: string;
@@ -214,17 +233,34 @@ async function main(): Promise<DeploymentResult> {
   SECURITY:         Owner != Treasury [VERIFIED]
 `);
 
-  console.log("Next Steps:");
+  // Update deployment.json and frontend constants. Skipped for local chains
+  // so a dry run never points the app at a throwaway contract.
+  console.log("Config Updates:");
   console.log("-".repeat(40));
-  console.log("1. Update backend config with new contract address");
-  console.log("2. Update frontend config with new contract address");
-  console.log("3. Run integration tests on testnet");
-  console.log("4. Request re-audit from Mezo security team");
-  console.log("5. Only accept real collateral after audit passes\n");
+  if (chainId === LOCAL_CHAIN_ID || process.env.SKIP_CONFIG_UPDATE === "true") {
+    console.log(
+      `  [SKIP] ${chainId === LOCAL_CHAIN_ID ? "Local chain" : "SKIP_CONFIG_UPDATE=true"} - no files written`
+    );
+  } else {
+    for (const file of writeDeploymentConfig(result, REPO_ROOT)) {
+      console.log(`  [WROTE] ${path.relative(REPO_ROOT, file)}`);
+    }
+  }
+
+  console.log("\nNext Steps:");
+  console.log("-".repeat(40));
+  console.log("1. Set in backend/.env and backend/.env-prod (not edited automatically):");
+  console.log(`     ${backendEnvLine(result)}`);
+  console.log("   then restart the backend");
+  console.log("2. If NEXT_PUBLIC_BILLING_CONTRACT_V2 is set in the frontend env, update it too");
+  console.log("3. Treasury wallet: approve the new contract so funds can be returned");
+  console.log("4. Run integration tests on testnet");
+  console.log("5. Request re-audit from Mezo security team");
+  console.log("6. Only accept real collateral after audit passes\n");
 
   // Output JSON for automated pipelines
   console.log("Deployment JSON (for CI/CD):");
-  console.log(JSON.stringify(result, (_, v) => typeof v === 'bigint' ? v.toString() : v, 2));
+  console.log(renderDeploymentJson(result));
 
   return result;
 }

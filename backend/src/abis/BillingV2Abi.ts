@@ -131,6 +131,33 @@ export const BillingV2Abi = {
       name: 'EmergencyExcessWithdrawn',
       type: 'event',
     },
+    {
+      anonymous: false,
+      inputs: [
+        { indexed: true, internalType: 'address', name: 'whale', type: 'address' },
+        { indexed: false, internalType: 'uint256', name: 'penalty', type: 'uint256' },
+      ],
+      name: 'EarlyWithdrawalPenaltyPaid',
+      type: 'event',
+    },
+    {
+      anonymous: false,
+      inputs: [
+        { indexed: false, internalType: 'uint256', name: 'amount', type: 'uint256' },
+        { indexed: false, internalType: 'uint256', name: 'executeAfter', type: 'uint256' },
+        { indexed: false, internalType: 'uint256', name: 'expiresAt', type: 'uint256' },
+      ],
+      name: 'TreasuryMoveProposed',
+      type: 'event',
+    },
+    {
+      anonymous: false,
+      inputs: [
+        { indexed: false, internalType: 'uint256', name: 'amount', type: 'uint256' },
+      ],
+      name: 'TreasuryMoveCancelled',
+      type: 'event',
+    },
     // Constants
     {
       inputs: [],
@@ -142,6 +169,20 @@ export const BillingV2Abi = {
     {
       inputs: [],
       name: 'TREASURY_CHANGE_DELAY',
+      outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+      stateMutability: 'view',
+      type: 'function',
+    },
+    {
+      inputs: [],
+      name: 'TREASURY_MOVE_DELAY',
+      outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+      stateMutability: 'view',
+      type: 'function',
+    },
+    {
+      inputs: [],
+      name: 'MIN_RESERVE_RATIO_BPS',
       outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
       stateMutability: 'view',
       type: 'function',
@@ -258,6 +299,45 @@ export const BillingV2Abi = {
       type: 'function',
     },
     {
+      inputs: [],
+      name: 'getPendingTreasuryMove',
+      outputs: [
+        { internalType: 'uint256', name: '_amount', type: 'uint256' },
+        { internalType: 'uint256', name: '_executeAfter', type: 'uint256' },
+        { internalType: 'uint256', name: '_expiresAt', type: 'uint256' },
+        { internalType: 'bool', name: '_canExecute', type: 'bool' },
+      ],
+      stateMutability: 'view',
+      type: 'function',
+    },
+    {
+      inputs: [],
+      name: 'getLiquidityStatus',
+      outputs: [
+        { internalType: 'uint256', name: 'contractBalance', type: 'uint256' },
+        { internalType: 'uint256', name: 'totalLiabilities', type: 'uint256' },
+        { internalType: 'uint256', name: 'liquidityBps', type: 'uint256' },
+        { internalType: 'uint256', name: 'guaranteedReserveBps', type: 'uint256' },
+        { internalType: 'uint256', name: 'pendingMove', type: 'uint256' },
+        { internalType: 'uint256', name: 'pendingMoveExecuteAfter', type: 'uint256' },
+      ],
+      stateMutability: 'view',
+      type: 'function',
+    },
+    {
+      inputs: [{ internalType: 'address', name: '_whale', type: 'address' }],
+      name: 'getQueuedWithdrawal',
+      outputs: [
+        { internalType: 'uint256', name: 'amount', type: 'uint256' },
+        { internalType: 'uint256', name: 'penalty', type: 'uint256' },
+        { internalType: 'uint256', name: 'requestTimestamp', type: 'uint256' },
+        { internalType: 'bool', name: 'isPending', type: 'bool' },
+        { internalType: 'bool', name: 'claimableNow', type: 'bool' },
+      ],
+      stateMutability: 'view',
+      type: 'function',
+    },
+    {
       inputs: [{ internalType: 'address', name: '', type: 'address' }],
       name: 'lockedVaults',
       outputs: [
@@ -355,7 +435,21 @@ export const BillingV2Abi = {
     },
     {
       inputs: [{ internalType: 'uint256', name: '_amount', type: 'uint256' }],
-      name: 'moveCollateralToTreasury',
+      name: 'proposeTreasuryMove',
+      outputs: [],
+      stateMutability: 'nonpayable',
+      type: 'function',
+    },
+    {
+      inputs: [],
+      name: 'executeTreasuryMove',
+      outputs: [],
+      stateMutability: 'nonpayable',
+      type: 'function',
+    },
+    {
+      inputs: [],
+      name: 'cancelTreasuryMove',
       outputs: [],
       stateMutability: 'nonpayable',
       type: 'function',
