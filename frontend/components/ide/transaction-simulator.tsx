@@ -98,7 +98,7 @@ export default function TransactionSimulator({
           caption="Deploy a contract from the Deploy tab, then simulate its functions here without spending gas."
         />
       ) : (
-        <div className="grid grid-cols-[340px_1fr] h-[62vh] min-h-[440px] border border-white/10">
+        <div className="grid grid-cols-[340px_minmax(0,1fr)] grid-rows-[minmax(0,1fr)] h-[calc(72vh-1rem)] min-h-[320px] overflow-hidden border border-white/10">
           {/* Form */}
           <div className="flex flex-col min-h-0 border-r border-white/10">
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -186,7 +186,7 @@ export default function TransactionSimulator({
           </div>
 
           {/* Result + history */}
-          <div className="flex flex-col min-h-0">
+          <div className="flex flex-col min-h-0 min-w-0">
             <div className="flex-1 overflow-y-auto">
               {sim.status === "simulating" ? (
                 <div className="h-full flex items-center justify-center gap-2 text-xs text-white/40">

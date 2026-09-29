@@ -1,17 +1,346 @@
+export type TemplateCategory = "mezo" | "example" | "token" | "nft" | "defi" | "governance" | "billing" | "utility"
+
+export const TEMPLATE_CATEGORIES: { key: TemplateCategory; label: string }[] = [
+  { key: "mezo", label: "Mezo" },
+  { key: "example", label: "Starters" },
+  { key: "token", label: "Tokens" },
+  { key: "nft", label: "NFTs" },
+  { key: "defi", label: "DeFi" },
+  { key: "governance", label: "Governance" },
+  { key: "billing", label: "Payments" },
+  { key: "utility", label: "Utilities" },
+]
+
+export interface TemplateParam {
+  name: string
+  type: string
+  /** What to pass at deploy time (units, constraints, examples) */
+  hint: string
+}
+
 export interface ContractTemplate {
   id: string
   name: string
   description: string
-  category: "billing" | "token" | "example" | "utility" | "defi" | "nft" | "governance"
+  category: TemplateCategory
+  level: "Beginner" | "Intermediate" | "Advanced"
+  features: string[]
+  /** Constructor arguments, in order */
+  params: TemplateParam[]
+  /** What to do after deploying */
+  afterDeploy: string[]
   content: string
 }
 
 export const TEMPLATES: ContractTemplate[] = [
   {
+    id: "musd-checkout",
+    name: "MUSD Checkout",
+    description: "Accept MUSD (Mezo's BTC-backed stablecoin) for orders, with one-transaction permit payments",
+    category: "mezo",
+    level: "Beginner",
+    features: ["Pay orders in MUSD", "Approve + pay in one tx (EIP-2612 permit)", "Each order paid once"],
+    params: [
+      { name: "_musd", type: "address", hint: "MUSD — testnet 0x118917a40FAF1CD7a13dB0Ef56C86De7973Ac503, mainnet 0xdD468A1DDc392dcdbEf6db6e34E89AA338F9F186" },
+      { name: "_treasury", type: "address", hint: "Receives every payment (e.g. your wallet or a multisig)" },
+    ],
+    afterDeploy: [
+      "Buyers approve MUSD to this contract, then call pay(orderId, amount) — or sign a permit and call payWithPermit(...) in one transaction.",
+      "Check isPaid(orderId) or listen for OrderPaid to fulfil orders. Amounts use 18 decimals (1 MUSD = 1000000000000000000).",
+    ],
+    content: `// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+/**
+ * @title MUSDCheckout
+ * @notice Accept MUSD, Mezo's BTC-backed stablecoin, for orders.
+ * Payments go straight to the treasury and each order ID can be paid once.
+ * MUSD supports EIP-2612, so buyers can approve and pay in one transaction
+ * with payWithPermit.
+ *
+ * MUSD addresses:
+ *   Mezo Testnet  0x118917a40FAF1CD7a13dB0Ef56C86De7973Ac503
+ *   Mezo Mainnet  0xdD468A1DDc392dcdbEf6db6e34E89AA338F9F186
+ */
+contract MUSDCheckout is Ownable {
+    using SafeERC20 for IERC20;
+
+    struct Payment {
+        address payer;
+        uint256 amount;
+        uint64 paidAt;
+    }
+
+    IERC20 public immutable musd;
+    address public treasury;
+    mapping(uint256 => Payment) public payments;
+
+    event OrderPaid(uint256 indexed orderId, address indexed payer, uint256 amount);
+    event TreasuryUpdated(address indexed treasury);
+
+    error AlreadyPaid(uint256 orderId);
+    error ZeroAmount();
+    error ZeroAddress();
+
+    constructor(address _musd, address _treasury) Ownable(msg.sender) {
+        if (_musd == address(0) || _treasury == address(0)) revert ZeroAddress();
+        musd = IERC20(_musd);
+        treasury = _treasury;
+    }
+
+    /// @notice Pay an order. Approve this contract to spend \`amount\` MUSD first.
+    function pay(uint256 orderId, uint256 amount) public {
+        if (amount == 0) revert ZeroAmount();
+        if (payments[orderId].payer != address(0)) revert AlreadyPaid(orderId);
+
+        payments[orderId] = Payment(msg.sender, amount, uint64(block.timestamp));
+        musd.safeTransferFrom(msg.sender, treasury, amount);
+
+        emit OrderPaid(orderId, msg.sender, amount);
+    }
+
+    /// @notice Approve (EIP-2612 permit signature) and pay in a single transaction.
+    function payWithPermit(
+        uint256 orderId,
+        uint256 amount,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external {
+        // If the permit was already submitted by someone else, the existing
+        // allowance is used instead of reverting.
+        try IERC20Permit(address(musd)).permit(msg.sender, address(this), amount, deadline, v, r, s) {} catch {}
+        pay(orderId, amount);
+    }
+
+    function isPaid(uint256 orderId) external view returns (bool) {
+        return payments[orderId].payer != address(0);
+    }
+
+    function setTreasury(address _treasury) external onlyOwner {
+        if (_treasury == address(0)) revert ZeroAddress();
+        treasury = _treasury;
+        emit TreasuryUpdated(_treasury);
+    }
+}
+`,
+  },
+  {
+    id: "btc-usd-checkout",
+    name: "USD-priced BTC Checkout",
+    description: "Price in dollars, get paid in native BTC using Mezo's on-chain BTC/USD oracle",
+    category: "mezo",
+    level: "Intermediate",
+    features: ["Mezo BTC/USD price feed", "Stale-price protection", "Overpayment refunded"],
+    params: [
+      { name: "_btcUsdFeed", type: "address", hint: "Mezo BTC/USD feed — 0x7b7c000000000000000000000000000000000015 on testnet and mainnet" },
+      { name: "_treasury", type: "address", hint: "Receives the BTC" },
+    ],
+    afterDeploy: [
+      "Call quoteBtc(usdCents) to get the BTC amount (in wei) for a price — e.g. 1999 = $19.99.",
+      "Buyers call pay(orderId, usdCents) sending at least the quote as value; add a small buffer for price movement — any excess is refunded.",
+    ],
+    content: `// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/math/Math.sol";
+
+/// @notice Mezo's Chainlink-compatible price feed
+interface IMezoPriceFeed {
+    function decimals() external view returns (uint8);
+    function latestRoundData()
+        external
+        view
+        returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound);
+}
+
+/**
+ * @title BTCCheckout
+ * @notice Price orders in US dollars and get paid in native BTC (Mezo's gas
+ * token, 18 decimals) at the live rate from Mezo's BTC/USD oracle.
+ *
+ * BTC/USD feed: 0x7b7c000000000000000000000000000000000015 (testnet and mainnet)
+ */
+contract BTCCheckout is Ownable, ReentrancyGuard {
+    IMezoPriceFeed public immutable btcUsdFeed;
+    address payable public treasury;
+    uint256 public maxPriceAge = 1 hours;
+
+    mapping(uint256 => bool) public isPaid;
+
+    event OrderPaid(uint256 indexed orderId, address indexed payer, uint256 usdCents, uint256 btcPaid);
+    event TreasuryUpdated(address indexed treasury);
+    event MaxPriceAgeUpdated(uint256 maxPriceAge);
+
+    error StalePrice(uint256 updatedAt);
+    error InvalidPrice();
+    error InsufficientPayment(uint256 required, uint256 sent);
+    error AlreadyPaid(uint256 orderId);
+    error TransferFailed();
+    error ZeroAddress();
+
+    constructor(address _btcUsdFeed, address payable _treasury) Ownable(msg.sender) {
+        if (_btcUsdFeed == address(0) || _treasury == address(0)) revert ZeroAddress();
+        btcUsdFeed = IMezoPriceFeed(_btcUsdFeed);
+        treasury = _treasury;
+    }
+
+    /// @notice Latest BTC/USD price, rejecting stale or invalid answers
+    function btcUsdPrice() public view returns (uint256 price, uint8 decimals) {
+        (, int256 answer, , uint256 updatedAt, ) = btcUsdFeed.latestRoundData();
+        if (answer <= 0) revert InvalidPrice();
+        if (block.timestamp - updatedAt > maxPriceAge) revert StalePrice(updatedAt);
+        return (uint256(answer), btcUsdFeed.decimals());
+    }
+
+    /// @notice BTC (in wei) needed to pay \`usdCents\` (1999 = $19.99), rounded up
+    function quoteBtc(uint256 usdCents) public view returns (uint256) {
+        (uint256 price, uint8 decimals) = btcUsdPrice();
+        // wei = usdCents / 100 * 1e18 / (price / 10^decimals)
+        return Math.mulDiv(usdCents * 1e16, 10 ** decimals, price, Math.Rounding.Ceil);
+    }
+
+    /// @notice Pay an order priced in USD cents. Send at least quoteBtc(usdCents); the rest is refunded.
+    function pay(uint256 orderId, uint256 usdCents) external payable nonReentrant {
+        if (isPaid[orderId]) revert AlreadyPaid(orderId);
+        uint256 required = quoteBtc(usdCents);
+        if (msg.value < required) revert InsufficientPayment(required, msg.value);
+
+        isPaid[orderId] = true;
+
+        (bool sent, ) = treasury.call{value: required}("");
+        if (!sent) revert TransferFailed();
+
+        uint256 refund = msg.value - required;
+        if (refund > 0) {
+            (bool refunded, ) = payable(msg.sender).call{value: refund}("");
+            if (!refunded) revert TransferFailed();
+        }
+
+        emit OrderPaid(orderId, msg.sender, usdCents, required);
+    }
+
+    function setTreasury(address payable _treasury) external onlyOwner {
+        if (_treasury == address(0)) revert ZeroAddress();
+        treasury = _treasury;
+        emit TreasuryUpdated(_treasury);
+    }
+
+    function setMaxPriceAge(uint256 _maxPriceAge) external onlyOwner {
+        maxPriceAge = _maxPriceAge;
+        emit MaxPriceAgeUpdated(_maxPriceAge);
+    }
+}
+`,
+  },
+  {
+    id: "btc-payment-splitter",
+    name: "BTC Payment Splitter",
+    description: "Split native BTC between team members by fixed shares — each payee withdraws their cut",
+    category: "mezo",
+    level: "Beginner",
+    features: ["Native BTC (Mezo's gas token)", "Fixed shares per payee", "Pull payments, reentrancy-safe"],
+    params: [
+      { name: "_payees", type: "address[]", hint: "JSON array of recipients, e.g. [\"0xabc…\", \"0xdef…\"] (no duplicates)" },
+      { name: "_shares", type: "uint256[]", hint: "JSON array of shares in the same order, e.g. [70, 30]" },
+    ],
+    afterDeploy: [
+      "Send BTC to the contract address from any wallet or contract.",
+      "Anyone can call release(payee) to pay out that payee's share; releasable(payee) shows what's owed.",
+    ],
+    content: `// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+
+/**
+ * @title BTCPaymentSplitter
+ * @notice Splits native BTC (Mezo's gas token, 18 decimals) between payees by
+ * fixed shares. BTC can be sent from anywhere; each payee's cut is paid out
+ * with release(payee).
+ */
+contract BTCPaymentSplitter is ReentrancyGuard {
+    uint256 public totalShares;
+    uint256 public totalReleased;
+
+    address[] public payees;
+    mapping(address => uint256) public shares;
+    mapping(address => uint256) public released;
+
+    event PaymentReceived(address indexed from, uint256 amount);
+    event PaymentReleased(address indexed to, uint256 amount);
+
+    error LengthMismatch();
+    error NoPayees();
+    error InvalidPayee(address payee);
+    error ZeroShares(address payee);
+    error NothingToRelease(address payee);
+    error TransferFailed();
+
+    constructor(address[] memory _payees, uint256[] memory _shares) {
+        if (_payees.length != _shares.length) revert LengthMismatch();
+        if (_payees.length == 0) revert NoPayees();
+
+        for (uint256 i = 0; i < _payees.length; i++) {
+            address payee = _payees[i];
+            if (payee == address(0) || shares[payee] != 0) revert InvalidPayee(payee);
+            if (_shares[i] == 0) revert ZeroShares(payee);
+
+            payees.push(payee);
+            shares[payee] = _shares[i];
+            totalShares += _shares[i];
+        }
+    }
+
+    receive() external payable {
+        emit PaymentReceived(msg.sender, msg.value);
+    }
+
+    /// @notice BTC (in wei) currently owed to \`payee\`
+    function releasable(address payee) public view returns (uint256) {
+        uint256 totalReceived = address(this).balance + totalReleased;
+        return (totalReceived * shares[payee]) / totalShares - released[payee];
+    }
+
+    /// @notice Send \`payee\` everything they're owed. Anyone can call this.
+    function release(address payable payee) external nonReentrant {
+        uint256 amount = releasable(payee);
+        if (amount == 0) revert NothingToRelease(payee);
+
+        released[payee] += amount;
+        totalReleased += amount;
+
+        (bool sent, ) = payee.call{value: amount}("");
+        if (!sent) revert TransferFailed();
+
+        emit PaymentReleased(payee, amount);
+    }
+
+    function payeeCount() external view returns (uint256) {
+        return payees.length;
+    }
+}
+`,
+  },
+  {
     id: "simple-storage",
     name: "Simple Storage",
     description: "Basic storage contract for learning Solidity on Mezo",
     category: "example",
+    level: "Beginner",
+    features: ["Owner-only setter", "Change events", "No dependencies"],
+    params: [
+      { name: "_initialValue", type: "uint256", hint: "Starting value, e.g. 42" },
+    ],
+    afterDeploy: [],
     content: `// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
@@ -69,6 +398,15 @@ contract SimpleStorage {
     name: "ERC20 Token",
     description: "Standard ERC20 token template for Mezo",
     category: "token",
+    level: "Beginner",
+    features: ["OpenZeppelin ERC-20", "Owner can mint", "Holders can burn"],
+    params: [
+      { name: "name_", type: "string", hint: "Token name, e.g. My Token" },
+      { name: "symbol_", type: "string", hint: "Ticker, e.g. MYT" },
+      { name: "decimals_", type: "uint8", hint: "Usually 18" },
+      { name: "initialSupply_", type: "uint256", hint: "Whole tokens: multiplied by 10^decimals, so 1000000 = one million" },
+    ],
+    afterDeploy: ["The whole initial supply is minted to the deployer."],
     content: `// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
@@ -120,6 +458,13 @@ contract MezoToken is ERC20, Ownable {
     name: "Simple Billing",
     description: "Basic billing contract for Mezo applications",
     category: "billing",
+    level: "Intermediate",
+    features: ["Deposit and withdraw ERC-20 balances", "Owner charges to a treasury", "Reentrancy guard"],
+    params: [
+      { name: "_paymentToken", type: "address", hint: "ERC-20 users pay with, e.g. MUSD on testnet: 0x118917a40FAF1CD7a13dB0Ef56C86De7973Ac503" },
+      { name: "_treasury", type: "address", hint: "Receives charged funds" },
+    ],
+    afterDeploy: ["Users approve the contract, then call deposit(amount).", "The owner calls charge(...) to move funds to the treasury."],
     content: `// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
@@ -211,6 +556,10 @@ contract SimpleBilling is ReentrancyGuard, Ownable {
     name: "Counter",
     description: "Simple counter contract - great for testing deployments",
     category: "example",
+    level: "Beginner",
+    features: ["No constructor arguments", "increment, decrement, reset", "Quickest deploy test"],
+    params: [],
+    afterDeploy: [],
     content: `// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
@@ -255,6 +604,13 @@ contract Counter {
     name: "Multi-Signature Wallet",
     description: "Basic multi-sig wallet requiring multiple approvals",
     category: "utility",
+    level: "Intermediate",
+    features: ["N-of-M approvals", "submit, approve, execute, revoke", "Holds native BTC"],
+    params: [
+      { name: "_owners", type: "address[]", hint: "JSON array, e.g. [\"0xabc…\", \"0xdef…\"] (no duplicates)" },
+      { name: "_required", type: "uint256", hint: "Approvals needed; at most the number of owners" },
+    ],
+    afterDeploy: ["Send BTC to the wallet, then owners submit → approve → execute."],
     content: `// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
@@ -366,6 +722,16 @@ contract MultiSigWallet {
     name: "ERC721 NFT Collection",
     description: "NFT collection with minting, metadata, and royalties for Mezo",
     category: "nft",
+    level: "Intermediate",
+    features: ["Enumerable + per-token URIs", "Paid and batch minting", "EIP-2981 royalties (5% default)"],
+    params: [
+      { name: "name_", type: "string", hint: "Collection name" },
+      { name: "symbol_", type: "string", hint: "e.g. MNFT" },
+      { name: "maxSupply_", type: "uint256", hint: "Maximum tokens, e.g. 1000" },
+      { name: "mintPrice_", type: "uint256", hint: "Price per mint in wei (BTC has 18 decimals); 0 = free" },
+      { name: "baseURI_", type: "string", hint: "Metadata base, e.g. ipfs://<CID>/" },
+    ],
+    afterDeploy: ["Minting starts disabled: call toggleMinting() to open it.", "Collect mint proceeds with withdraw()."],
     content: `// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
@@ -534,6 +900,12 @@ contract MezoNFT is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
     name: "Token Vesting",
     description: "Linear vesting contract for team tokens, investors, or grants",
     category: "defi",
+    level: "Intermediate",
+    features: ["Cliff + linear vesting", "Revocable schedules", "Many beneficiaries"],
+    params: [
+      { name: "_token", type: "address", hint: "ERC-20 being vested" },
+    ],
+    afterDeploy: ["Approve tokens to the contract, then call createVesting(...) for each beneficiary.", "Beneficiaries call release() as tokens vest."],
     content: `// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
@@ -700,6 +1072,12 @@ contract TokenVesting is Ownable, ReentrancyGuard {
     name: "Timelock Controller",
     description: "Timelock for governance actions with configurable delay",
     category: "governance",
+    level: "Advanced",
+    features: ["Queue, wait, execute", "14-day grace period", "Cancel queued transactions"],
+    params: [
+      { name: "_delay", type: "uint256", hint: "Seconds between 86400 (1 day) and 2592000 (30 days)" },
+    ],
+    afterDeploy: ["queueTransaction(...), wait for the delay, then executeTransaction(...)."],
     content: `// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
@@ -834,6 +1212,14 @@ contract Timelock is Ownable {
     name: "Staking Pool",
     description: "Stake tokens to earn rewards over time",
     category: "defi",
+    level: "Intermediate",
+    features: ["Stake one ERC-20, earn another", "Rewards accrue per second", "exit() withdraws and claims"],
+    params: [
+      { name: "_stakingToken", type: "address", hint: "ERC-20 users stake" },
+      { name: "_rewardToken", type: "address", hint: "ERC-20 paid as rewards (can be the same token)" },
+      { name: "_rewardRate", type: "uint256", hint: "Reward per second in base units, e.g. 1000000000000000 = 0.001 token/s at 18 decimals" },
+    ],
+    afterDeploy: ["Fund rewards: approve the reward token, then depositRewards(amount)."],
     content: `// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
@@ -936,6 +1322,28 @@ contract StakingPool is Ownable, ReentrancyGuard {
      * @param amount Amount to withdraw
      */
     function withdraw(uint256 amount) external nonReentrant updateReward(msg.sender) {
+        _withdraw(amount);
+    }
+
+    /**
+     * @dev Claim pending rewards
+     */
+    function claimRewards() external nonReentrant updateReward(msg.sender) {
+        require(rewards[msg.sender] > 0, "No rewards");
+        _claimRewards();
+    }
+
+    /**
+     * @dev Withdraw everything and claim any pending rewards in one transaction
+     */
+    function exit() external nonReentrant updateReward(msg.sender) {
+        _withdraw(stakedBalance[msg.sender]);
+        if (rewards[msg.sender] > 0) {
+            _claimRewards();
+        }
+    }
+
+    function _withdraw(uint256 amount) internal {
         require(amount > 0, "Cannot withdraw 0");
         require(stakedBalance[msg.sender] >= amount, "Insufficient balance");
 
@@ -947,25 +1355,12 @@ contract StakingPool is Ownable, ReentrancyGuard {
         emit Withdrawn(msg.sender, amount);
     }
 
-    /**
-     * @dev Claim pending rewards
-     */
-    function claimRewards() external nonReentrant updateReward(msg.sender) {
+    function _claimRewards() internal {
         uint256 reward = rewards[msg.sender];
-        require(reward > 0, "No rewards");
-
         rewards[msg.sender] = 0;
         rewardToken.safeTransfer(msg.sender, reward);
 
         emit RewardsClaimed(msg.sender, reward);
-    }
-
-    /**
-     * @dev Withdraw all and claim rewards
-     */
-    function exit() external {
-        withdraw(stakedBalance[msg.sender]);
-        claimRewards();
     }
 
     /**
@@ -1004,6 +1399,13 @@ contract StakingPool is Ownable, ReentrancyGuard {
     name: "Simple Token Swap",
     description: "Basic AMM-style token swap with liquidity pools",
     category: "defi",
+    level: "Advanced",
+    features: ["Constant-product AMM", "Add and remove liquidity", "0.3% swap fee"],
+    params: [
+      { name: "_tokenA", type: "address", hint: "First ERC-20" },
+      { name: "_tokenB", type: "address", hint: "Second ERC-20 (must differ from token A)" },
+    ],
+    afterDeploy: ["Call addLiquidity(...) before swapping; price views revert while the pool is empty."],
     content: `// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
@@ -1192,6 +1594,14 @@ contract SimpleSwap is Ownable, ReentrancyGuard {
     name: "Merkle Airdrop",
     description: "Gas-efficient airdrop using Merkle proofs",
     category: "utility",
+    level: "Intermediate",
+    features: ["Merkle-proof claims", "Claim deadline", "Owner recovers unclaimed tokens"],
+    params: [
+      { name: "_token", type: "address", hint: "ERC-20 being airdropped" },
+      { name: "_merkleRoot", type: "bytes32", hint: "Root where each leaf = keccak256(abi.encodePacked(account, amount)), hashed once (not OpenZeppelin StandardMerkleTree format)" },
+      { name: "_claimDeadline", type: "uint256", hint: "Unix timestamp in seconds; must be in the future" },
+    ],
+    afterDeploy: ["Transfer the airdrop tokens to the contract after deploying."],
     content: `// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
@@ -1326,3 +1736,20 @@ contract MyContract {
     // Your code here
 }
 `
+
+/** Name of the main contract in a template's source (used for the file name) */
+export function templateContractName(template: ContractTemplate): string {
+  const names = [...template.content.matchAll(/^\s*contract\s+(\w+)/gm)].map((m) => m[1])
+  return names[names.length - 1] ?? template.name.replace(/[^a-zA-Z0-9]/g, "")
+}
+
+/** "Foo.sol", or "Foo2.sol", "Foo3.sol"… if that name is taken */
+export function uniqueFileName(base: string, existing: string[]): string {
+  const taken = new Set(existing.map((n) => n.toLowerCase()))
+  const stem = base.replace(/\.sol$/i, "")
+  if (!taken.has(`${stem}.sol`.toLowerCase())) return `${stem}.sol`
+  for (let i = 2; ; i++) {
+    const candidate = `${stem}${i}.sol`
+    if (!taken.has(candidate.toLowerCase())) return candidate
+  }
+}

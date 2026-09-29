@@ -257,3 +257,34 @@ Then redeploy the frontend.
 | Frontend and backend typecheck | Pass (backend's 3 pre-existing broken spec files excluded) |
 
 Not yet clicked through in a browser — include "send a report" and "deploy with an empty testnet wallet" in the tester walkthrough.
+
+---
+
+## 9. "Create from Template" rebuilt (2026-09-29)
+
+**Bugs fixed**
+- **Staking Pool template didn't compile** (`exit()` called `external` functions internally). Even once compiled it would have reverted: all three functions were `nonReentrant`, and `claimRewards` required non-zero rewards. Refactored to internal `_withdraw` / `_claimRewards`; `exit()` now withdraws everything and claims only if rewards exist.
+- File names came from the display name (`Simple Storage.sol`, with a space) and could clash with existing files. They now default to the contract name (`SimpleStorage.sol`), are editable, and never clash (`SimpleStorage2.sol`…).
+
+**New modal**
+- Search, "All" + category filters with counts, template list with level (Beginner / Intermediate / Advanced).
+- Detail pane: description, key features, **every constructor argument with a hint** (units, limits, examples — e.g. Timelock delay must be 86400–2592000 s, ERC-20 supply is in whole tokens, airdrop leaf format), "after deploying" steps (e.g. NFT minting starts disabled → `toggleMinting()`), and a highlighted code preview with line numbers.
+- Footer: file name, Copy code, Create file. Double-click a template or press Enter to create. The console then shows the next step (compile, then fill N constructor args).
+
+**Verified**
+- All 11 templates compile with solc 0.8.28 + OpenZeppelin 5.0.2 exactly as the IDE resolves them.
+- All 11 deploy on a local chain with realistic arguments and their no-argument view functions run (Simple Swap's price view reverts with "No liquidity" until liquidity is added — expected, and now stated in its hints).
+- Staking Pool end-to-end: stake → earn → `exit()` returns the full stake plus rewards.
+- Every template's constructor hints were checked against the compiled ABI (names, types, order).
+
+### 9.1 Modal overflow fixes
+- Vertical: grid row pinned with `grid-rows-[minmax(0,1fr)]`, panes sized from the modal body's 72vh cap. Horizontal: right column `minmax(0,1fr)` + `min-w-0`, so long code lines scroll inside the preview instead of pushing "Create file" off-screen. Same fix applied to the Protocols and Simulate modals.
+
+### 9.2 Mezo templates (new "Mezo" category, listed first)
+| Template | What it does | Verified |
+|---|---|---|
+| **MUSD Checkout** | Take MUSD payments per order; `payWithPermit` approves + pays in one tx (EIP-2612) | Fork of Mezo testnet with the **real MUSD contract**: approve+pay and permit+pay (signed over MUSD's real EIP-712 domain "Mezo USD" v1) → treasury +35 MUSD; double pay rejected |
+| **USD-priced BTC Checkout** | Price in USD cents, get paid in native BTC via Mezo's BTC/USD oracle; stale-price guard; overpayment refunded | `quoteBtc` run against the **live** Mezo testnet oracle (deployless eth_call): $100.00 → 0.001206 BTC ≈ $100.0000. Pay flow on a local chain: exact quote to treasury, excess refunded, AlreadyPaid / InsufficientPayment / StalePrice enforced |
+| **BTC Payment Splitter** | Split native BTC between payees by fixed shares; pull payments | 3 BTC split 50/30/20 over two deposits, contract drained to 0, duplicate payees rejected |
+
+All 14 templates compile with solc 0.8.28 + OpenZeppelin 5.0.2 and their constructor hints match the compiled ABI.

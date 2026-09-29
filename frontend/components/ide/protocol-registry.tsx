@@ -77,7 +77,7 @@ export default function ProtocolRegistry({
       width={1000}
       bodyClassName="pt-3"
     >
-      <div className="grid grid-cols-[260px_1fr] h-[62vh] min-h-[420px] border border-white/10">
+      <div className="grid grid-cols-[260px_minmax(0,1fr)] grid-rows-[minmax(0,1fr)] h-[calc(72vh-1rem)] min-h-[320px] overflow-hidden border border-white/10">
         {/* Left: search + list */}
         <aside className="flex flex-col min-h-0 border-r border-white/10">
           <div className="p-3 space-y-3 border-b border-white/10">
@@ -224,7 +224,7 @@ function ProtocolDetails({
   const items = summary ? summary[tab] : []
 
   return (
-    <section className="flex flex-col min-h-0">
+    <section className="flex flex-col min-h-0 min-w-0">
       {/* Header */}
       <div className="p-5 space-y-4 border-b border-white/10">
         <div className="flex items-start justify-between gap-4">

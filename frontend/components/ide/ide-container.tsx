@@ -15,6 +15,7 @@ import DeployPanel from "./deploy-panel"
 import ContractInteract from "./contract-interact"
 import ConsolePanel from "./console-panel"
 import TemplateSelector from "./template-selector"
+import type { ContractTemplate } from "@/lib/ide/templates"
 import ProtocolRegistry from "./protocol-registry"
 import TransactionSimulator from "./transaction-simulator"
 import ShareModal from "./share-modal"
@@ -159,9 +160,16 @@ export default function IDEContainer() {
   }, [])
 
   const handleTemplateSelect = useCallback(
-    async (template: { name: string; content: string }) => {
-      await ide.createNewFile(`${template.name}.sol`, template.content)
+    async (template: ContractTemplate, fileName: string) => {
+      await ide.createNewFile(fileName, template.content)
       setIsTemplateModalOpen(false)
+      ide.addLog("success", `Created ${fileName} from the ${template.name} template`)
+      ide.addLog(
+        "info",
+        template.params.length > 0
+          ? `Next: compile (Ctrl+B), then fill in ${template.params.length} constructor argument(s) in the Deploy tab`
+          : "Next: compile (Ctrl+B), then deploy from the Deploy tab"
+      )
     },
     [ide]
   )
@@ -362,6 +370,7 @@ export const ${name.replace(/[^a-zA-Z0-9]/g, "").toUpperCase()}_ADDRESS = "${add
         open={isTemplateModalOpen}
         onClose={() => setIsTemplateModalOpen(false)}
         onSelect={handleTemplateSelect}
+        existingFileNames={ide.contracts.map((c) => c.name)}
       />
 
       {/* Protocol Registry Modal */}
