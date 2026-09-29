@@ -18,6 +18,7 @@ import {
 import { AdminUser, AdminUserProject } from "@/types/admin"
 import { convertCreditsToUSD, convertStakedCreditsToUSD } from "@/lib/convert-credit-to-usd"
 import moment from "moment"
+import { IdeReports } from "@/components/admin/ide-reports"
 
 const AdminKeyForm = ({
   onSubmit,
@@ -225,7 +226,10 @@ const UserCard = ({ user }: { user: AdminUser }) => {
   )
 }
 
+type AdminTab = "analytics" | "reports"
+
 const AdminDashboard = ({ adminKey }: { adminKey: string }) => {
+  const [tab, setTab] = useState<AdminTab>("analytics")
   const { data, isLoading, isError, error } = useAdminAnalytics(adminKey)
 
   if (isLoading) {
@@ -265,10 +269,40 @@ const AdminDashboard = ({ adminKey }: { adminKey: string }) => {
     <div className="min-h-screen bg-dark">
       <div className="max-w-7xl mx-auto p-4 md:p-8">
         <PageHeader
-          title="Admin Analytics"
-          subtitle="Overview of all users and their activities"
+          title={tab === "analytics" ? "Admin Analytics" : "IDE Reports"}
+          subtitle={
+            tab === "analytics"
+              ? "Overview of all users and their activities"
+              : "Problems reported from the IDE"
+          }
         />
 
+        <div className="border-b border-white/10 mt-6">
+          <nav className="flex space-x-6">
+            {([
+              ["analytics", "Analytics"],
+              ["reports", "IDE Reports"],
+            ] as const).map(([key, label]) => (
+              <button
+                key={key}
+                onClick={() => setTab(key)}
+                className={`pb-3 text-sm font-medium relative transition-colors cursor-pointer ${
+                  tab === key ? "text-primary" : "text-white/60 hover:text-white"
+                }`}
+              >
+                {label}
+                {tab === key && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-t-full" />}
+              </button>
+            ))}
+          </nav>
+        </div>
+
+        {tab === "reports" ? (
+          <div className="mt-8">
+            <IdeReports adminKey={adminKey} />
+          </div>
+        ) : (
+        <>
         <div className="grid md:grid-cols-4 gap-4 mt-8">
           <InfoCard
             title="Total Users"
@@ -325,6 +359,8 @@ const AdminDashboard = ({ adminKey }: { adminKey: string }) => {
             </div>
           )}
         </div>
+        </>
+        )}
       </div>
     </div>
   )

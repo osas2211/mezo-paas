@@ -2,44 +2,71 @@
 
 import { useState, useEffect, useCallback } from "react"
 
+import { createPublicClient, parseAbi } from "viem"
+import { MEZO_CONTRACTS, mezoChains, mezoTransport, type MezoNetwork } from "@/lib/ide/mezo-network"
+
 interface BTCPriceData {
   price: number
-  change24h: number
+  /** 24h change is only available from CoinGecko */
+  change24h: number | null
+  source: "Mezo BTC/USD oracle" | "CoinGecko"
   lastUpdated: number
 }
 
 const CACHE_DURATION = 60000 // 1 minute cache
 let cachedPrice: BTCPriceData | null = null
-let fetchPromise: Promise<BTCPriceData> | null = null
+let fetchPromise: Promise<BTCPriceData | null> | null = null
 
-async function fetchBTCPrice(): Promise<BTCPriceData> {
-  // Use CoinGecko API (free, no API key required)
-  try {
-    const response = await fetch(
-      "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true",
-      { next: { revalidate: 60 } }
-    )
+const ORACLE_ABI = parseAbi([
+  "function decimals() view returns (uint8)",
+  "function latestRoundData() view returns (uint80, int256, uint256, uint256, uint80)",
+])
+const MAX_ORACLE_AGE_SECONDS = 3600
 
-    if (!response.ok) {
-      throw new Error("Failed to fetch BTC price")
-    }
+/** Mezo's on-chain, Chainlink-compatible BTC/USD feed */
+async function fetchOraclePrice(network: MezoNetwork): Promise<BTCPriceData> {
+  const client = createPublicClient({ chain: mezoChains[network], transport: mezoTransport(network) })
+  const address = MEZO_CONTRACTS.BTC_USD_ORACLE[network]
+  const [decimals, round] = await Promise.all([
+    client.readContract({ address, abi: ORACLE_ABI, functionName: "decimals" }),
+    client.readContract({ address, abi: ORACLE_ABI, functionName: "latestRoundData" }),
+  ])
+  const [, answer, , updatedAt] = round
+  if (answer <= BigInt(0)) throw new Error("Oracle returned no price")
+  if (Date.now() / 1000 - Number(updatedAt) > MAX_ORACLE_AGE_SECONDS) throw new Error("Oracle price is stale")
+  return {
+    price: Number(answer) / 10 ** decimals,
+    change24h: null,
+    source: "Mezo BTC/USD oracle",
+    lastUpdated: Date.now(),
+  }
+}
 
-    const data = await response.json()
+async function fetchCoinGeckoPrice(): Promise<BTCPriceData> {
+  const response = await fetch(
+    "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true"
+  )
+  if (!response.ok) throw new Error("Failed to fetch BTC price")
+  const data = await response.json()
+  return {
+    price: data.bitcoin.usd,
+    change24h: data.bitcoin.usd_24h_change ?? null,
+    source: "CoinGecko",
+    lastUpdated: Date.now(),
+  }
+}
 
-    return {
-      price: data.bitcoin.usd,
-      change24h: data.bitcoin.usd_24h_change || 0,
-      lastUpdated: Date.now(),
-    }
-  } catch (error) {
-    // Fallback to a reasonable estimate if API fails
-    console.warn("BTC price fetch failed, using fallback")
-    return {
-      price: 70000, // Fallback price
-      change24h: 0,
-      lastUpdated: Date.now(),
+/** Returns null when no source is reachable — never a made-up price */
+async function fetchBTCPrice(): Promise<BTCPriceData | null> {
+  for (const source of [() => fetchOraclePrice("mainnet"), () => fetchOraclePrice("testnet"), fetchCoinGeckoPrice]) {
+    try {
+      return await source()
+    } catch {
+      // try the next source
     }
   }
+  console.warn("BTC price unavailable from Mezo oracle and CoinGecko")
+  return null
 }
 
 export function useBTCPrice() {
@@ -51,7 +78,7 @@ export function useBTCPrice() {
     // If there's already a fetch in progress, wait for it
     if (fetchPromise) {
       const data = await fetchPromise
-      setPriceData(data)
+      if (data) setPriceData(data)
       return
     }
 
@@ -61,8 +88,12 @@ export function useBTCPrice() {
     try {
       fetchPromise = fetchBTCPrice()
       const data = await fetchPromise
-      cachedPrice = data
-      setPriceData(data)
+      if (data) {
+        cachedPrice = data
+        setPriceData(data)
+      } else {
+        setError("BTC price unavailable")
+      }
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -87,8 +118,10 @@ export function useBTCPrice() {
   }, [refresh])
 
   return {
-    price: priceData?.price ?? 0,
-    change24h: priceData?.change24h ?? 0,
+    /** null when unavailable — callers must not substitute a guess */
+    price: priceData?.price ?? null,
+    change24h: priceData?.change24h ?? null,
+    source: priceData?.source ?? null,
     lastUpdated: priceData?.lastUpdated ?? 0,
     isLoading,
     error,

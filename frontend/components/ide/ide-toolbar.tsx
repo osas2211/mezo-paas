@@ -1,7 +1,7 @@
 "use client"
 
 import { Tooltip, Dropdown, MenuProps } from "antd"
-import { FilePlus, Save, Play, FileCode, Database, Zap, Share2, ChevronDown } from "lucide-react"
+import { FilePlus, Save, Play, FileCode, Database, Zap, Share2, ChevronDown, MessageSquareWarning } from "lucide-react"
 import { IconButton, IdeButton } from "./ui"
 
 interface IDEToolbarProps {
@@ -12,6 +12,7 @@ interface IDEToolbarProps {
   onProtocolRegistry: () => void
   onSimulator: () => void
   onShare: () => void
+  onReport: () => void
   isDirty: boolean
   isCompiling: boolean
   hasActiveFile: boolean
@@ -27,6 +28,7 @@ export default function IDEToolbar({
   onProtocolRegistry,
   onSimulator,
   onShare,
+  onReport,
   isDirty,
   isCompiling,
   hasActiveFile,
@@ -100,19 +102,29 @@ export default function IDEToolbar({
         </Tooltip>
       </div>
 
-      {/* Primary Action */}
-      <Tooltip title="Compile (Ctrl+B)">
-        <IdeButton
-          variant="primary"
-          size="xs"
-          icon={<Play size={13} />}
-          onClick={onCompile}
-          loading={isCompiling}
-          disabled={!hasActiveFile}
-        >
-          {isCompiling ? "Compiling..." : "Compile"}
-        </IdeButton>
-      </Tooltip>
+      {/* Right Actions */}
+      <div className="flex items-center">
+        <Tooltip title="Report a problem with the IDE">
+          <IdeButton variant="ghost" size="xs" icon={<MessageSquareWarning size={14} />} onClick={onReport}>
+            Report
+          </IdeButton>
+        </Tooltip>
+
+        <Divider />
+
+        <Tooltip title="Compile (Ctrl+B)">
+          <IdeButton
+            variant="primary"
+            size="xs"
+            icon={<Play size={13} />}
+            onClick={onCompile}
+            loading={isCompiling}
+            disabled={!hasActiveFile}
+          >
+            {isCompiling ? "Compiling..." : "Compile"}
+          </IdeButton>
+        </Tooltip>
+      </div>
     </div>
   )
 }

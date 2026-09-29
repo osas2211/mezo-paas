@@ -28,6 +28,7 @@ model User {
   role                 Role           @default(REGULAR_DEVELOPER)
   transactions         Transaction[]
   yieldRecords         YieldRecord[]
+  ideReports           IdeReport[]
 }
 
 model Wallet {
@@ -192,4 +193,36 @@ enum TreasuryOpType {
   RETURN_FROM_YIELD
   HARVEST_YIELD
   EMERGENCY_WITHDRAW
+}
+
+// Problems reported from the IDE ("Report a problem")
+model IdeReport {
+  id          String            @id @default(uuid())
+  userId      String?
+  user        User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+  email       String?
+  category    IdeReportCategory
+  message     String
+  diagnostics Json?
+  status      IdeReportStatus   @default(OPEN)
+  adminNotes  String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@index([status, createdAt])
+  @@index([userId, createdAt])
+}
+
+enum IdeReportCategory {
+  BUG
+  CONFUSING
+  FEATURE_REQUEST
+  OTHER
+}
+
+enum IdeReportStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  WONT_FIX
 }

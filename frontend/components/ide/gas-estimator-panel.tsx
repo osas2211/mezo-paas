@@ -1,189 +1,83 @@
 "use client"
 
-import { useEffect } from "react"
-import { Tooltip, Progress } from "antd"
-import { Zap, TrendingUp, TrendingDown, RefreshCw, AlertCircle } from "lucide-react"
+import { formatGwei } from "viem"
+import { RefreshCw, Zap } from "lucide-react"
 import type { GasEstimate } from "@/hooks/ide/use-gas-estimator"
-import { formatSats } from "@/hooks/ide/use-btc-price"
-import { ide, IconButton, Notice, PanelHeader, Spinner, toneText } from "./ui"
+import { formatUSD } from "@/hooks/ide/use-btc-price"
+import { IconButton, Notice, PanelHeader, Spinner, ide } from "./ui"
 
 interface GasEstimatorPanelProps {
   estimate: GasEstimate | null
   isEstimating: boolean
   error: string | null
-  btcPrice: number
-  btcChange24h: number
+  btcPrice: number | null
+  priceSource: string | null
+  /** Shown instead of an estimate, e.g. while constructor args are incomplete */
+  hint?: string | null
   onRefresh?: () => void
-  compact?: boolean
 }
-
-const PROGRESS_TRAIL = "rgba(255,255,255,0.1)"
 
 export default function GasEstimatorPanel({
   estimate,
   isEstimating,
   error,
   btcPrice,
-  btcChange24h,
+  priceSource,
+  hint,
   onRefresh,
-  compact = false,
 }: GasEstimatorPanelProps) {
-  if (isEstimating) {
-    return (
-      <div className={`${ide.card} p-3`}>
-        <div className="flex items-center gap-2 text-white/60 text-xs">
-          <Spinner size={14} />
-          <span>Estimating deployment cost...</span>
-        </div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <Notice tone="error" icon={<AlertCircle size={14} />}>
-        Failed to estimate: {error}
-      </Notice>
-    )
-  }
-
-  if (!estimate) {
-    return null
-  }
-
-  const priceChangePositive = btcChange24h >= 0
-
-  if (compact) {
-    return (
-      <div className={`${ide.card} p-2`}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Zap size={12} className="text-primary" />
-            <span className="text-white/60 text-xs">Est. Cost:</span>
-          </div>
-          <div className="text-right">
-            <span className="text-primary font-mono text-sm font-medium">
-              {estimate.satsFormatted}
-            </span>
-            <span className="text-white/40 text-xs ml-2">
-              ≈ {estimate.usdFormatted}
-            </span>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  const breakdownRows = [
-    {
-      label: "Base Fee",
-      percent: estimate.breakdownPercent.baseFee,
-      value: estimate.breakdown.baseFee,
-      color: "#b3ec11",
-    },
-    {
-      label: "Priority Fee",
-      percent: estimate.breakdownPercent.priorityFee,
-      value: estimate.breakdown.priorityFee,
-      color: "rgba(179,236,17,0.5)",
-    },
-    {
-      label: "Size Premium",
-      percent: estimate.breakdownPercent.sizePremium,
-      value: estimate.breakdown.sizePremium,
-      color: "#f59e0b",
-    },
-  ]
-
   return (
-    <div className={`${ide.card} overflow-hidden`}>
-      {/* Header */}
+    <div className={ide.card}>
       <PanelHeader
-        icon={<Zap size={14} className="text-primary" />}
-        title="Deployment Cost Estimate"
+        icon={<Zap size={13} className="text-primary" />}
+        title="Estimated deployment cost"
         actions={
           onRefresh && (
-            <IconButton onClick={onRefresh} title="Refresh estimate">
-              <RefreshCw size={12} />
+            <IconButton onClick={onRefresh} disabled={isEstimating} title="Re-estimate" aria-label="Re-estimate">
+              <RefreshCw size={12} className={isEstimating ? "animate-spin" : ""} />
             </IconButton>
           )
         }
       />
 
-      <div className="p-3 space-y-4">
-        {/* Main Cost Display */}
-        <div className="border border-primary/30 bg-primary/10 p-3 text-center">
-          <div className="text-2xl font-mono font-bold text-primary mb-1">
-            {estimate.satsFormatted}
+      <div className="p-3">
+        {isEstimating ? (
+          <div className="flex items-center gap-2 text-xs text-white/50 py-2">
+            <Spinner size={13} /> Asking the network…
           </div>
-          <div className="text-white/60 text-sm">
-            <span className="font-mono">{estimate.btcFormatted}</span> BTC ≈{" "}
-            <span className="text-white font-medium">{estimate.usdFormatted}</span>
-          </div>
-        </div>
+        ) : error ? (
+          <Notice tone="error">{error}</Notice>
+        ) : hint && !estimate ? (
+          <p className="text-xs text-white/50 py-1">{hint}</p>
+        ) : estimate ? (
+          <div className="space-y-3">
+            <div>
+              <p className="font-mono text-lg text-white leading-tight">{estimate.btcFormatted} BTC</p>
+              <p className="text-xs text-white/50 mt-0.5">
+                {estimate.satsFormatted}
+                {estimate.usdFormatted ? ` · ≈ ${estimate.usdFormatted}` : " · USD price unavailable"}
+              </p>
+            </div>
 
-        {/* Breakdown */}
-        <div className="space-y-2">
-          <div className={ide.label}>Cost Breakdown</div>
-          <div className="space-y-2">
-            {breakdownRows.map((row) => (
-              <div key={row.label} className="flex items-center justify-between text-xs">
-                <span className="text-white/60">{row.label}</span>
-                <div className="flex items-center gap-2">
-                  <Progress
-                    percent={row.percent}
-                    showInfo={false}
-                    strokeColor={row.color}
-                    trailColor={PROGRESS_TRAIL}
-                    size="small"
-                    className="w-16"
-                  />
-                  <span className="text-white font-mono w-20 text-right">
-                    {formatSats(row.value)}
-                  </span>
-                </div>
+            <dl className="grid grid-cols-2 gap-px bg-white/10 border border-white/10 text-xs">
+              <div className="bg-dark p-2">
+                <dt className={ide.label}>Gas limit</dt>
+                <dd className="font-mono text-white/80 mt-0.5">{estimate.gasUnits.toLocaleString()}</dd>
               </div>
-            ))}
-          </div>
-        </div>
+              <div className="bg-dark p-2">
+                <dt className={ide.label}>Gas price</dt>
+                <dd className="font-mono text-white/80 mt-0.5">{formatGwei(estimate.gasPrice)} gwei</dd>
+              </div>
+            </dl>
 
-        {/* Technical Details */}
-        <div className="grid grid-cols-2 gap-2">
-          <div className="border border-white/10 bg-dark p-2 space-y-0.5">
-            <div className={ide.label}>Gas Units</div>
-            <div className="text-white font-mono text-xs">
-              {estimate.gasUnits.toLocaleString()}
-            </div>
+            <p className="text-[10px] text-white/30 leading-relaxed">
+              eth_estimateGas on Mezo {estimate.network} + 10% headroom.
+              {btcPrice !== null && priceSource && ` BTC ${formatUSD(btcPrice)} via ${priceSource}.`}
+            </p>
           </div>
-          <div className="border border-white/10 bg-dark p-2 space-y-0.5">
-            <div className={ide.label}>Gas Price</div>
-            <div className="text-white font-mono text-xs">
-              {(Number(estimate.gasPrice) / 1e9).toFixed(2)} gwei
-            </div>
-          </div>
-        </div>
-
-        {/* BTC Price Footer */}
-        <div className="flex items-center justify-between pt-3 border-t border-white/10">
-          <div className="flex items-center gap-1 text-white/40 text-[10px]">
-            <span>BTC/USD:</span>
-            <span className="text-white/60 font-mono">
-              ${btcPrice.toLocaleString()}
-            </span>
-          </div>
-          <div
-            className={`flex items-center gap-1 text-[10px] font-mono ${
-              priceChangePositive ? toneText.success : toneText.error
-            }`}
-          >
-            {priceChangePositive ? (
-              <TrendingUp size={10} />
-            ) : (
-              <TrendingDown size={10} />
-            )}
-            <span>{Math.abs(btcChange24h).toFixed(2)}%</span>
-          </div>
-        </div>
+        ) : (
+          <p className="text-xs text-white/50 py-1">No estimate yet.</p>
+        )}
       </div>
     </div>
   )

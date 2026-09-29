@@ -10,7 +10,14 @@ const protectedRoutes = [
   "/domains",
   "/integrations",
   "/projects",
+  "/ide",
 ]
+
+/** Only allow same-site relative paths as post-login destinations */
+function safeNext(value: string | null): string | null {
+  if (!value || !value.startsWith("/") || value.startsWith("//") || value.startsWith("/\\")) return null
+  return value
+}
 
 const authRoutes = ["/login", "/sign-up"]
 
@@ -40,7 +47,8 @@ export default function middleware(request: NextRequest) {
 
   // Redirect to dashboard if logged in and token is valid
   if (isAuthRoute && token && !isExpired) {
-    return NextResponse.redirect(new URL("/dashboard", request.url))
+    const next = safeNext(request.nextUrl.searchParams.get("next"))
+    return NextResponse.redirect(new URL(next ?? "/dashboard", request.url))
   }
 
   // Check if it's a protected route
@@ -50,7 +58,10 @@ export default function middleware(request: NextRequest) {
 
   // Redirect to login if accessing a protected route without a token or if expired
   if (isProtectedRoute && (isExpired || !token)) {
-    const response = NextResponse.redirect(new URL("/login", request.url))
+    // Remember where the user was going (e.g. an IDE share link)
+    const loginUrl = new URL("/login", request.url)
+    loginUrl.searchParams.set("next", pathname + request.nextUrl.search)
+    const response = NextResponse.redirect(loginUrl)
     if (token) {
       response.cookies.delete("access_token")
     }

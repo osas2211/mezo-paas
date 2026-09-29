@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useEffect } from "react"
 import { Code, Rocket, Play as PlayIcon, FilePlus, FileCode } from "lucide-react"
-import { useChainId } from "wagmi"
 import { useIDEState } from "@/hooks/ide/use-ide-state"
 import { useCompiler } from "@/hooks/ide/use-compiler"
 import { getAllDeployments, saveDeployment, generateId } from "@/lib/ide/storage"
@@ -21,6 +20,7 @@ import TransactionSimulator from "./transaction-simulator"
 import ShareModal from "./share-modal"
 import DAppGeneratorModal from "./dapp-generator-modal"
 import IDEToolbar from "./ide-toolbar"
+import ReportProblemModal from "./report-problem-modal"
 import { parseShareFromLocation, clearShareFromUrl, hasShareParams } from "@/lib/ide/share"
 import { PageLoading } from "@/components/utilities/page-loading"
 import { EmptyState, IdeButton, UnderlineTabs } from "./ui"
@@ -28,18 +28,17 @@ import { EmptyState, IdeButton, UnderlineTabs } from "./ui"
 export default function IDEContainer() {
   const ide = useIDEState()
   const compiler = useCompiler()
-  const chainId = useChainId()
 
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false)
   const [isProtocolRegistryOpen, setIsProtocolRegistryOpen] = useState(false)
   const [isSimulatorOpen, setIsSimulatorOpen] = useState(false)
   const [isShareModalOpen, setIsShareModalOpen] = useState(false)
   const [isDAppGeneratorOpen, setIsDAppGeneratorOpen] = useState(false)
+  const [isReportOpen, setIsReportOpen] = useState(false)
   const [dappGeneratorContract, setDappGeneratorContract] = useState<DeployedContract | null>(null)
   const [deployedContracts, setDeployedContracts] = useState<DeployedContract[]>([])
   const [rightPanelTab, setRightPanelTab] = useState<"compile" | "deploy" | "interact">("compile")
   const [consoleHeight, setConsoleHeight] = useState(150)
-  const [selectedNetwork, setSelectedNetwork] = useState<"testnet" | "mainnet">("mainnet")
 
   // Load deployed contracts
   useEffect(() => {
@@ -221,6 +220,7 @@ export const ${name.replace(/[^a-zA-Z0-9]/g, "").toUpperCase()}_ADDRESS = "${add
         onProtocolRegistry={() => setIsProtocolRegistryOpen(true)}
         onSimulator={() => setIsSimulatorOpen(true)}
         onShare={() => setIsShareModalOpen(true)}
+        onReport={() => setIsReportOpen(true)}
         isDirty={ide.activeFile?.isDirty || false}
         isCompiling={compiler.status === "compiling" || compiler.status === "resolving"}
         hasActiveFile={!!ide.activeFile}
@@ -370,7 +370,6 @@ export const ${name.replace(/[^a-zA-Z0-9]/g, "").toUpperCase()}_ADDRESS = "${add
         onClose={() => setIsProtocolRegistryOpen(false)}
         onImportAbi={handleImportAbi}
         onGenerateInterface={handleGenerateInterface}
-        network={selectedNetwork}
       />
 
       {/* Transaction Simulator Modal */}
@@ -379,7 +378,6 @@ export const ${name.replace(/[^a-zA-Z0-9]/g, "").toUpperCase()}_ADDRESS = "${add
         onClose={() => setIsSimulatorOpen(false)}
         deployedContracts={deployedContracts}
         addLog={ide.addLog}
-        chainId={chainId}
       />
 
       {/* Share Modal */}
@@ -388,6 +386,19 @@ export const ${name.replace(/[^a-zA-Z0-9]/g, "").toUpperCase()}_ADDRESS = "${add
         onClose={() => setIsShareModalOpen(false)}
         fileName={ide.activeFile?.name || "Contract.sol"}
         content={ide.activeFile?.content || ""}
+      />
+
+      {/* Report a Problem */}
+      <ReportProblemModal
+        open={isReportOpen}
+        onClose={() => setIsReportOpen(false)}
+        sources={{
+          logs: ide.consoleLogs,
+          compilation: compiler.result,
+          compilerStatus: compiler.status,
+          activeFile: ide.activeFile ? { name: ide.activeFile.name, content: ide.activeFile.content } : null,
+          deployments: deployedContracts,
+        }}
       />
 
       {/* dApp Generator Modal */}

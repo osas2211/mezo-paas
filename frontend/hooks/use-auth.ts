@@ -5,6 +5,14 @@ import { useToastify } from "./use-toastify"
 import { removeCookie } from "@/services/api.instance"
 import { RoleEnum } from "@/types/user"
 
+/** Post-login destination from ?next=, limited to same-site relative paths */
+function nextPath(): string {
+  if (typeof window === "undefined") return "/dashboard"
+  const next = new URLSearchParams(window.location.search).get("next")
+  if (!next || !next.startsWith("/") || next.startsWith("//") || next.startsWith("/\\")) return "/dashboard"
+  return next
+}
+
 export const useLogin = () => {
   const router = useRouter()
   const { successToast, errorToast } = useToastify()
@@ -12,7 +20,7 @@ export const useLogin = () => {
     mutationFn: (data: { email: string, password: string }) => loginService(data),
     onSuccess: (data: any) => {
       successToast(data?.message || "Logged in successfully", "bottom-left")
-      router.push("/dashboard")
+      router.push(nextPath())
     },
     onError: (error: any) => {
       errorToast(error?.response?.data?.message || "Invalid Credentials", "bottom-left")

@@ -59,18 +59,14 @@ export default function ContractInteract({
         return parseInputValue(input.type, value)
       })
 
-      // Use viem directly for read
-      const { createPublicClient, http } = await import("viem")
-      const { mezoTestnet } = await import("wagmi/chains")
+      // Read from the network the contract was deployed to (not the wallet's current chain)
+      const { createPublicClient } = await import("viem")
+      const { mezoChains, mezoTransport, networkForChainId } = await import("@/lib/ide/mezo-network")
+      const network = networkForChainId(selectedContract.chainId) ?? "testnet"
 
       const publicClient = createPublicClient({
-        chain: chainId === 31611 ? mezoTestnet : {
-          id: 31612,
-          name: "Mezo Mainnet",
-          nativeCurrency: { name: "BTC", symbol: "BTC", decimals: 18 },
-          rpcUrls: { default: { http: ["https://rpc.mezo.org"] } },
-        },
-        transport: http(),
+        chain: mezoChains[network],
+        transport: mezoTransport(network),
       })
 
       const result = await publicClient.readContract({

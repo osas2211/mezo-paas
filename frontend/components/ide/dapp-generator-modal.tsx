@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import {
   Rocket,
   Download,
@@ -9,9 +9,13 @@ import {
   FileCode,
   Folder,
 } from "lucide-react"
-import { FaGithub } from "react-icons/fa"
 import type { DeployedContract } from "@/types/ide"
-import { generateDAppProject, downloadAsZip } from "@/lib/ide/dapp-generator"
+import {
+  generateDAppProject,
+  downloadAsZip,
+  sanitizeProjectName,
+  type DAppTemplate,
+} from "@/lib/ide/dapp-generator"
 import { ide, IdeButton, IdeModal, Section, Field, StatusPill } from "./ui"
 
 interface DAppGeneratorModalProps {
@@ -24,7 +28,7 @@ interface DAppGeneratorModalProps {
   ) => void
 }
 
-type Template = "nextjs-wagmi" | "nextjs-viem" | "react-wagmi"
+type Template = DAppTemplate
 
 interface TemplateOption {
   value: Template
@@ -37,19 +41,19 @@ const templates: TemplateOption[] = [
   {
     value: "nextjs-wagmi",
     label: "Next.js + wagmi",
-    description: "Full-stack React framework with wagmi hooks",
+    description: "Next.js 16, wagmi, RainbowKit. Browser, WalletConnect and mobile wallets.",
     icon: <Package size={16} />,
   },
   {
     value: "nextjs-viem",
     label: "Next.js + viem",
-    description: "Full-stack React with low-level viem client",
+    description: "Next.js 16 and viem only. Minimal, no wallet kit, browser wallets.",
     icon: <FileCode size={16} />,
   },
   {
     value: "react-wagmi",
-    label: "React + wagmi",
-    description: "Client-side React with wagmi hooks",
+    label: "React + wagmi (Vite)",
+    description: "Client-side React 19 SPA with Vite, wagmi and RainbowKit.",
     icon: <Folder size={16} />,
   },
 ]
@@ -66,6 +70,15 @@ export default function DAppGeneratorModal({
   const [isGenerating, setIsGenerating] = useState(false)
   const [isComplete, setIsComplete] = useState(false)
 
+  // Start fresh for each contract, with a sensible default name
+  useEffect(() => {
+    if (!contract) return
+    setProjectName(sanitizeProjectName(`${contract.name}-dapp`))
+    setIsComplete(false)
+  }, [contract?.address, contract?.chainId])
+
+  const folderName = sanitizeProjectName(projectName)
+
   const handleGenerate = useCallback(async () => {
     if (!contract || !projectName.trim()) return
 
@@ -75,7 +88,7 @@ export default function DAppGeneratorModal({
     try {
       // Generate the project files
       const files = await generateDAppProject({
-        projectName: projectName.trim().toLowerCase().replace(/\s+/g, "-"),
+        projectName: folderName,
         template: selectedTemplate,
         contract: {
           name: contract.name,
@@ -86,22 +99,23 @@ export default function DAppGeneratorModal({
       })
 
       // Download as zip
-      await downloadAsZip(
-        projectName.trim().toLowerCase().replace(/\s+/g, "-"),
-        files,
-      )
+      await downloadAsZip(folderName, files)
 
       setIsComplete(true)
-      addLog?.("success", `Project "${projectName}" generated and downloaded!`)
+      addLog?.("success", `Project "${folderName}" generated and downloaded (${files.length} files)`)
     } catch (error: any) {
       addLog?.("error", `Failed to generate project: ${error.message}`)
     } finally {
       setIsGenerating(false)
     }
-  }, [contract, projectName, selectedTemplate, addLog])
+  }, [contract, projectName, folderName, selectedTemplate, addLog])
 
   const networkName =
-    contract?.chainId === 31611 ? "Mezo Testnet" : "Mezo Mainnet"
+    contract?.chainId === 31611
+      ? "Mezo Testnet"
+      : contract?.chainId === 31612
+        ? "Mezo Mainnet"
+        : `Chain ${contract?.chainId}`
 
   return (
     <IdeModal
@@ -122,20 +136,19 @@ export default function DAppGeneratorModal({
             Project Generated!
           </h3>
           <p className="text-white/60 text-sm">
-            Your dApp project has been downloaded. Unzip and run:
+            Unzip <span className="font-mono text-white">{folderName}.zip</span>, then run:
           </p>
-          <code className={`${ide.codeBlock} block mt-4 text-left`}>
-            cd {projectName.trim().toLowerCase().replace(/\s+/g, "-")} &&
-            npm install && npm run dev
+          <code className={`${ide.codeBlock} block mt-4 text-left whitespace-pre`}>
+            {[`cd ${folderName}`, "npm install", "npm run dev"].join("\n")}
           </code>
+          <p className="text-white/40 text-xs mt-3">
+            Requires Node.js 20.9+. See the project README for wallet setup.
+          </p>
           <div className="flex gap-3 mt-6 justify-center">
             <IdeButton
               variant="secondary"
               size="md"
-              onClick={() => {
-                setIsComplete(false)
-                setProjectName("")
-              }}
+              onClick={() => setIsComplete(false)}
             >
               Create Another
             </IdeButton>
@@ -145,7 +158,6 @@ export default function DAppGeneratorModal({
               className="px-6"
               onClick={() => {
                 setIsComplete(false)
-                setProjectName("")
                 onClose()
               }}
             >
@@ -169,7 +181,16 @@ export default function DAppGeneratorModal({
           </div>
 
           {/* Project Name */}
-          <Field label="Project Name">
+          <Field
+            label="Project Name"
+            hint={
+              projectName.trim() && folderName !== projectName.trim() ? (
+                <>
+                  Folder and package name: <span className="font-mono text-white/60">{folderName}</span>
+                </>
+              ) : undefined
+            }
+          >
             <input
               type="text"
               placeholder="my-mezo-dapp"
@@ -233,11 +254,11 @@ export default function DAppGeneratorModal({
           <div className={`${ide.card} p-3`}>
             <p className={`${ide.label} mb-2`}>Your project will include:</p>
             <ul className="text-xs text-white/60 space-y-1">
-              <li>• Pre-configured {contract.name} contract with ABI</li>
-              <li>• Mezo network configuration ({networkName})</li>
-              <li>• RainbowKit wallet connection</li>
-              <li>• Example component to interact with your contract</li>
-              <li>• TypeScript support</li>
+              <li>• Typed {contract.name} ABI and address ({networkName})</li>
+              <li>• Read and write UI for every contract function, including payable, arrays and structs</li>
+              <li>• Transactions simulated first, so revert reasons show before the wallet opens</li>
+              <li>• Wallet connection with switch-to-Mezo prompt</li>
+              <li>• Official Mezo chains from viem, Tailwind CSS 4, TypeScript</li>
             </ul>
           </div>
 
@@ -256,18 +277,6 @@ export default function DAppGeneratorModal({
             </IdeButton>
           </div>
 
-          {/* Future: GitHub Deploy */}
-          <div className={`text-center pt-4 border-t ${ide.divider}`}>
-            <IdeButton
-              variant="ghost"
-              size="xs"
-              disabled
-              icon={<FaGithub size={12} />}
-              className="mx-auto"
-            >
-              <span>Deploy to GitHub (Coming Soon)</span>
-            </IdeButton>
-          </div>
         </div>
       )}
     </IdeModal>

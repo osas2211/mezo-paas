@@ -1,3 +1,4 @@
+import { CHAIN_IDS, MEZO_EXPLORERS, MEZO_RPC_URLS } from "@/lib/ide/mezo-network"
 // IDE TypeScript Types
 
 export interface StoredContract {
@@ -110,18 +111,19 @@ export interface NetworkConfig {
   explorerUrl: string
 }
 
+// Derived from lib/ide/mezo-network.ts (Mezo's documented RPCs and explorers)
 export const MEZO_NETWORKS: Record<string, NetworkConfig> = {
   testnet: {
     name: "Mezo Testnet",
-    chainId: 31611,
-    rpcUrl: "https://rpc.test.mezo.org",
-    explorerUrl: "https://explorer.test.mezo.org",
+    chainId: CHAIN_IDS.testnet,
+    rpcUrl: MEZO_RPC_URLS.testnet[0],
+    explorerUrl: MEZO_EXPLORERS.testnet.url,
   },
   mainnet: {
     name: "Mezo Mainnet",
-    chainId: 31612,
-    rpcUrl: "https://rpc.mezo.org",
-    explorerUrl: "https://explorer.mezo.org",
+    chainId: CHAIN_IDS.mainnet,
+    rpcUrl: MEZO_RPC_URLS.mainnet[0],
+    explorerUrl: MEZO_EXPLORERS.mainnet.url,
   },
 }
 
@@ -167,69 +169,4 @@ export interface VerificationRequest {
   compilerSettings?: CompilerSettings // Exact settings used at compile time
 }
 
-// Transaction Simulator types
-export interface SimulationStateChange {
-  slot: string
-  key?: string // For mappings
-  oldValue: string
-  newValue: string
-  decoded?: {
-    type: string
-    label?: string
-    oldDecoded: string
-    newDecoded: string
-  }
-}
-
-export interface SimulationEvent {
-  name: string
-  signature: string
-  args: Record<string, any>
-  topics: string[]
-  data: string
-}
-
-export interface SimulationTrace {
-  type: "CALL" | "STATICCALL" | "DELEGATECALL" | "CREATE" | "CREATE2"
-  from: string
-  to: string
-  value: string
-  input: string
-  output?: string
-  gasUsed: bigint
-  error?: string
-}
-
-export interface SimulationResult {
-  success: boolean
-  returnData: string
-  decodedReturn?: string | null
-  gasUsed: bigint
-  gasCost: {
-    sats: bigint
-    btc: string
-    usd: string
-  }
-  stateChanges: SimulationStateChange[]
-  events: SimulationEvent[]
-  traces: SimulationTrace[]
-  error?: {
-    message: string
-    reason?: string // Decoded revert reason
-    data?: string
-  }
-  blockNumber: bigint
-  timestamp: number
-}
-
-export interface SimulationRequest {
-  contractAddress: string
-  abi: any[]
-  functionName: string
-  args: any[]
-  value?: bigint // ETH/BTC value to send
-  from?: string // Caller address (can impersonate)
-  chainId: number
-}
-
-export type SimulationStatus = "idle" | "simulating" | "success" | "failed"
+// Transaction simulator types live in lib/ide/transaction-simulator.ts

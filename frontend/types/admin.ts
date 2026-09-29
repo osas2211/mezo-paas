@@ -43,3 +43,25 @@ export interface AdminAnalyticsResponse {
   users: AdminUser[]
   message: string
 }
+
+export type IdeReportStatus = "OPEN" | "IN_PROGRESS" | "RESOLVED" | "WONT_FIX"
+export type IdeReportCategory = "BUG" | "CONFUSING" | "FEATURE_REQUEST" | "OTHER"
+
+export interface IdeReport {
+  id: string
+  userId: string | null
+  email: string | null
+  category: IdeReportCategory
+  message: string
+  diagnostics: Record<string, any> | null
+  status: IdeReportStatus
+  adminNotes: string | null
+  createdAt: string
+  updatedAt: string
+  user: { id: string; name: string; email: string } | null
+}
+
+export interface IdeReportsResponse {
+  reports: IdeReport[]
+  counts: Record<IdeReportStatus, number>
+}

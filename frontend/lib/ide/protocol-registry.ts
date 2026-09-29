@@ -1,517 +1,321 @@
 /**
  * Mezo Protocol Registry
- * Live addresses, ABIs, and integration guides for Mezo core protocols
+ *
+ * Only documented, on-chain-verified contracts (see ./mezo-network.ts).
+ * ABIs are loaded from the Mezo explorer's verified source at runtime, so
+ * signatures are never hand-written or out of date.
  */
 
-export interface ProtocolFunction {
-  name: string
-  signature: string
-  description: string
-  type: "read" | "write"
-}
+import { MEZO_CONTRACTS, MEZO_EXPLORERS, type MezoContractKey, type MezoNetwork } from "./mezo-network"
+import { PYTH_ABI } from "./abis/pyth"
 
-export interface ProtocolEvent {
-  name: string
-  signature: string
-  description: string
-}
+export type ProtocolCategory = "token" | "oracle" | "dex" | "governance"
 
 export interface Protocol {
   id: string
   name: string
+  category: ProtocolCategory
   description: string
-  category: "defi" | "token" | "infrastructure" | "governance"
-  status: "live" | "testnet" | "coming-soon"
-  docs?: string
-  github?: string
-  addresses: {
-    testnet?: string
-    mainnet?: string
-  }
-  abi: any[]
-  functions: ProtocolFunction[]
-  events: ProtocolEvent[]
-  integrationGuide?: string
+  contract: MezoContractKey
+  docsUrl: string
+  /** Bundled ABI (with provenance) for contracts whose source isn't verified on the explorer */
+  staticAbi?: { abi: readonly any[]; source: string }
+  /** Short, factual integration notes */
+  notes?: string[]
 }
 
-// ============================================================================
-// MUSD Stablecoin
-// ============================================================================
-
-const MUSD_ABI = [
-  "function name() view returns (string)",
-  "function symbol() view returns (string)",
-  "function decimals() view returns (uint8)",
-  "function totalSupply() view returns (uint256)",
-  "function balanceOf(address account) view returns (uint256)",
-  "function transfer(address to, uint256 amount) returns (bool)",
-  "function approve(address spender, uint256 amount) returns (bool)",
-  "function allowance(address owner, address spender) view returns (uint256)",
-  "function transferFrom(address from, address to, uint256 amount) returns (bool)",
-  "event Transfer(address indexed from, address indexed to, uint256 value)",
-  "event Approval(address indexed owner, address indexed spender, uint256 value)",
-]
-
-const MUSD_PROTOCOL: Protocol = {
-  id: "musd",
-  name: "MUSD Stablecoin",
-  description: "Bitcoin-backed stablecoin. Mint MUSD by depositing BTC collateral in a CDP with minimum 150% collateral ratio.",
-  category: "defi",
-  status: "testnet",
-  docs: "https://docs.mezo.org/musd",
-  addresses: {
-    testnet: "0x0000000000000000000000000000000000000000", // Placeholder
-    mainnet: "0x0000000000000000000000000000000000000000", // Placeholder
-  },
-  abi: MUSD_ABI,
-  functions: [
-    { name: "balanceOf", signature: "balanceOf(address) → uint256", description: "Get MUSD balance of an address", type: "read" },
-    { name: "totalSupply", signature: "totalSupply() → uint256", description: "Get total MUSD supply", type: "read" },
-    { name: "transfer", signature: "transfer(address to, uint256 amount) → bool", description: "Transfer MUSD to another address", type: "write" },
-    { name: "approve", signature: "approve(address spender, uint256 amount) → bool", description: "Approve spender to use MUSD", type: "write" },
-  ],
-  events: [
-    { name: "Transfer", signature: "Transfer(address indexed from, address indexed to, uint256 value)", description: "Emitted on MUSD transfer" },
-  ],
-  integrationGuide: `
-// Import MUSD interface
-interface IMUSD {
-    function balanceOf(address account) external view returns (uint256);
-    function transfer(address to, uint256 amount) external returns (bool);
-    function approve(address spender, uint256 amount) external returns (bool);
-    function transferFrom(address from, address to, uint256 amount) external returns (bool);
+export const CATEGORY_LABELS: Record<ProtocolCategory, string> = {
+  token: "Tokens",
+  oracle: "Oracles",
+  dex: "Mezo Pools",
+  governance: "Governance",
 }
 
-// Use in your contract
-IMUSD public constant MUSD = IMUSD(0x...); // Replace with actual address
-
-function checkBalance(address user) external view returns (uint256) {
-    return MUSD.balanceOf(user);
+const DOCS = {
+  musd: "https://mezo.org/docs/developers/musd/",
+  oracles: "https://mezo.org/docs/developers/architecture/oracles/read-oracle/",
+  pools: "https://mezo.org/docs/developers/features/mezo-pools/",
+  env: "https://mezo.org/docs/developers/getting-started/configure-environment/",
 }
-`,
-}
-
-// ============================================================================
-// CDP Manager
-// ============================================================================
-
-const CDP_MANAGER_ABI = [
-  "function openCDP(uint256 collateral, uint256 debt) returns (uint256 cdpId)",
-  "function closeCDP(uint256 cdpId)",
-  "function addCollateral(uint256 cdpId, uint256 amount)",
-  "function withdrawCollateral(uint256 cdpId, uint256 amount)",
-  "function borrowMore(uint256 cdpId, uint256 amount)",
-  "function repayDebt(uint256 cdpId, uint256 amount)",
-  "function getCollateralRatio(uint256 cdpId) view returns (uint256)",
-  "function isLiquidatable(uint256 cdpId) view returns (bool)",
-  "function getCDP(uint256 cdpId) view returns (address owner, uint256 collateral, uint256 debt, uint256 lastUpdate)",
-  "function liquidate(uint256 cdpId)",
-  "event CDPOpened(address indexed owner, uint256 indexed cdpId, uint256 collateral, uint256 debt)",
-  "event CDPClosed(address indexed owner, uint256 indexed cdpId)",
-  "event CollateralAdded(uint256 indexed cdpId, uint256 amount)",
-  "event CollateralWithdrawn(uint256 indexed cdpId, uint256 amount)",
-  "event DebtIncreased(uint256 indexed cdpId, uint256 amount)",
-  "event DebtRepaid(uint256 indexed cdpId, uint256 amount)",
-  "event Liquidation(uint256 indexed cdpId, address indexed liquidator, uint256 collateralSeized)",
-]
-
-const CDP_MANAGER_PROTOCOL: Protocol = {
-  id: "cdp-manager",
-  name: "CDP Manager",
-  description: "Manages Collateralized Debt Positions for MUSD minting. Deposit BTC, mint MUSD, manage collateral ratios.",
-  category: "defi",
-  status: "testnet",
-  docs: "https://docs.mezo.org/cdp",
-  addresses: {
-    testnet: "0x0000000000000000000000000000000000000000", // Placeholder
-    mainnet: "0x0000000000000000000000000000000000000000", // Placeholder
-  },
-  abi: CDP_MANAGER_ABI,
-  functions: [
-    { name: "openCDP", signature: "openCDP(uint256 collateral, uint256 debt) → uint256", description: "Open new CDP with BTC collateral", type: "write" },
-    { name: "closeCDP", signature: "closeCDP(uint256 cdpId)", description: "Close CDP by repaying all debt", type: "write" },
-    { name: "getCollateralRatio", signature: "getCollateralRatio(uint256 cdpId) → uint256", description: "Get collateral ratio in basis points (15000 = 150%)", type: "read" },
-    { name: "isLiquidatable", signature: "isLiquidatable(uint256 cdpId) → bool", description: "Check if CDP can be liquidated", type: "read" },
-    { name: "addCollateral", signature: "addCollateral(uint256 cdpId, uint256 amount)", description: "Add more collateral to CDP", type: "write" },
-    { name: "repayDebt", signature: "repayDebt(uint256 cdpId, uint256 amount)", description: "Repay MUSD debt", type: "write" },
-    { name: "liquidate", signature: "liquidate(uint256 cdpId)", description: "Liquidate undercollateralized CDP", type: "write" },
-  ],
-  events: [
-    { name: "CDPOpened", signature: "CDPOpened(address indexed owner, uint256 indexed cdpId, uint256 collateral, uint256 debt)", description: "Emitted when CDP is opened" },
-    { name: "Liquidation", signature: "Liquidation(uint256 indexed cdpId, address indexed liquidator, uint256 collateralSeized)", description: "Emitted on liquidation" },
-  ],
-  integrationGuide: `
-// CDP Manager Interface
-interface ICDPManager {
-    function openCDP(uint256 collateral, uint256 debt) external returns (uint256 cdpId);
-    function closeCDP(uint256 cdpId) external;
-    function addCollateral(uint256 cdpId, uint256 amount) external;
-    function getCollateralRatio(uint256 cdpId) external view returns (uint256);
-    function isLiquidatable(uint256 cdpId) external view returns (bool);
-}
-
-// Example: Open a CDP
-function openPosition(uint256 btcAmount, uint256 musdAmount) external {
-    // Transfer BTC collateral
-    IERC20(BTC).transferFrom(msg.sender, address(this), btcAmount);
-    IERC20(BTC).approve(address(cdpManager), btcAmount);
-
-    // Open CDP (must maintain 150% collateral ratio)
-    uint256 cdpId = cdpManager.openCDP(btcAmount, musdAmount);
-
-    // Verify ratio
-    require(cdpManager.getCollateralRatio(cdpId) >= 15000, "Below min ratio");
-}
-`,
-}
-
-// ============================================================================
-// tBTC Token
-// ============================================================================
-
-const TBTC_ABI = [
-  "function name() view returns (string)",
-  "function symbol() view returns (string)",
-  "function decimals() view returns (uint8)",
-  "function totalSupply() view returns (uint256)",
-  "function balanceOf(address account) view returns (uint256)",
-  "function transfer(address to, uint256 amount) returns (bool)",
-  "function approve(address spender, uint256 amount) returns (bool)",
-  "function allowance(address owner, address spender) view returns (uint256)",
-  "function transferFrom(address from, address to, uint256 amount) returns (bool)",
-  "event Transfer(address indexed from, address indexed to, uint256 value)",
-  "event Approval(address indexed owner, address indexed spender, uint256 value)",
-]
-
-const TBTC_PROTOCOL: Protocol = {
-  id: "tbtc",
-  name: "tBTC",
-  description: "Threshold BTC - The primary Bitcoin representation on Mezo. Bridged from Bitcoin mainnet via Threshold Network.",
-  category: "token",
-  status: "live",
-  docs: "https://docs.threshold.network/applications/tbtc",
-  addresses: {
-    testnet: "0x118917a40FAF1CD7a13dB0Ef56C86De7973Ac503",
-    mainnet: "0x0000000000000000000000000000000000000000", // Placeholder
-  },
-  abi: TBTC_ABI,
-  functions: [
-    { name: "balanceOf", signature: "balanceOf(address) → uint256", description: "Get tBTC balance", type: "read" },
-    { name: "transfer", signature: "transfer(address to, uint256 amount) → bool", description: "Transfer tBTC", type: "write" },
-    { name: "approve", signature: "approve(address spender, uint256 amount) → bool", description: "Approve tBTC spending", type: "write" },
-  ],
-  events: [
-    { name: "Transfer", signature: "Transfer(address indexed from, address indexed to, uint256 value)", description: "Emitted on transfer" },
-  ],
-  integrationGuide: `
-// tBTC is an ERC20 token
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-
-// Testnet address
-address constant TBTC = 0x118917a40FAF1CD7a13dB0Ef56C86De7973Ac503;
-
-// Use in your contract
-function depositBTC(uint256 amount) external {
-    IERC20(TBTC).transferFrom(msg.sender, address(this), amount);
-}
-`,
-}
-
-// ============================================================================
-// veBTC (Vote-Escrowed BTC)
-// ============================================================================
-
-const VEBTC_ABI = [
-  "function lock(uint256 amount, uint256 duration) returns (uint256 lockId)",
-  "function unlock(uint256 lockId)",
-  "function extendLock(uint256 lockId, uint256 newDuration)",
-  "function increaseAmount(uint256 lockId, uint256 amount)",
-  "function getVotingPower(address account) view returns (uint256)",
-  "function getLockInfo(uint256 lockId) view returns (uint256 amount, uint256 unlockTime, uint256 votingPower)",
-  "function totalVotingPower() view returns (uint256)",
-  "event Locked(address indexed user, uint256 indexed lockId, uint256 amount, uint256 duration)",
-  "event Unlocked(address indexed user, uint256 indexed lockId, uint256 amount)",
-]
-
-const VEBTC_PROTOCOL: Protocol = {
-  id: "vebtc",
-  name: "veBTC (Vote-Escrowed BTC)",
-  description: "Lock BTC to receive voting power and yield boosts on Mezo Earn. Longer locks = more voting power (up to 4 years).",
-  category: "governance",
-  status: "coming-soon",
-  docs: "https://docs.mezo.org/earn/vebtc",
-  addresses: {
-    testnet: "0x0000000000000000000000000000000000000000", // Placeholder
-    mainnet: "0x0000000000000000000000000000000000000000", // Placeholder
-  },
-  abi: VEBTC_ABI,
-  functions: [
-    { name: "lock", signature: "lock(uint256 amount, uint256 duration) → uint256", description: "Lock BTC for voting power", type: "write" },
-    { name: "unlock", signature: "unlock(uint256 lockId)", description: "Unlock BTC after lock period", type: "write" },
-    { name: "getVotingPower", signature: "getVotingPower(address) → uint256", description: "Get voting power of address", type: "read" },
-    { name: "getLockInfo", signature: "getLockInfo(uint256 lockId) → (uint256, uint256, uint256)", description: "Get lock details", type: "read" },
-  ],
-  events: [
-    { name: "Locked", signature: "Locked(address indexed user, uint256 indexed lockId, uint256 amount, uint256 duration)", description: "Emitted when BTC is locked" },
-  ],
-  integrationGuide: `
-// veBTC Interface
-interface IveBTC {
-    function lock(uint256 amount, uint256 duration) external returns (uint256 lockId);
-    function unlock(uint256 lockId) external;
-    function getVotingPower(address account) external view returns (uint256);
-}
-
-// Lock BTC for 1 year
-uint256 constant ONE_YEAR = 365 days;
-
-function lockForVoting(uint256 btcAmount) external {
-    IERC20(BTC).transferFrom(msg.sender, address(this), btcAmount);
-    IERC20(BTC).approve(address(veBTC), btcAmount);
-
-    uint256 lockId = veBTC.lock(btcAmount, ONE_YEAR);
-    // Voting power = amount * (duration / MAX_DURATION)
-    // 1 BTC locked for 4 years = 1 veBTC
-    // 1 BTC locked for 1 year = 0.25 veBTC
-}
-`,
-}
-
-// ============================================================================
-// veMEZO (Vote-Escrowed MEZO)
-// ============================================================================
-
-const VEMEZO_ABI = [
-  "function lock(uint256 amount, uint256 duration) returns (uint256 lockId)",
-  "function unlock(uint256 lockId)",
-  "function getBoostMultiplier(address account) view returns (uint256)",
-  "function getEpochRewards(uint256 epoch) view returns (uint256)",
-  "function claimRewards() returns (uint256)",
-  "event Locked(address indexed user, uint256 indexed lockId, uint256 amount, uint256 duration)",
-  "event RewardsClaimed(address indexed user, uint256 amount)",
-]
-
-const VEMEZO_PROTOCOL: Protocol = {
-  id: "vemezo",
-  name: "veMEZO (Vote-Escrowed MEZO)",
-  description: "Lock MEZO tokens for yield multipliers and emissions coordination. Boost your Mezo Earn rewards up to 2.5x.",
-  category: "governance",
-  status: "coming-soon",
-  docs: "https://docs.mezo.org/earn/vemezo",
-  addresses: {
-    testnet: "0x0000000000000000000000000000000000000000", // Placeholder
-    mainnet: "0x0000000000000000000000000000000000000000", // Placeholder
-  },
-  abi: VEMEZO_ABI,
-  functions: [
-    { name: "lock", signature: "lock(uint256 amount, uint256 duration) → uint256", description: "Lock MEZO for boost multiplier", type: "write" },
-    { name: "getBoostMultiplier", signature: "getBoostMultiplier(address) → uint256", description: "Get yield boost (10000 = 1x, 25000 = 2.5x)", type: "read" },
-    { name: "claimRewards", signature: "claimRewards() → uint256", description: "Claim accumulated rewards", type: "write" },
-  ],
-  events: [
-    { name: "RewardsClaimed", signature: "RewardsClaimed(address indexed user, uint256 amount)", description: "Emitted when rewards claimed" },
-  ],
-  integrationGuide: `
-// veMEZO Interface
-interface IveMEZO {
-    function lock(uint256 amount, uint256 duration) external returns (uint256 lockId);
-    function getBoostMultiplier(address account) external view returns (uint256);
-    function claimRewards() external returns (uint256);
-}
-
-// Calculate boosted yield
-function calculateBoostedYield(address user, uint256 baseYield) external view returns (uint256) {
-    uint256 multiplier = veMEZO.getBoostMultiplier(user);
-    // multiplier is in basis points (10000 = 1x)
-    return (baseYield * multiplier) / 10000;
-}
-`,
-}
-
-// ============================================================================
-// Gauge Controller
-// ============================================================================
-
-const GAUGE_ABI = [
-  "function deposit(uint256 amount)",
-  "function withdraw(uint256 amount)",
-  "function claimRewards() returns (uint256)",
-  "function getRewardRate() view returns (uint256)",
-  "function getWeight() view returns (uint256)",
-  "function vote(uint256 weight)",
-  "function balanceOf(address account) view returns (uint256)",
-  "event Deposited(address indexed user, uint256 amount)",
-  "event Withdrawn(address indexed user, uint256 amount)",
-  "event RewardPaid(address indexed user, uint256 reward)",
-]
-
-const GAUGE_PROTOCOL: Protocol = {
-  id: "gauge",
-  name: "Liquidity Gauge",
-  description: "Stake LP tokens in gauges to earn MEZO rewards. Vote with veBTC to direct emissions to your preferred gauges.",
-  category: "defi",
-  status: "coming-soon",
-  docs: "https://docs.mezo.org/earn/gauges",
-  addresses: {
-    testnet: "0x0000000000000000000000000000000000000000", // Placeholder
-    mainnet: "0x0000000000000000000000000000000000000000", // Placeholder
-  },
-  abi: GAUGE_ABI,
-  functions: [
-    { name: "deposit", signature: "deposit(uint256 amount)", description: "Stake LP tokens in gauge", type: "write" },
-    { name: "withdraw", signature: "withdraw(uint256 amount)", description: "Withdraw LP tokens", type: "write" },
-    { name: "claimRewards", signature: "claimRewards() → uint256", description: "Claim MEZO rewards", type: "write" },
-    { name: "getRewardRate", signature: "getRewardRate() → uint256", description: "Current reward rate per second", type: "read" },
-    { name: "vote", signature: "vote(uint256 weight)", description: "Vote for gauge weight (requires veBTC)", type: "write" },
-  ],
-  events: [
-    { name: "RewardPaid", signature: "RewardPaid(address indexed user, uint256 reward)", description: "Emitted when rewards claimed" },
-  ],
-  integrationGuide: `
-// Gauge Interface
-interface IGauge {
-    function deposit(uint256 amount) external;
-    function withdraw(uint256 amount) external;
-    function claimRewards() external returns (uint256);
-    function getRewardRate() external view returns (uint256);
-}
-
-// Stake LP tokens
-function stakeLPTokens(address gauge, uint256 amount) external {
-    IERC20(lpToken).transferFrom(msg.sender, address(this), amount);
-    IERC20(lpToken).approve(gauge, amount);
-    IGauge(gauge).deposit(amount);
-}
-
-// Harvest rewards
-function harvest(address gauge) external returns (uint256) {
-    return IGauge(gauge).claimRewards();
-}
-`,
-}
-
-// ============================================================================
-// MEZO Token
-// ============================================================================
-
-const MEZO_TOKEN_ABI = [
-  "function name() view returns (string)",
-  "function symbol() view returns (string)",
-  "function decimals() view returns (uint8)",
-  "function totalSupply() view returns (uint256)",
-  "function balanceOf(address account) view returns (uint256)",
-  "function transfer(address to, uint256 amount) returns (bool)",
-  "function approve(address spender, uint256 amount) returns (bool)",
-  "function allowance(address owner, address spender) view returns (uint256)",
-  "function transferFrom(address from, address to, uint256 amount) returns (bool)",
-]
-
-const MEZO_TOKEN_PROTOCOL: Protocol = {
-  id: "mezo-token",
-  name: "MEZO Token",
-  description: "The native governance and utility token of the Mezo ecosystem. Used for staking, governance, and fee payments.",
-  category: "token",
-  status: "live",
-  docs: "https://docs.mezo.org/token",
-  addresses: {
-    testnet: "0x7B7c000000000000000000000000000000000001",
-    mainnet: "0x7B7c000000000000000000000000000000000001",
-  },
-  abi: MEZO_TOKEN_ABI,
-  functions: [
-    { name: "balanceOf", signature: "balanceOf(address) → uint256", description: "Get MEZO balance", type: "read" },
-    { name: "transfer", signature: "transfer(address to, uint256 amount) → bool", description: "Transfer MEZO", type: "write" },
-    { name: "approve", signature: "approve(address spender, uint256 amount) → bool", description: "Approve MEZO spending", type: "write" },
-  ],
-  events: [
-    { name: "Transfer", signature: "Transfer(address indexed from, address indexed to, uint256 value)", description: "Emitted on transfer" },
-  ],
-  integrationGuide: `
-// MEZO is the native token (precompile)
-address constant MEZO = 0x7B7c000000000000000000000000000000000001;
-
-// Use standard ERC20 interface
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-
-function getMezoBalance(address user) external view returns (uint256) {
-    return IERC20(MEZO).balanceOf(user);
-}
-`,
-}
-
-// ============================================================================
-// All Protocols
-// ============================================================================
 
 export const PROTOCOLS: Protocol[] = [
-  TBTC_PROTOCOL,
-  MEZO_TOKEN_PROTOCOL,
-  MUSD_PROTOCOL,
-  CDP_MANAGER_PROTOCOL,
-  VEBTC_PROTOCOL,
-  VEMEZO_PROTOCOL,
-  GAUGE_PROTOCOL,
+  {
+    id: "btc",
+    name: "BTC",
+    category: "token",
+    description: "Native BTC exposed as an ERC-20 (18 decimals). BTC is also Mezo's gas token.",
+    contract: "BTC",
+    docsUrl: DOCS.env,
+    notes: ["Supports EIP-2612 permit.", "Same address on testnet and mainnet."],
+  },
+  {
+    id: "musd",
+    name: "MUSD",
+    category: "token",
+    description: "Mezo USD — the BTC-backed stablecoin (Liquity-style troves). ERC-20 with permit.",
+    contract: "MUSD",
+    docsUrl: DOCS.musd,
+    notes: ["Minting and burning are restricted to the MUSD system contracts."],
+  },
+  {
+    id: "mezo",
+    name: "MEZO",
+    category: "token",
+    description: "The MEZO token as an ERC-20 (18 decimals).",
+    contract: "MEZO",
+    docsUrl: DOCS.env,
+    notes: ["Same address on testnet and mainnet."],
+  },
+  {
+    id: "btc-usd-oracle",
+    name: "BTC/USD Price Feed",
+    category: "oracle",
+    description: "Chainlink-compatible BTC/USD feed — read it with latestRoundData() and decimals().",
+    contract: "BTC_USD_ORACLE",
+    docsUrl: DOCS.oracles,
+  },
+  {
+    id: "pyth",
+    name: "Pyth",
+    category: "oracle",
+    description: "Pyth pull oracle for other price feeds (MUSD/USD, USDC/USD, MEZO/USD and more).",
+    contract: "PYTH",
+    docsUrl: DOCS.oracles,
+    staticAbi: { abi: PYTH_ABI, source: "Pyth SDK (@pythnetwork/pyth-sdk-solidity 4.3.1)" },
+    notes: [
+      "Pull oracle: push a fresh update (updatePriceFeeds) before relying on a price — getPriceUnsafe can be stale.",
+      "Feed IDs are listed in the Mezo oracle docs.",
+    ],
+  },
+  {
+    id: "pools-router",
+    name: "Pools Router",
+    category: "dex",
+    description: "Router for Mezo's basic (volatile and stable) pools: swaps and liquidity.",
+    contract: "POOLS_ROUTER",
+    docsUrl: DOCS.pools,
+  },
+  {
+    id: "pool-factory",
+    name: "Pool Factory",
+    category: "dex",
+    description: "Creates basic pools and looks up existing pools (getPool).",
+    contract: "POOL_FACTORY",
+    docsUrl: DOCS.pools,
+  },
+  {
+    id: "cl-swap-router",
+    name: "CL Swap Router",
+    category: "dex",
+    description: "Swap router for concentrated-liquidity pools.",
+    contract: "CL_SWAP_ROUTER",
+    docsUrl: DOCS.pools,
+  },
+  {
+    id: "cl-position-manager",
+    name: "CL Position Manager",
+    category: "dex",
+    description: "Mints and manages concentrated-liquidity positions as NFTs.",
+    contract: "CL_POSITION_MANAGER",
+    docsUrl: DOCS.pools,
+  },
+  {
+    id: "vebtc",
+    name: "veBTC",
+    category: "governance",
+    description: "Vote-escrowed BTC: lock BTC as an NFT (createLock) for voting power.",
+    contract: "VEBTC",
+    docsUrl: DOCS.pools,
+  },
+  {
+    id: "vebtc-voter",
+    name: "veBTC Voter",
+    category: "governance",
+    description: "Directs veBTC voting power to gauges.",
+    contract: "VEBTC_VOTER",
+    docsUrl: DOCS.pools,
+  },
 ]
 
-// Get protocol by ID
-export function getProtocol(id: string): Protocol | undefined {
-  return PROTOCOLS.find((p) => p.id === id)
+export function protocolAddress(protocol: Protocol, network: MezoNetwork): string {
+  return MEZO_CONTRACTS[protocol.contract][network]
 }
 
-// Get protocols by category
-export function getProtocolsByCategory(category: Protocol["category"]): Protocol[] {
-  return PROTOCOLS.filter((p) => p.category === category)
+export function explorerAddressUrl(address: string, network: MezoNetwork): string {
+  return `${MEZO_EXPLORERS[network].url}/address/${address}`
 }
 
-// Get protocols by status
-export function getProtocolsByStatus(status: Protocol["status"]): Protocol[] {
-  return PROTOCOLS.filter((p) => p.status === status)
-}
-
-// Search protocols
-export function searchProtocols(query: string): Protocol[] {
-  const lowerQuery = query.toLowerCase()
-  return PROTOCOLS.filter(
+export function searchProtocols(query: string, protocols: Protocol[] = PROTOCOLS): Protocol[] {
+  const q = query.trim().toLowerCase()
+  if (!q) return protocols
+  return protocols.filter(
     (p) =>
-      p.name.toLowerCase().includes(lowerQuery) ||
-      p.description.toLowerCase().includes(lowerQuery) ||
-      p.id.toLowerCase().includes(lowerQuery)
+      p.name.toLowerCase().includes(q) ||
+      p.description.toLowerCase().includes(q) ||
+      CATEGORY_LABELS[p.category].toLowerCase().includes(q)
   )
 }
 
-// Generate Solidity interface from protocol
-export function generateInterface(protocol: Protocol): string {
-  const lines = [
-    `// SPDX-License-Identifier: MIT`,
-    `pragma solidity ^0.8.20;`,
-    ``,
-    `/**`,
-    ` * @title I${protocol.name.replace(/[^a-zA-Z0-9]/g, "")}`,
-    ` * @notice ${protocol.description}`,
-    ` */`,
-    `interface I${protocol.name.replace(/[^a-zA-Z0-9]/g, "")} {`,
-  ]
+/* ------------------------------------------------------------------ */
+/* ABI loading                                                          */
+/* ------------------------------------------------------------------ */
 
-  // Add functions
-  for (const fn of protocol.functions) {
-    const viewMod = fn.type === "read" ? " view" : ""
-    const returnType = fn.signature.includes("→")
-      ? ` returns (${fn.signature.split("→")[1].trim()})`
-      : ""
-    const params = fn.signature.split("(")[1].split(")")[0]
-    lines.push(`    /// @notice ${fn.description}`)
-    lines.push(`    function ${fn.name}(${params}) external${viewMod}${returnType};`)
-    lines.push(``)
+export interface LoadedAbi {
+  abi: any[]
+  contractName: string
+  proxy: boolean
+  /** Where the ABI came from */
+  source: string
+}
+
+const abiCache = new Map<string, Promise<LoadedAbi>>()
+
+async function fetchAbi(network: MezoNetwork, address: string): Promise<LoadedAbi> {
+  const response = await fetch(`/api/explorer/abi?network=${network}&address=${address}`)
+  const data = await response.json().catch(() => ({}))
+  if (!response.ok || !data.verified) {
+    throw new Error(data.error || `Could not load ABI (HTTP ${response.status})`)
+  }
+  return {
+    abi: data.abi,
+    contractName: data.name,
+    proxy: !!data.proxy,
+    source: data.proxy ? "Verified implementation on Mezo explorer" : "Verified source on Mezo explorer",
+  }
+}
+
+export function loadProtocolAbi(protocol: Protocol, network: MezoNetwork): Promise<LoadedAbi> {
+  const key = `${protocol.id}:${network}`
+  if (protocol.staticAbi) {
+    return Promise.resolve({
+      abi: [...protocol.staticAbi.abi],
+      contractName: protocol.name,
+      proxy: false,
+      source: protocol.staticAbi.source,
+    })
+  }
+  if (!abiCache.has(key)) {
+    const promise = fetchAbi(network, protocolAddress(protocol, network))
+    // Don't cache failures
+    abiCache.set(key, promise.catch((e) => { abiCache.delete(key); throw e }))
+  }
+  return abiCache.get(key)!
+}
+
+/* ------------------------------------------------------------------ */
+/* ABI helpers                                                          */
+/* ------------------------------------------------------------------ */
+
+export interface AbiSummary {
+  reads: any[]
+  writes: any[]
+  events: any[]
+}
+
+export function summarizeAbi(abi: any[]): AbiSummary {
+  const functions = abi.filter((x) => x.type === "function")
+  return {
+    reads: functions.filter((f) => f.stateMutability === "view" || f.stateMutability === "pure"),
+    writes: functions.filter((f) => f.stateMutability !== "view" && f.stateMutability !== "pure"),
+    events: abi.filter((x) => x.type === "event"),
+  }
+}
+
+export function formatSignature(item: any): string {
+  const params = (item.inputs ?? [])
+    .map((p: any) => `${displayType(p)}${p.indexed ? " indexed" : ""}${p.name ? " " + p.name : ""}`)
+    .join(", ")
+  const outputs = item.type === "function" && item.outputs?.length
+    ? ` → ${item.outputs.map((o: any) => displayType(o)).join(", ")}`
+    : ""
+  return `${item.name}(${params})${outputs}`
+}
+
+function displayType(param: any): string {
+  if (param.type.startsWith("tuple")) return structName(param) + param.type.slice("tuple".length)
+  return param.type
+}
+
+/* ------------------------------------------------------------------ */
+/* Solidity interface generation from a real ABI                        */
+/* ------------------------------------------------------------------ */
+
+function structName(param: any): string {
+  // internalType looks like "struct IPyth.Price" or "struct Foo[]"
+  const match = /struct\s+(?:[\w]+\.)?(\w+)/.exec(param.internalType ?? "")
+  return match?.[1] ?? "Tuple"
+}
+
+function isDynamic(param: any): boolean {
+  return (
+    param.type === "string" ||
+    param.type === "bytes" ||
+    param.type.endsWith("]") ||
+    param.type.startsWith("tuple")
+  )
+}
+
+export function generateInterface(name: string, abi: any[]): string {
+  const interfaceName = "I" + name.replace(/[^a-zA-Z0-9]/g, "")
+  const structs = new Map<string, string>()
+
+  const solType = (param: any): string => {
+    if (!param.type.startsWith("tuple")) return param.type
+    const sName = structName(param)
+    if (!structs.has(sName)) {
+      structs.set(sName, "") // reserve (handles recursion)
+      const fields = (param.components ?? [])
+        .map((c: any, i: number) => `        ${solType(c)} ${c.name || `field${i}`};`)
+        .join("\n")
+      structs.set(sName, `    struct ${sName} {\n${fields}\n    }`)
+    }
+    return sName + param.type.slice("tuple".length)
   }
 
-  // Add events
-  for (const event of protocol.events) {
-    lines.push(`    /// @notice ${event.description}`)
-    lines.push(`    event ${event.signature};`)
-    lines.push(``)
-  }
+  const paramList = (params: any[], location: "calldata" | "memory", withNames: boolean) =>
+    params
+      .map((p, i) => {
+        const t = solType(p)
+        const loc = isDynamic(p) ? ` ${location}` : ""
+        const n = withNames ? ` ${p.name || `arg${i}`}` : p.name ? ` ${p.name}` : ""
+        return `${t}${loc}${n}`
+      })
+      .join(", ")
 
-  lines.push(`}`)
+  const functions = abi
+    .filter((x) => x.type === "function")
+    .map((f) => {
+      const mutability =
+        f.stateMutability === "view" || f.stateMutability === "pure" || f.stateMutability === "payable"
+          ? ` ${f.stateMutability}`
+          : ""
+      const returns = f.outputs?.length ? ` returns (${paramList(f.outputs, "memory", false)})` : ""
+      return `    function ${f.name}(${paramList(f.inputs ?? [], "calldata", true)}) external${mutability}${returns};`
+    })
 
-  return lines.join("\n")
+  const events = abi
+    .filter((x) => x.type === "event")
+    .map((e) => {
+      const params = (e.inputs ?? [])
+        .map((p: any) => `${solType(p)}${p.indexed ? " indexed" : ""}${p.name ? " " + p.name : ""}`)
+        .join(", ")
+      return `    event ${e.name}(${params});`
+    })
+
+  const sections = [
+    structs.size ? [...structs.values()].join("\n\n") : "",
+    events.join("\n"),
+    functions.join("\n"),
+  ].filter(Boolean)
+
+  return [
+    "// SPDX-License-Identifier: MIT",
+    "pragma solidity ^0.8.20;",
+    "",
+    `/// @notice Generated by Mezo IDE from the verified ${name} ABI on the Mezo explorer.`,
+    `interface ${interfaceName} {`,
+    sections.join("\n\n"),
+    "}",
+    "",
+  ].join("\n")
 }

@@ -21,6 +21,7 @@ import { getConstructor, parseInputValue } from "@/lib/ide/abi-utils"
 import { useGasEstimator } from "@/hooks/ide/use-gas-estimator"
 import { useVerification } from "@/hooks/ide/use-verification"
 import GasEstimatorPanel from "./gas-estimator-panel"
+import FaucetPrompt from "./faucet-prompt"
 import { Switch } from "antd"
 import { ide, IdeButton, Notice, Section, Field, PanelHeader, EmptyState, Spinner } from "./ui"
 
@@ -57,7 +58,8 @@ export default function DeployPanel({
   const { data: walletClient } = useWalletClient()
   const publicClient = usePublicClient()
 
-  const [selectedNetwork, setSelectedNetwork] = useState<"testnet" | "mainnet">("mainnet")
+  // Testnet by default — mainnet costs real BTC
+  const [selectedNetwork, setSelectedNetwork] = useState<"testnet" | "mainnet">("testnet")
   const [constructorArgs, setConstructorArgs] = useState<Record<string, string>>({})
   const [deploymentStatus, setDeploymentStatus] = useState<DeploymentStatus>("idle")
   const [txHash, setTxHash] = useState<string | null>(null)
@@ -87,46 +89,55 @@ export default function DeployPanel({
   const targetChainId = selectedNetwork === "testnet" ? 31611 : 31612
   const isCorrectNetwork = chainId === targetChainId
 
-  // Reset constructor args and estimate gas when contract changes
+  // Reset state when the contract changes
   useEffect(() => {
     setConstructorArgs({})
     setDeploymentStatus("idle")
     setTxHash(null)
     setDeployedAddress(null)
     verification.reset()
+  }, [selectedContract?.name])
 
-    // Estimate gas for the new contract
-    if (selectedContract && isConnected) {
-      gasEstimator.estimateDeployment(
-        selectedContract.bytecode,
-        selectedContract.abi,
-        []
-      )
-    }
-  }, [selectedContract?.name, isConnected])
-
-  // Re-estimate when constructor args change
-  const handleEstimateGas = () => {
-    if (!selectedContract) return
-
+  /** Parsed constructor args, or null while any are missing/invalid */
+  const parsedConstructorArgs = (): any[] | null => {
+    if (!hasConstructorArgs || !constructor) return []
     const args: any[] = []
-    if (hasConstructorArgs && constructor) {
-      for (const input of constructor.inputs) {
-        const value = constructorArgs[input.name] || ""
-        try {
-          args.push(parseInputValue(input.type, value))
-        } catch {
-          // Invalid arg, use empty for estimation
-        }
+    for (const input of constructor.inputs) {
+      const raw = constructorArgs[input.name]
+      if (raw === undefined || (raw.trim() === "" && input.type !== "string")) return null
+      try {
+        args.push(parseInputValue(input.type, raw))
+      } catch {
+        return null
       }
     }
+    return args
+  }
 
+  const gasHint =
+    hasConstructorArgs && parsedConstructorArgs() === null
+      ? "Fill in the constructor arguments to estimate the cost."
+      : null
+
+  // Real eth_estimateGas against the selected network (no wallet needed)
+  const handleEstimateGas = () => {
+    if (!selectedContract) return
+    const args = parsedConstructorArgs()
+    if (args === null) return
     gasEstimator.estimateDeployment(
       selectedContract.bytecode,
       selectedContract.abi,
-      args
+      args,
+      selectedNetwork,
+      address
     )
   }
+
+  // Estimate automatically for contracts without constructor args, and on network change
+  useEffect(() => {
+    if (selectedContract && !hasConstructorArgs) handleEstimateGas()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedContract?.name, selectedNetwork])
 
   const handleDeploy = async () => {
     if (!selectedContract || !isConnected || !walletClient || !publicClient) {
@@ -342,15 +353,30 @@ export default function DeployPanel({
             )}
 
             {/* Gas Estimator */}
-            {isCorrectNetwork && (
-              <GasEstimatorPanel
-                estimate={gasEstimator.estimate}
-                isEstimating={gasEstimator.isEstimating}
-                error={gasEstimator.error}
-                btcPrice={gasEstimator.btcPrice}
-                btcChange24h={gasEstimator.btcChange24h}
-                onRefresh={handleEstimateGas}
+            <GasEstimatorPanel
+              estimate={gasEstimator.estimate}
+              isEstimating={gasEstimator.isEstimating}
+              error={gasEstimator.error}
+              btcPrice={gasEstimator.btcPrice}
+              priceSource={gasEstimator.priceSource}
+              hint={gasHint}
+              onRefresh={gasHint ? undefined : handleEstimateGas}
+            />
+
+            {isConnected && (
+              <FaucetPrompt
+                address={address}
+                network={selectedNetwork}
+                requiredWei={
+                  gasEstimator.estimate?.network === selectedNetwork ? gasEstimator.estimate.totalWei : null
+                }
               />
+            )}
+
+            {selectedNetwork === "mainnet" && (
+              <Notice tone="warning" icon={<AlertCircle size={14} />} title="Deploying to Mezo Mainnet">
+                This uses real BTC for gas. Test on Mezo Testnet first.
+              </Notice>
             )}
 
             {/* Auto-Verify Toggle */}

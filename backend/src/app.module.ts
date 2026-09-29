@@ -18,6 +18,7 @@ import { ProjectModule } from './project/project.module'
 import { BillingModule } from './billing/billing.module';
 import { YieldModule } from './yield/yield.module';
 import { TreasuryModule } from './treasury/treasury.module';
+import { IdeReportModule } from './ide-report/ide-report.module';
 import { ScheduleModule } from '@nestjs/schedule'
 import { BlockchainListenerService } from './blockchain-listener/blockchain-listener.service';
 import { LogsController } from './logs/logs.controller';
@@ -41,6 +42,7 @@ import { LogsController } from './logs/logs.controller';
     BillingModule,
     YieldModule,
     TreasuryModule,
+    IdeReportModule,
   ],
   controllers: [AppController, LogsController],
   providers: [
