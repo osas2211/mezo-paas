@@ -1,13 +1,14 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Link, Copy, Check, AlertCircle, ExternalLink, X } from "lucide-react"
+import { Link, Copy, Check, AlertCircle, ExternalLink } from "lucide-react"
 import {
   generateShareUrl,
   copyToClipboard,
   isContentTooLarge,
   estimateUrlLength,
 } from "@/lib/ide/share"
+import { ide, IdeButton, Notice, Section, IdeModal } from "./ui"
 
 interface ShareModalProps {
   open: boolean
@@ -42,17 +43,6 @@ export default function ShareModal({
     }
   }, [copied])
 
-  // Handle escape key
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose()
-    }
-    if (open) {
-      document.addEventListener("keydown", handleEscape)
-      return () => document.removeEventListener("keydown", handleEscape)
-    }
-  }, [open, onClose])
-
   const generateUrl = async () => {
     setIsGenerating(true)
     setError(null)
@@ -85,131 +75,88 @@ export default function ShareModal({
     window.open(shareUrl, "_blank")
   }
 
-  if (!open) return null
-
   const estimatedLength = estimateUrlLength(content, fileName)
   const isTooLarge = isContentTooLarge(content, fileName)
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/80 backdrop-blur-sm"
-        onClick={onClose}
-      />
-
-      {/* Modal */}
-      <div className="relative w-full max-w-lg mx-4 bg-[#0a0a0a] border border-white/10 rounded-lg shadow-2xl">
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-white/10">
-          <div className="flex items-center gap-2">
-            <Link size={18} className="text-primary" />
-            <h2 className="text-white text-base font-medium">Share Contract</h2>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-1 text-white/40 hover:text-white transition-colors"
-          >
-            <X size={18} />
-          </button>
+    <IdeModal open={open} onClose={onClose} title="Share Contract" icon={<Link />} width={520}>
+      <div className="space-y-4">
+        {/* File Info */}
+        <div className={`${ide.card} p-3`}>
+          <p className="text-white text-sm font-medium">{fileName}</p>
+          <p className="text-white/60 text-xs mt-1">
+            {content.length.toLocaleString()} characters
+            {content.length > 2000 && " (will be compressed)"}
+          </p>
         </div>
 
-        {/* Content */}
-        <div className="p-5">
-          {/* File Info */}
-          <div className="mb-4 p-3 bg-[#111] rounded-lg border border-white/10">
-            <p className="text-white text-sm font-medium">{fileName}</p>
-            <p className="text-white/50 text-xs mt-1">
-              {content.length.toLocaleString()} characters
-              {content.length > 2000 && " (will be compressed)"}
-            </p>
-          </div>
+        {/* Error State */}
+        {error && (
+          <Notice tone="error" icon={<AlertCircle size={14} />}>
+            {error}
+          </Notice>
+        )}
 
-          {/* Error State */}
-          {error && (
-            <div className="mb-4 p-3 bg-red-500/10 rounded-lg border border-red-500/20">
-              <div className="flex items-start gap-2">
-                <AlertCircle size={16} className="text-red-400 mt-0.5 flex-shrink-0" />
-                <p className="text-red-400 text-sm">{error}</p>
-              </div>
-            </div>
-          )}
+        {/* Too Large Warning */}
+        {isTooLarge && !error && (
+          <Notice tone="warning" icon={<AlertCircle size={14} />} title="Contract too large">
+            This contract exceeds the URL limit. Consider using GitHub Gist for large files.
+          </Notice>
+        )}
 
-          {/* Too Large Warning */}
-          {isTooLarge && !error && (
-            <div className="mb-4 p-3 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
-              <div className="flex items-start gap-2">
-                <AlertCircle size={16} className="text-yellow-400 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="text-yellow-400 text-sm font-medium">Contract too large</p>
-                  <p className="text-yellow-400/70 text-xs mt-1">
-                    This contract exceeds the URL limit. Consider using GitHub Gist for large files.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* URL Display */}
-          {!isTooLarge && !error && (
-            <>
-              <div className="mb-4">
-                <label className="text-white/60 text-xs mb-2 block">Share Link</label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={isGenerating ? "Generating..." : shareUrl}
-                    readOnly
-                    className="flex-1 bg-[#111] border border-white/10 rounded-lg px-3 py-2.5 text-white/80 text-sm font-mono focus:outline-none focus:border-primary/50"
-                    onClick={(e) => (e.target as HTMLInputElement).select()}
-                  />
-                  <button
-                    onClick={handleCopy}
-                    disabled={isGenerating || !shareUrl}
-                    className="px-4 py-2.5 bg-primary text-dark font-medium text-sm rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5"
-                  >
-                    {copied ? (
-                      <>
-                        <Check size={14} />
-                        <span>Copied</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy size={14} />
-                        <span>Copy</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className="flex items-center justify-between">
-                <button
-                  onClick={handleOpenInNewTab}
+        {/* URL Display */}
+        {!isTooLarge && !error && (
+          <>
+            <Section title="Share Link">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={isGenerating ? "Generating..." : shareUrl}
+                  readOnly
+                  className={`${ide.inputMono} flex-1 min-w-0`}
+                  onClick={(e) => (e.target as HTMLInputElement).select()}
+                />
+                <IdeButton
+                  variant="primary"
+                  size="md"
+                  onClick={handleCopy}
                   disabled={isGenerating || !shareUrl}
-                  className="flex items-center gap-1.5 text-white/50 text-xs hover:text-primary disabled:opacity-50 transition-colors"
+                  icon={copied ? <Check size={14} /> : <Copy size={14} />}
+                  className="shrink-0"
                 >
-                  <ExternalLink size={12} />
-                  Open in new tab
-                </button>
-
-                <span className="text-white/30 text-xs">
-                  ~{estimatedLength.toLocaleString()} chars
-                </span>
+                  <span>{copied ? "Copied" : "Copy"}</span>
+                </IdeButton>
               </div>
-            </>
-          )}
+            </Section>
 
-          {/* Tips */}
-          <div className="mt-5 pt-4 border-t border-white/10">
-            <p className="text-white/40 text-xs leading-relaxed">
-              Share this link with anyone to let them view and edit this contract in Mezo IDE.
-              The contract code is embedded in the URL.
-            </p>
-          </div>
+            {/* Actions */}
+            <div className="flex items-center justify-between">
+              <IdeButton
+                variant="ghost"
+                size="xs"
+                onClick={handleOpenInNewTab}
+                disabled={isGenerating || !shareUrl}
+                icon={<ExternalLink size={12} />}
+                className="-ml-2.5"
+              >
+                Open in new tab
+              </IdeButton>
+
+              <span className="text-white/40 text-xs">
+                ~{estimatedLength.toLocaleString()} chars
+              </span>
+            </div>
+          </>
+        )}
+
+        {/* Tips */}
+        <div className="pt-4 border-t border-white/10">
+          <p className="text-white/40 text-xs leading-relaxed">
+            Share this link with anyone to let them view and edit this contract in Mezo IDE.
+            The contract code is embedded in the URL.
+          </p>
         </div>
       </div>
-    </div>
+    </IdeModal>
   )
 }

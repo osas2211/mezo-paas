@@ -1,15 +1,15 @@
 "use client"
 
 import { useState, useCallback } from "react"
-import type { CompilationResult, CompilerStatus } from "@/types/ide"
+import type { CompilationResult, CompilerSettings, CompilerStatus } from "@/types/ide"
 import {
   resolveImportsForCompilation,
   hasOpenZeppelinImports,
   preloadCommonContracts,
 } from "@/lib/ide/openzeppelin-resolver"
 
-// Solc version to use
-const SOLC_VERSION = "v0.8.28+commit.7893614a"
+// Solc version to use (also reported to the explorer for verification)
+export const SOLC_VERSION = "v0.8.28+commit.7893614a"
 const SOLC_CDN_URL = `https://binaries.soliditylang.org/bin/soljson-${SOLC_VERSION}.js`
 
 interface SolcInput {
@@ -221,14 +221,14 @@ export function useCompiler() {
         }
 
         // Build solc input with all resolved sources
+        const compilerSettings: CompilerSettings = {
+          optimizer: { enabled: optimize, runs },
+        }
         const input: SolcInput = {
           language: "Solidity",
           sources,
           settings: {
-            optimizer: {
-              enabled: optimize,
-              runs,
-            },
+            ...compilerSettings,
             outputSelection: {
               "*": {
                 "*": ["abi", "evm.bytecode", "evm.deployedBytecode"],
@@ -295,6 +295,9 @@ export function useCompiler() {
           errors: errors.length > 0 ? errors : undefined,
           warnings: warnings.length > 0 ? warnings : undefined,
           sources, // Include resolved sources for verification
+          mainFileName: fileName,
+          compilerVersion: SOLC_VERSION,
+          compilerSettings,
         }
 
         setResult(compilationResult)

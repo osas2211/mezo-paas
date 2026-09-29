@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Play, Eye, Edit3, ChevronDown, ExternalLink, Package, Loader2 } from "lucide-react"
+import { useState, useEffect, type ReactNode } from "react"
+import { Play, Eye, Edit3, ChevronDown, ExternalLink, Package } from "lucide-react"
 import { useAccount, useChainId, useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi"
 import { ConnectButton } from "@rainbow-me/rainbowkit"
 import type { DeployedContract } from "@/types/ide"
@@ -13,6 +13,7 @@ import {
   formatOutputValue,
   type AbiFunction,
 } from "@/lib/ide/abi-utils"
+import { ide, IdeButton, StatusPill, Notice, Section, Field, PanelHeader, EmptyState } from "./ui"
 
 interface ContractInteractProps {
   deployedContracts: DeployedContract[]
@@ -161,37 +162,35 @@ export default function ContractInteract({
     const funcKey = func.name
     const isLoading = loadingFunctions.has(funcKey)
     const result = functionResults[funcKey]
+    const tone = !isWrite ? "neutral" : func.stateMutability === "payable" ? "warning" : "primary"
 
     return (
-      <div
-        key={func.name}
-        className="p-3 bg-[#111] border border-white/10 rounded-lg mb-2"
-      >
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
+      <div key={func.name} className={`${ide.card} p-3 space-y-3`}>
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
             {isWrite ? (
-              <Edit3 size={12} className="text-orange-400" />
+              <Edit3 size={12} className="text-primary shrink-0" />
             ) : (
-              <Eye size={12} className="text-blue-400" />
+              <Eye size={12} className="text-white/40 shrink-0" />
             )}
-            <span className="text-white/90 text-sm font-medium">{func.name}</span>
+            <span className="text-white text-sm font-medium truncate">{func.name}</span>
           </div>
-          <span className={`text-[10px] px-1.5 py-0.5 rounded ${
-            isWrite ? "bg-orange-500/20 text-orange-400" : "bg-blue-500/20 text-blue-400"
-          }`}>
-            {func.stateMutability}
-          </span>
+          <StatusPill tone={tone}>{func.stateMutability}</StatusPill>
         </div>
 
         {/* Inputs */}
         {func.inputs.length > 0 && (
-          <div className="space-y-2 mb-2">
+          <div className="space-y-2.5">
             {func.inputs.map((input) => (
-              <div key={input.name}>
-                <div className="flex items-center gap-1 mb-1">
-                  <span className="text-white/60 text-xs">{input.name}</span>
-                  <span className="text-white/30 text-xs">({input.type})</span>
-                </div>
+              <Field
+                key={input.name}
+                label={
+                  <>
+                    <span>{input.name}</span>
+                    <span className="normal-case tracking-normal font-mono text-white/30">({input.type})</span>
+                  </>
+                }
+              >
                 <input
                   type="text"
                   placeholder={input.type}
@@ -199,36 +198,33 @@ export default function ContractInteract({
                   onChange={(e) =>
                     updateFunctionInput(funcKey, input.name, e.target.value)
                   }
-                  className="w-full bg-[#0a0a0a] border border-white/10 rounded px-2 py-1.5 text-white text-sm focus:outline-none focus:border-primary/50 placeholder:text-white/30"
+                  className={ide.inputMono}
                 />
-              </div>
+              </Field>
             ))}
           </div>
         )}
 
         {/* Call Button */}
-        <button
+        <IdeButton
+          variant={isWrite ? "primary" : "secondary"}
+          size="xs"
+          block
+          loading={isLoading}
+          icon={<Play size={10} />}
           onClick={() =>
             isWrite ? handleWriteFunction(func) : handleReadFunction(func)
           }
           disabled={isLoading || (isWrite && !isConnected)}
-          className="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white py-1.5 px-3 text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors rounded-lg"
         >
-          {isLoading ? (
-            <Loader2 size={10} className="animate-spin" />
-          ) : (
-            <>
-              <Play size={10} />
-              <span>{isWrite ? "Write" : "Read"}</span>
-            </>
-          )}
-        </button>
+          {!isLoading && <span>{isWrite ? "Write" : "Read"}</span>}
+        </IdeButton>
 
         {/* Result */}
         {result && (
-          <div className="mt-2 p-2 bg-black/30 rounded-lg text-xs font-mono break-all border border-white/5">
+          <div className={`${ide.codeBlock} break-all`}>
             <span className="text-white/40">Result: </span>
-            <span className={result.startsWith("Error") ? "text-red-400" : "text-white/80"}>
+            <span className={result.startsWith("Error") ? "text-red-500" : "text-white/80"}>
               {result}
             </span>
           </div>
@@ -237,96 +233,109 @@ export default function ContractInteract({
     )
   }
 
-  return (
-    <div className="h-full flex flex-col bg-[#0d0d0d]">
-      {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-white/10">
-        <span className="text-white/80 text-sm font-medium">Interact</span>
+  const renderGroupToggle = (
+    icon: ReactNode,
+    label: string,
+    isOpen: boolean,
+    onToggle: () => void
+  ) => (
+    <button
+      onClick={onToggle}
+      className="w-full flex items-center justify-between px-3 h-9 hover:bg-white/5 transition-colors cursor-pointer"
+    >
+      <div className="flex items-center gap-2">
+        {icon}
+        <span className="text-white/80 text-xs font-medium">{label}</span>
       </div>
+      <ChevronDown
+        size={14}
+        className={`text-white/40 transition-transform ${isOpen ? "rotate-180" : ""}`}
+      />
+    </button>
+  )
 
-      <div className="flex-1 overflow-auto p-3 space-y-4">
+  return (
+    <div className="h-full overflow-y-auto">
+      <PanelHeader title="Interact" className="sticky top-0 z-10 bg-dark" />
+
+      <div className="p-4 space-y-5">
         {/* Contract Selection */}
-        <div>
-          <label className="text-white/60 text-xs mb-2 block">
-            Select Contract
-          </label>
+        <Section title="Select Contract">
           {chainContracts.length > 0 ? (
             <div className="space-y-2">
-              {chainContracts.map((contract) => (
-                <div
-                  key={contract.id}
-                  className={`p-2 rounded-lg text-xs transition-colors ${
-                    selectedContract?.id === contract.id
-                      ? "bg-primary/20 border border-primary/50"
-                      : "bg-[#111] border border-white/10 hover:border-white/20"
-                  }`}
-                >
-                  <button
-                    onClick={() => setSelectedContract(contract)}
-                    className="w-full text-left"
+              {chainContracts.map((contract) => {
+                const isSelected = selectedContract?.id === contract.id
+                return (
+                  <div
+                    key={contract.id}
+                    className={`p-2.5 text-xs ${
+                      isSelected
+                        ? "border border-primary/40 bg-primary/10 transition-colors"
+                        : ide.row
+                    }`}
                   >
-                    <div className={`font-medium ${selectedContract?.id === contract.id ? "text-primary" : "text-white/80"}`}>
-                      {contract.name}
-                    </div>
-                    <div className="text-white/40 truncate">{contract.address}</div>
-                  </button>
-                  {selectedContract?.id === contract.id && onCreateDApp && (
                     <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onCreateDApp(contract)
-                      }}
-                      className="mt-2 w-full flex items-center justify-center gap-1.5 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 py-1.5 px-3 text-xs font-medium transition-colors rounded-lg"
+                      onClick={() => setSelectedContract(contract)}
+                      className="w-full text-left cursor-pointer"
                     >
-                      <Package size={12} />
-                      <span>Create dApp</span>
+                      <div className={`font-medium ${isSelected ? "text-primary" : "text-white"}`}>
+                        {contract.name}
+                      </div>
+                      <div className="text-white/40 font-mono truncate mt-0.5">{contract.address}</div>
                     </button>
-                  )}
-                </div>
-              ))}
+                    {isSelected && onCreateDApp && (
+                      <IdeButton
+                        variant="outline"
+                        size="xs"
+                        block
+                        icon={<Package size={12} />}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onCreateDApp(contract)
+                        }}
+                        className="mt-2.5"
+                      >
+                        <span>Create dApp</span>
+                      </IdeButton>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           ) : (
-            <p className="text-white/40 text-xs">No deployed contracts on this chain</p>
+            <EmptyState
+              icon={<Package size={24} />}
+              title="No deployed contracts on this chain"
+              className={`${ide.card} py-6`}
+            />
           )}
-        </div>
+        </Section>
 
         {/* Custom Address */}
-        <div>
-          <label className="text-white/60 text-xs mb-1.5 block">
-            Or enter address
-          </label>
+        <Field label="Or enter address">
           <input
             type="text"
             placeholder="0x..."
             value={customAddress}
             onChange={(e) => setCustomAddress(e.target.value)}
-            className="w-full bg-[#111] border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-primary/50 placeholder:text-white/30"
+            className={ide.inputMono}
           />
-        </div>
+        </Field>
 
         {/* Functions */}
         {selectedContract && (
           <>
             {/* Read Functions */}
             {readFunctions.length > 0 && (
-              <div className="border border-white/10 rounded-lg overflow-hidden">
-                <button
-                  onClick={() => setShowReadFunctions(!showReadFunctions)}
-                  className="w-full flex items-center justify-between px-3 py-2 hover:bg-white/5 transition-colors"
-                >
-                  <div className="flex items-center gap-2">
-                    <Eye size={14} className="text-blue-400" />
-                    <span className="text-white/80 text-xs">
-                      Read Functions ({readFunctions.length})
-                    </span>
-                  </div>
-                  <ChevronDown
-                    size={14}
-                    className={`text-white/40 transition-transform ${showReadFunctions ? "rotate-180" : ""}`}
-                  />
-                </button>
+              <div className="border border-white/10">
+                {renderGroupToggle(
+                  <Eye size={14} className="text-white/40" />,
+                  `Read Functions (${readFunctions.length})`,
+                  showReadFunctions,
+                  () => setShowReadFunctions(!showReadFunctions)
+                )}
                 {showReadFunctions && (
-                  <div className="p-3 border-t border-white/10">
+                  <div className="p-3 border-t border-white/10 space-y-2">
                     {readFunctions.map((func) => renderFunctionCard(func, false))}
                   </div>
                 )}
@@ -335,30 +344,19 @@ export default function ContractInteract({
 
             {/* Write Functions */}
             {writeFunctions.length > 0 && (
-              <div className="border border-white/10 rounded-lg overflow-hidden">
-                <button
-                  onClick={() => setShowWriteFunctions(!showWriteFunctions)}
-                  className="w-full flex items-center justify-between px-3 py-2 hover:bg-white/5 transition-colors"
-                >
-                  <div className="flex items-center gap-2">
-                    <Edit3 size={14} className="text-orange-400" />
-                    <span className="text-white/80 text-xs">
-                      Write Functions ({writeFunctions.length})
-                    </span>
-                  </div>
-                  <ChevronDown
-                    size={14}
-                    className={`text-white/40 transition-transform ${showWriteFunctions ? "rotate-180" : ""}`}
-                  />
-                </button>
+              <div className="border border-white/10">
+                {renderGroupToggle(
+                  <Edit3 size={14} className="text-primary" />,
+                  `Write Functions (${writeFunctions.length})`,
+                  showWriteFunctions,
+                  () => setShowWriteFunctions(!showWriteFunctions)
+                )}
                 {showWriteFunctions && (
-                  <div className="p-3 border-t border-white/10">
+                  <div className="p-3 border-t border-white/10 space-y-2">
                     {!isConnected && (
-                      <div className="mb-3 p-2 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
-                        <p className="text-yellow-400 text-xs">
-                          Connect wallet to call write functions
-                        </p>
-                      </div>
+                      <Notice tone="warning">
+                        Connect wallet to call write functions
+                      </Notice>
                     )}
                     {writeFunctions.map((func) => renderFunctionCard(func, true))}
                   </div>
@@ -370,11 +368,9 @@ export default function ContractInteract({
 
         {/* Empty State */}
         {!selectedContract && (
-          <div className="text-center py-8">
-            <p className="text-white/40 text-xs">
-              Select a deployed contract or enter an address to interact
-            </p>
-          </div>
+          <p className="text-center py-8 text-white/40 text-xs">
+            Select a deployed contract or enter an address to interact
+          </p>
         )}
       </div>
     </div>

@@ -1,8 +1,7 @@
 "use client"
 
 import { useState, useCallback, useEffect } from "react"
-import { Tabs, Modal, Spin } from "antd"
-import { Code, Rocket, Play as PlayIcon } from "lucide-react"
+import { Code, Rocket, Play as PlayIcon, FilePlus, FileCode } from "lucide-react"
 import { useChainId } from "wagmi"
 import { useIDEState } from "@/hooks/ide/use-ide-state"
 import { useCompiler } from "@/hooks/ide/use-compiler"
@@ -23,6 +22,8 @@ import ShareModal from "./share-modal"
 import DAppGeneratorModal from "./dapp-generator-modal"
 import IDEToolbar from "./ide-toolbar"
 import { parseShareFromLocation, clearShareFromUrl, hasShareParams } from "@/lib/ide/share"
+import { PageLoading } from "@/components/utilities/page-loading"
+import { EmptyState, IdeButton, UnderlineTabs } from "./ui"
 
 export default function IDEContainer() {
   const ide = useIDEState()
@@ -171,11 +172,6 @@ export default function IDEContainer() {
     ide.createNewFile(name)
   }, [ide])
 
-  const handleThemeToggle = useCallback(() => {
-    const newTheme = ide.settings?.theme === "dark" ? "light" : "dark"
-    ide.updateSettingsValue({ theme: newTheme })
-  }, [ide.settings])
-
   const handleOptimizerChange = useCallback(
     (enabled: boolean, runs: number) => {
       ide.updateSettingsValue({ optimizerEnabled: enabled, optimizerRuns: runs })
@@ -210,17 +206,12 @@ export const ${name.replace(/[^a-zA-Z0-9]/g, "").toUpperCase()}_ADDRESS = "${add
 
   if (ide.isLoading) {
     return (
-      <div className="h-full flex items-center justify-center bg-[#0a0a0a]">
-        <div className="flex flex-col items-center gap-4">
-          <Spin size="large" />
-          <p className="text-white/60 text-sm">Loading IDE...</p>
-        </div>
-      </div>
+      <PageLoading label="Loading IDE" className="h-full" />
     )
   }
 
   return (
-    <div className="h-full flex flex-col bg-[#0a0a0a]">
+    <div className="h-full flex flex-col">
       {/* Toolbar */}
       <IDEToolbar
         onNewFile={handleNewFile}
@@ -230,18 +221,15 @@ export const ${name.replace(/[^a-zA-Z0-9]/g, "").toUpperCase()}_ADDRESS = "${add
         onProtocolRegistry={() => setIsProtocolRegistryOpen(true)}
         onSimulator={() => setIsSimulatorOpen(true)}
         onShare={() => setIsShareModalOpen(true)}
-        onSettings={() => {}}
         isDirty={ide.activeFile?.isDirty || false}
         isCompiling={compiler.status === "compiling" || compiler.status === "resolving"}
         hasActiveFile={!!ide.activeFile}
-        theme={ide.settings?.theme || "dark"}
-        onThemeToggle={handleThemeToggle}
       />
 
       {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 min-h-0 flex overflow-hidden">
         {/* File Explorer */}
-        <div className="w-56 border-r border-white/10 flex-shrink-0">
+        <div className="w-56 border-r border-white/10 shrink-0">
           <FileExplorer
             contracts={ide.contracts}
             activeFileId={ide.activeFileId}
@@ -275,71 +263,47 @@ export const ${name.replace(/[^a-zA-Z0-9]/g, "").toUpperCase()}_ADDRESS = "${add
                 fontSize={ide.settings?.fontSize || 14}
               />
             ) : (
-              <div className="h-full flex items-center justify-center bg-[#0a0a0a]">
-                <div className="text-center">
-                  <Code size={48} className="text-white/20 mx-auto mb-4" />
-                  <p className="text-white/40 text-sm mb-4">No file open</p>
-                  <div className="flex items-center justify-center gap-3">
-                    <button
-                      onClick={handleNewFile}
-                      className="px-4 py-2 bg-white/10 text-white/80 text-sm hover:bg-white/20 transition-colors rounded"
-                    >
-                      New File
-                    </button>
-                    <button
-                      onClick={() => setIsTemplateModalOpen(true)}
-                      className="px-4 py-2 bg-primary text-dark text-sm hover:bg-primary/90 transition-colors"
-                    >
-                      From Template
-                    </button>
-                  </div>
-                </div>
+              <div className="h-full flex items-center justify-center">
+                <EmptyState
+                  icon={<Code size={40} />}
+                  title="No file open"
+                  caption="Create a new contract or start from one of the Mezo templates."
+                  action={
+                    <div className="flex items-center gap-2">
+                      <IdeButton variant="secondary" icon={<FilePlus size={14} />} onClick={handleNewFile}>
+                        New File
+                      </IdeButton>
+                      <IdeButton
+                        variant="primary"
+                        icon={<FileCode size={14} />}
+                        onClick={() => setIsTemplateModalOpen(true)}
+                      >
+                        From Template
+                      </IdeButton>
+                    </div>
+                  }
+                />
               </div>
             )}
           </div>
         </div>
 
         {/* Right Panel */}
-        <div className="w-80 border-l border-white/10 flex-shrink-0 flex flex-col">
+        <div className="w-80 border-l border-white/10 shrink-0 flex flex-col min-h-0">
           {/* Panel Tabs */}
-          <div className="flex border-b border-white/10 bg-[#0d0d0d]">
-            <button
-              onClick={() => setRightPanelTab("compile")}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs transition-colors ${
-                rightPanelTab === "compile"
-                  ? "text-primary border-b-2 border-primary bg-primary/5"
-                  : "text-white/60 hover:text-white"
-              }`}
-            >
-              <PlayIcon size={12} />
-              Compile
-            </button>
-            <button
-              onClick={() => setRightPanelTab("deploy")}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs transition-colors ${
-                rightPanelTab === "deploy"
-                  ? "text-primary border-b-2 border-primary bg-primary/5"
-                  : "text-white/60 hover:text-white"
-              }`}
-            >
-              <Rocket size={12} />
-              Deploy
-            </button>
-            <button
-              onClick={() => setRightPanelTab("interact")}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs transition-colors ${
-                rightPanelTab === "interact"
-                  ? "text-primary border-b-2 border-primary bg-primary/5"
-                  : "text-white/60 hover:text-white"
-              }`}
-            >
-              <Code size={12} />
-              Interact
-            </button>
-          </div>
+          <UnderlineTabs
+            fill
+            active={rightPanelTab}
+            onChange={setRightPanelTab}
+            items={[
+              { key: "compile", label: "Compile", icon: <PlayIcon size={12} /> },
+              { key: "deploy", label: "Deploy", icon: <Rocket size={12} /> },
+              { key: "interact", label: "Interact", icon: <Code size={12} /> },
+            ]}
+          />
 
           {/* Panel Content */}
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 min-h-0 overflow-hidden">
             {rightPanelTab === "compile" && (
               <CompilerPanel
                 status={compiler.status}
@@ -356,11 +320,12 @@ export const ${name.replace(/[^a-zA-Z0-9]/g, "").toUpperCase()}_ADDRESS = "${add
               <DeployPanel
                 selectedContract={ide.selectedContract}
                 sourceCode={ide.activeFile?.content}
-                compilerVersion={ide.settings?.solcVersion || "0.8.28"}
-                optimizerEnabled={ide.settings?.optimizerEnabled ?? true}
-                optimizerRuns={ide.settings?.optimizerRuns ?? 200}
+                compilerVersion={compiler.result?.compilerVersion || ide.settings?.solcVersion || "0.8.28"}
+                optimizerEnabled={compiler.result?.compilerSettings?.optimizer.enabled ?? ide.settings?.optimizerEnabled ?? true}
+                optimizerRuns={compiler.result?.compilerSettings?.optimizer.runs ?? ide.settings?.optimizerRuns ?? 200}
                 resolvedSources={compiler.result?.sources}
-                mainFileName={ide.activeFile?.name}
+                mainFileName={compiler.result?.mainFileName ?? ide.activeFile?.name}
+                compilerSettings={compiler.result?.compilerSettings}
                 onDeploySuccess={handleDeploySuccess}
                 onCreateDApp={() => dappGeneratorContract && setIsDAppGeneratorOpen(true)}
                 addLog={ide.addLog}
@@ -380,7 +345,7 @@ export const ${name.replace(/[^a-zA-Z0-9]/g, "").toUpperCase()}_ADDRESS = "${add
       {/* Console */}
       <div
         style={{ height: consoleHeight }}
-        className="transition-[height] duration-150 ease-out"
+        className="shrink-0 transition-[height] duration-150 ease-out"
       >
         <ConsolePanel
           logs={ide.consoleLogs}

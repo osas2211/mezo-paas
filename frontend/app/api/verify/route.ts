@@ -1,139 +1,126 @@
 import { NextRequest, NextResponse } from "next/server"
 
-// Explorer URLs
-const getExplorerUrl = (chainId: number): string => {
-  if (chainId === 31611) {
-    return "https://explorer.test.mezo.org"
-  }
-  if (chainId === 31612) {
-    return "https://explorer.mezo.org"
-  }
-  throw new Error(`Unsupported chain ID: ${chainId}`)
+/**
+ * Contract verification proxy for the Mezo Blockscout explorers.
+ *
+ * The explorer UI (explorer[.test].mezo.org) and its API are on different
+ * hosts — the API lives on api.explorer[.test].mezo.org. Verification is
+ * asynchronous in Blockscout: a successful POST only means "verification
+ * started"; the result is read back from GET /api/v2/smart-contracts/:address.
+ */
+
+interface ExplorerHosts {
+  explorerUrl: string // human-facing links
+  apiUrl: string // Blockscout REST API
 }
 
-// Build Standard JSON input for Blockscout
-function buildStandardJsonInput(
-  sources: Record<string, { content: string }>,
-  optimize: boolean,
-  runs: number
-): string {
-  const input = {
-    language: "Solidity",
-    sources,
-    settings: {
-      optimizer: {
-        enabled: optimize,
-        runs,
-      },
-      outputSelection: {
-        "*": {
-          "*": ["abi", "evm.bytecode", "evm.deployedBytecode", "metadata"],
-        },
-      },
-    },
-  }
-  return JSON.stringify(input)
+const EXPLORERS: Record<number, ExplorerHosts> = {
+  31611: {
+    explorerUrl: "https://explorer.test.mezo.org",
+    apiUrl: "https://api.explorer.test.mezo.org",
+  },
+  31612: {
+    explorerUrl: "https://explorer.mezo.org",
+    apiUrl: "https://api.explorer.mezo.org",
+  },
 }
 
-// Try Standard JSON verification (for multi-file contracts with imports)
-async function tryStandardJsonVerification(
-  explorerUrl: string,
-  contractAddress: string,
-  contractName: string,
-  sources: Record<string, { content: string }>,
-  mainFileName: string,
-  compilerVersion: string,
-  optimizationUsed: boolean,
-  runs: number,
-  constructorArguments?: string
-): Promise<{ success: boolean; data?: any; error?: string }> {
-  const apiUrl = `${explorerUrl}/api/v2/smart-contracts/${contractAddress}/verification/via/standard-input`
+function getExplorer(chainId: number): ExplorerHosts {
+  const hosts = EXPLORERS[chainId]
+  if (!hosts) throw new Error(`Unsupported chain ID: ${chainId}`)
+  return hosts
+}
 
-  try {
-    // Build the Standard JSON input
-    const standardJsonInput = buildStandardJsonInput(sources, optimizationUsed, runs)
+type SubmitOutcome =
+  | { kind: "started" }
+  | { kind: "already-verified" }
+  | { kind: "rejected"; message: string }
+  | { kind: "unavailable"; message: string }
 
-    // Create form data for multipart request (Blockscout prefers this for large payloads)
-    const formData = new FormData()
-    formData.append("compiler_version", compilerVersion)
-    formData.append("contract_name", `${mainFileName}:${contractName}`)
-    formData.append("license_type", "mit")
-    formData.append("autodetect_constructor_args", constructorArguments ? "false" : "true")
-    if (constructorArguments) {
-      formData.append("constructor_args", constructorArguments)
-    }
-    // Append the JSON input as a file-like blob
-    const jsonBlob = new Blob([standardJsonInput], { type: "application/json" })
-    formData.append("files[0]", jsonBlob, "input.json")
+/** Normalise a Blockscout verification POST response */
+async function readSubmitResponse(response: Response): Promise<SubmitOutcome> {
+  const contentType = response.headers.get("content-type") || ""
+  if (!contentType.includes("application/json")) {
+    return { kind: "unavailable", message: `Explorer API returned HTTP ${response.status}` }
+  }
 
-    const response = await fetch(apiUrl, {
+  const data = await response.json().catch(() => ({}))
+  const message: string = data?.message || data?.error || ""
+
+  if (/already verified/i.test(message)) return { kind: "already-verified" }
+  if (response.ok) return { kind: "started" }
+  return { kind: "rejected", message: message || `Explorer API returned HTTP ${response.status}` }
+}
+
+/**
+ * Standard JSON input verification — the IDE sends the exact sources and
+ * compiler settings it compiled with, so the explorer can reproduce the
+ * bytecode byte-for-byte (including the metadata hash).
+ */
+async function submitStandardInput(
+  apiUrl: string,
+  params: {
+    contractAddress: string
+    contractName: string
+    compilerVersion: string
+    input: object
+    constructorArguments?: string
+  }
+): Promise<SubmitOutcome> {
+  const formData = new FormData()
+  formData.append("compiler_version", params.compilerVersion)
+  formData.append("contract_name", params.contractName)
+  formData.append("license_type", "none")
+  formData.append("autodetect_constructor_args", params.constructorArguments ? "false" : "true")
+  if (params.constructorArguments) {
+    formData.append("constructor_args", params.constructorArguments)
+  }
+  formData.append(
+    "files[0]",
+    new Blob([JSON.stringify(params.input)], { type: "application/json" }),
+    "input.json"
+  )
+
+  const response = await fetch(
+    `${apiUrl}/api/v2/smart-contracts/${params.contractAddress}/verification/via/standard-input`,
+    { method: "POST", body: formData }
+  )
+  return readSubmitResponse(response)
+}
+
+/** Flattened single-file verification (fallback) */
+async function submitFlattened(
+  apiUrl: string,
+  params: {
+    contractAddress: string
+    contractName: string
+    compilerVersion: string
+    sourceCode: string
+    optimizationUsed: boolean
+    runs: number
+    evmVersion?: string
+    constructorArguments?: string
+  }
+): Promise<SubmitOutcome> {
+  const response = await fetch(
+    `${apiUrl}/api/v2/smart-contracts/${params.contractAddress}/verification/via/flattened-code`,
+    {
       method: "POST",
-      body: formData,
-    })
-
-    const contentType = response.headers.get("content-type")
-    if (contentType && contentType.includes("application/json")) {
-      const data = await response.json()
-      if (response.ok || data.status === "1" || data.message === "OK" || data.is_verified) {
-        return { success: true, data }
-      }
-      return { success: false, error: data.message || "Standard JSON verification failed" }
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        compiler_version: params.compilerVersion,
+        source_code: params.sourceCode,
+        is_optimization_enabled: params.optimizationUsed,
+        optimization_runs: params.runs,
+        contract_name: params.contractName,
+        evm_version: params.evmVersion || "default",
+        license_type: "none",
+        autodetect_constructor_args: !params.constructorArguments,
+        constructor_args: params.constructorArguments || undefined,
+      }),
     }
-    return { success: false, error: "Invalid response from verification API" }
-  } catch (e: any) {
-    console.log(`Standard JSON verification error:`, e.message)
-    return { success: false, error: e.message }
-  }
-}
-
-// Try flattened source verification (for single-file contracts)
-async function tryFlattenedVerification(
-  explorerUrl: string,
-  contractAddress: string,
-  contractName: string,
-  sourceCode: string,
-  compilerVersion: string,
-  optimizationUsed: boolean,
-  runs: number,
-  constructorArguments?: string
-): Promise<{ success: boolean; data?: any; error?: string }> {
-  const apiPaths = [
-    `${explorerUrl}/api/v2/smart-contracts/${contractAddress}/verification/via/flattened-code`,
-    `${explorerUrl}/api/v2/smart-contracts/${contractAddress}/verification/via/sourcify`,
-  ]
-
-  for (const apiUrl of apiPaths) {
-    try {
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          compiler_version: compilerVersion,
-          source_code: sourceCode,
-          is_optimization_enabled: optimizationUsed,
-          optimization_runs: runs,
-          contract_name: contractName,
-          license_type: "mit",
-          autodetect_constructor_args: !constructorArguments,
-          constructor_args: constructorArguments || undefined,
-        }),
-      })
-
-      const contentType = response.headers.get("content-type")
-      if (contentType && contentType.includes("application/json")) {
-        const data = await response.json()
-        if (response.ok || data.status === "1" || data.message === "OK" || data.is_verified) {
-          return { success: true, data }
-        }
-      }
-    } catch (e: any) {
-      console.log(`API ${apiUrl} error:`, e.message)
-    }
-  }
-
-  return { success: false, error: "All flattened verification methods failed" }
+  )
+  return readSubmitResponse(response)
 }
 
 export async function POST(request: NextRequest) {
@@ -142,10 +129,9 @@ export async function POST(request: NextRequest) {
     const {
       contractAddress,
       contractName,
+      sources,
+      compilerSettings,
       sourceCode,
-      sources, // For Standard JSON verification
-      mainFileName,
-      verificationMethod,
       compilerVersion,
       optimizationUsed,
       runs,
@@ -153,104 +139,98 @@ export async function POST(request: NextRequest) {
       chainId,
     } = body
 
-    if (!contractAddress || !contractName || !chainId) {
+    if (!contractAddress || !contractName || !chainId || !compilerVersion) {
       return NextResponse.json(
-        { success: false, message: "Missing required fields" },
+        { success: false, status: "failed", message: "Missing required fields" },
         { status: 400 }
       )
     }
 
-    // Need either sourceCode or sources
-    if (!sourceCode && !sources) {
+    if (!sources && !sourceCode) {
       return NextResponse.json(
-        { success: false, message: "Missing source code or sources" },
+        { success: false, status: "failed", message: "Missing source code or sources" },
         { status: 400 }
       )
     }
 
-    const explorerUrl = getExplorerUrl(chainId)
-    const verifyPageUrl = `${explorerUrl}/address/${contractAddress}/contract-verification`
+    const { explorerUrl, apiUrl } = getExplorer(chainId)
+    const addressUrl = `${explorerUrl}/address/${contractAddress}`
+    const verifyPageUrl = `${addressUrl}/contract-verification`
 
-    let result: { success: boolean; data?: any; error?: string }
+    let outcome: SubmitOutcome = { kind: "unavailable", message: "No verification method attempted" }
 
-    // Try Standard JSON verification first if we have multi-file sources
-    if (verificationMethod === "standard-json" && sources && Object.keys(sources).length > 0) {
-      console.log(`Attempting Standard JSON verification for ${contractName}...`)
-      result = await tryStandardJsonVerification(
-        explorerUrl,
-        contractAddress,
-        contractName,
-        sources,
-        mainFileName || Object.keys(sources)[0],
-        compilerVersion,
-        optimizationUsed,
-        runs,
-        constructorArguments
-      )
-
-      if (result.success) {
-        return NextResponse.json({
-          success: true,
-          status: "verified",
-          message: "Contract verified successfully via Standard JSON!",
-          data: result.data,
-        })
+    // 1. Standard JSON input with the exact compiler input (preferred)
+    if (sources && Object.keys(sources).length > 0) {
+      const settings = compilerSettings || {
+        optimizer: { enabled: !!optimizationUsed, runs: runs ?? 200 },
       }
-
-      console.log(`Standard JSON failed: ${result.error}, trying flattened...`)
-    }
-
-    // Fall back to flattened verification
-    if (sourceCode) {
-      console.log(`Attempting flattened verification for ${contractName}...`)
-      result = await tryFlattenedVerification(
-        explorerUrl,
+      outcome = await submitStandardInput(apiUrl, {
         contractAddress,
         contractName,
+        compilerVersion,
+        input: { language: "Solidity", sources, settings },
+        constructorArguments,
+      })
+    }
+
+    // 2. Flattened fallback, only when standard input could not be used at all
+    if (outcome.kind === "unavailable" && sourceCode) {
+      outcome = await submitFlattened(apiUrl, {
+        contractAddress,
+        contractName,
+        compilerVersion,
         sourceCode,
-        compilerVersion,
-        optimizationUsed,
-        runs,
-        constructorArguments
-      )
+        optimizationUsed: !!optimizationUsed,
+        runs: runs ?? 200,
+        evmVersion: compilerSettings?.evmVersion,
+        constructorArguments,
+      })
+    }
 
-      if (result.success) {
+    switch (outcome.kind) {
+      case "already-verified":
         return NextResponse.json({
           success: true,
           status: "verified",
-          message: "Contract verified successfully!",
-          data: result.data,
+          message: "Contract is already verified.",
+          explorerUrl: addressUrl,
         })
-      }
+      case "started":
+        return NextResponse.json({
+          success: true,
+          status: "pending",
+          message: "Verification submitted — waiting for the explorer to confirm...",
+          guid: contractAddress,
+        })
+      case "rejected":
+        return NextResponse.json({
+          success: false,
+          status: "failed",
+          message: outcome.message,
+          verifyUrl: verifyPageUrl,
+        })
+      default:
+        return NextResponse.json({
+          success: false,
+          status: "manual",
+          message: `Automatic verification is unavailable (${outcome.message}). Please verify manually on the explorer.`,
+          verifyUrl: verifyPageUrl,
+        })
     }
-
-    // If all API verification fails, return manual verification instructions
-    return NextResponse.json({
-      success: false,
-      status: "manual",
-      message: "Automatic verification not available. Please verify manually on the explorer.",
-      verifyUrl: verifyPageUrl,
-      verificationData: {
-        contractName,
-        compilerVersion,
-        optimizationUsed,
-        runs,
-      },
-    })
   } catch (error: any) {
     console.error("Verification API error:", error)
     return NextResponse.json(
-      {
-        success: false,
-        status: "failed",
-        message: error.message || "Internal server error",
-      },
+      { success: false, status: "failed", message: error.message || "Internal server error" },
       { status: 500 }
     )
   }
 }
 
-// Check verification status
+/**
+ * Verification / indexing status.
+ * - exists: the explorer has indexed the address as a smart contract
+ * - isVerified: source is verified on the explorer
+ */
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
   const chainId = parseInt(searchParams.get("chainId") || "0")
@@ -264,30 +244,31 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const explorerUrl = getExplorerUrl(chainId)
-
-    // Check if contract is verified using Blockscout v2 API
-    const response = await fetch(`${explorerUrl}/api/v2/smart-contracts/${address}`)
+    const { apiUrl, explorerUrl } = getExplorer(chainId)
+    const response = await fetch(`${apiUrl}/api/v2/smart-contracts/${address}`, {
+      cache: "no-store",
+    })
 
     if (!response.ok) {
-      return NextResponse.json({
-        success: true,
-        isVerified: false,
-      })
+      return NextResponse.json({ success: true, exists: false, isVerified: false })
     }
 
     const data = await response.json()
 
     return NextResponse.json({
       success: true,
+      exists: true,
       isVerified: data.is_verified === true,
+      isPartiallyVerified: data.is_partially_verified === true,
       name: data.name,
       compilerVersion: data.compiler_version,
+      explorerUrl: `${explorerUrl}/address/${address}`,
     })
   } catch (error: any) {
     console.error("Check verification error:", error)
     return NextResponse.json({
       success: false,
+      exists: false,
       isVerified: false,
       message: error.message,
     })

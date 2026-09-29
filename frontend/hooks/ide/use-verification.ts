@@ -1,12 +1,12 @@
 "use client"
 
 import { useState, useCallback, useRef } from "react"
-import type { VerificationStatus, VerificationResult } from "@/types/ide"
+import type { CompilerSettings, VerificationStatus, VerificationResult } from "@/types/ide"
+import { MEZO_NETWORKS } from "@/types/ide"
 import {
   submitVerification,
   checkVerificationStatus,
-  isContractVerified,
-  flattenSource,
+  getContractStatus,
   getFullSolcVersion,
   encodeConstructorArgsHex,
 } from "@/lib/ide/verification"
@@ -40,7 +40,13 @@ export interface VerifyParams {
   chainId: number
   sources?: Record<string, { content: string }> // Resolved sources for Standard JSON
   mainFileName?: string // Main file name for multi-file verification
+  compilerSettings?: CompilerSettings // Exact settings used at compile time
 }
+
+const INDEX_POLL_INTERVAL = 3000
+const INDEX_MAX_ATTEMPTS = 40 // ~2 minutes for the explorer to index a new contract
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 export function useVerification(
   options: UseVerificationOptions = {}
@@ -48,8 +54,8 @@ export function useVerification(
   const {
     onSuccess,
     onError,
-    pollInterval = 3000,
-    maxPollAttempts = 20,
+    pollInterval = 5000,
+    maxPollAttempts = 36, // ~3 minutes for the verifier to finish
   } = options
 
   const [status, setStatus] = useState<VerificationStatus>("idle")
@@ -100,9 +106,18 @@ export function useVerification(
         pollCountRef.current++
 
         if (pollCountRef.current > maxPollAttempts) {
+          const network = chainId === 31611 ? "testnet" : "mainnet"
+          const timeoutMessage =
+            "The explorer didn't confirm verification in time. It may still complete — check the explorer, or retry."
           setStatus("failed")
-          setError("Verification timed out. Check explorer manually.")
-          onError?.("Verification timed out")
+          setResult({
+            success: false,
+            status: "failed",
+            message: timeoutMessage,
+            explorerUrl: `${MEZO_NETWORKS[network].explorerUrl}/address/${guid}`,
+          })
+          setError(timeoutMessage)
+          onError?.(timeoutMessage)
           return
         }
 
@@ -135,22 +150,26 @@ export function useVerification(
   const verify = useCallback(
     async (params: VerifyParams): Promise<VerificationResult> => {
       reset()
-      setStatus("flattening")
+      setStatus("indexing")
+
+      const network = params.chainId === 31611 ? "testnet" : "mainnet"
+      const addressUrl = `${MEZO_NETWORKS[network].explorerUrl}/address/${params.contractAddress}`
 
       try {
-        // Check if already verified
-        const alreadyVerified = await isContractVerified(
-          params.chainId,
-          params.contractAddress
-        )
+        // Wait until the explorer has indexed the freshly deployed contract —
+        // Blockscout rejects verification for addresses it doesn't know yet.
+        let explorerStatus = await getContractStatus(params.chainId, params.contractAddress)
+        for (let attempt = 1; !explorerStatus.exists && attempt < INDEX_MAX_ATTEMPTS; attempt++) {
+          await sleep(INDEX_POLL_INTERVAL)
+          explorerStatus = await getContractStatus(params.chainId, params.contractAddress)
+        }
 
-        if (alreadyVerified) {
-          const network = params.chainId === 31611 ? "testnet" : "mainnet"
+        if (explorerStatus.isVerified) {
           const successResult: VerificationResult = {
             success: true,
             status: "verified",
             message: "Contract is already verified!",
-            explorerUrl: `https://explorer${params.chainId === 31611 ? ".test" : ""}.mezo.org/address/${params.contractAddress}`,
+            explorerUrl: addressUrl,
           }
           setStatus("verified")
           setResult(successResult)
@@ -158,37 +177,52 @@ export function useVerification(
           return successResult
         }
 
+        if (!explorerStatus.exists) {
+          const message =
+            "The explorer hasn't indexed this contract yet. Wait a minute and retry verification."
+          const failedResult: VerificationResult = {
+            success: false,
+            status: "failed",
+            message,
+            explorerUrl: addressUrl,
+          }
+          setStatus("failed")
+          setResult(failedResult)
+          setError(message)
+          onError?.(message)
+          return failedResult
+        }
+
         setStatus("submitting")
 
-        // Get full compiler version
-        const fullVersion = getFullSolcVersion(params.compilerVersion)
+        // Full compiler version (the compile result already carries it)
+        const fullVersion = params.compilerVersion.startsWith("v")
+          ? params.compilerVersion
+          : getFullSolcVersion(params.compilerVersion)
 
-        // Encode constructor arguments if present
+        // Encode constructor arguments if present (otherwise the explorer autodetects them)
         let constructorArgsHex = ""
         if (params.constructorArgs && params.constructorArgs.length > 0) {
           constructorArgsHex = encodeConstructorArgsHex(params.abi, params.constructorArgs)
         }
 
-        // Determine if we have multiple sources (OpenZeppelin imports)
-        const hasMultipleSources = params.sources && Object.keys(params.sources).length > 1
+        // Flattened fallback uses the exact compiled source, unmodified
+        const mainSource =
+          (params.mainFileName && params.sources?.[params.mainFileName]?.content) ||
+          params.sourceCode
 
-        // Flatten source code for single-file contracts only
-        const flattenedSource = hasMultipleSources
-          ? params.sourceCode
-          : flattenSource(params.sourceCode, `${params.contractName}.sol`)
-
-        // Submit verification with all parameters
         const submitResult = await submitVerification({
           contractAddress: params.contractAddress,
           contractName: params.contractName,
-          sourceCode: flattenedSource,
+          sourceCode: mainSource,
           compilerVersion: fullVersion,
-          optimizationUsed: params.optimizationUsed,
-          runs: params.runs,
+          optimizationUsed: params.compilerSettings?.optimizer.enabled ?? params.optimizationUsed,
+          runs: params.compilerSettings?.optimizer.runs ?? params.runs,
           constructorArguments: constructorArgsHex,
           chainId: params.chainId,
-          sources: params.sources,
+          sources: params.sources ?? { [params.mainFileName || `${params.contractName}.sol`]: { content: params.sourceCode } },
           mainFileName: params.mainFileName,
+          compilerSettings: params.compilerSettings,
         })
 
         setResult(submitResult)
@@ -234,7 +268,7 @@ export function useVerification(
     status,
     result,
     error,
-    isVerifying: status === "flattening" || status === "submitting" || status === "pending",
+    isVerifying: status === "indexing" || status === "submitting" || status === "pending",
     verify,
     checkStatus,
     reset,

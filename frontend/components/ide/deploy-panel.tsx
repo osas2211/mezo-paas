@@ -9,19 +9,20 @@ import {
   Shield,
   ShieldCheck,
   ShieldX,
-  Loader2,
   HelpCircle,
   Package,
   ChevronDown,
 } from "lucide-react"
 import { useAccount, useChainId, useSwitchChain, useWalletClient, usePublicClient } from "wagmi"
 import { ConnectButton } from "@rainbow-me/rainbowkit"
-import type { CompiledContract, DeploymentStatus } from "@/types/ide"
+import type { CompiledContract, CompilerSettings, DeploymentStatus } from "@/types/ide"
 import { MEZO_NETWORKS } from "@/types/ide"
 import { getConstructor, parseInputValue } from "@/lib/ide/abi-utils"
 import { useGasEstimator } from "@/hooks/ide/use-gas-estimator"
 import { useVerification } from "@/hooks/ide/use-verification"
 import GasEstimatorPanel from "./gas-estimator-panel"
+import { Switch } from "antd"
+import { ide, IdeButton, Notice, Section, Field, PanelHeader, EmptyState, Spinner } from "./ui"
 
 interface DeployPanelProps {
   selectedContract: CompiledContract | null
@@ -31,6 +32,7 @@ interface DeployPanelProps {
   optimizerRuns?: number
   resolvedSources?: Record<string, { content: string }> // All resolved sources for verification
   mainFileName?: string // Main contract file name
+  compilerSettings?: CompilerSettings // Exact settings used at compile time
   onDeploySuccess: (address: string, txHash: string, chainId: number) => void
   onCreateDApp?: () => void // Open dApp generator
   addLog: (type: "info" | "success" | "warning" | "error", message: string, details?: string) => void
@@ -44,6 +46,7 @@ export default function DeployPanel({
   optimizerRuns = 200,
   resolvedSources,
   mainFileName,
+  compilerSettings,
   onDeploySuccess,
   onCreateDApp,
   addLog,
@@ -191,6 +194,7 @@ export default function DeployPanel({
             chainId: targetChainId,
             sources: resolvedSources,
             mainFileName,
+            compilerSettings,
           })
         }
       } else {
@@ -217,108 +221,108 @@ export default function DeployPanel({
 
   if (!selectedContract) {
     return (
-      <div className="h-full flex flex-col bg-[#0d0d0d]">
-        <div className="flex items-center justify-between px-3 py-2 border-b border-white/10">
-          <span className="text-white/80 text-sm font-medium">Deploy</span>
-        </div>
-        <div className="flex-1 flex items-center justify-center p-6">
-          <p className="text-white/40 text-xs text-center">
-            Compile a contract first to deploy
-          </p>
+      <div className="h-full flex flex-col">
+        <PanelHeader icon={<Rocket size={14} />} title="Deploy" />
+        <div className="flex-1 overflow-y-auto">
+          <EmptyState icon={<Rocket size={28} />} title="Compile a contract first to deploy" />
         </div>
       </div>
     )
   }
 
   return (
-    <div className="h-full flex flex-col bg-[#0d0d0d]">
+    <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-white/10">
-        <span className="text-white/80 text-sm font-medium">Deploy</span>
-        <span className="text-primary text-xs">{selectedContract.name}</span>
-      </div>
+      <PanelHeader
+        icon={<Rocket size={14} />}
+        title="Deploy"
+        actions={
+          <span className="text-primary text-xs font-medium truncate max-w-40">
+            {selectedContract.name}
+          </span>
+        }
+      />
 
-      <div className="flex-1 overflow-auto p-3 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-5">
         {/* Wallet Connection */}
         {!isConnected ? (
-          <div className="p-4 bg-[#111] border border-white/10 rounded-lg">
-            <p className="text-white/60 text-xs mb-3 text-center">
+          <div className={`${ide.card} p-4 space-y-3`}>
+            <p className="text-white/60 text-xs text-center">
               Connect your wallet to deploy
             </p>
             <ConnectButton.Custom>
               {({ openConnectModal }) => (
-                <button
-                  onClick={openConnectModal}
-                  className="w-full bg-primary text-dark py-2 px-4 text-sm font-medium rounded-lg hover:bg-primary/90 transition-colors"
-                >
+                <IdeButton variant="primary" size="md" block onClick={openConnectModal}>
                   Connect Wallet
-                </button>
+                </IdeButton>
               )}
             </ConnectButton.Custom>
           </div>
         ) : (
           <>
             {/* Network Selector */}
-            <div className="relative">
-              <label className="text-white/60 text-xs mb-1.5 block">Network</label>
-              <button
-                onClick={() => setNetworkDropdownOpen(!networkDropdownOpen)}
-                className="w-full flex items-center justify-between bg-[#111] border border-white/10 rounded-lg px-3 py-2.5 text-left text-sm hover:border-white/20 transition-colors"
-              >
-                <span className="text-white">
-                  {selectedNetwork === "testnet" ? "Mezo Testnet (31611)" : "Mezo Mainnet (31612)"}
-                </span>
-                <ChevronDown size={14} className="text-white/40" />
-              </button>
-              {networkDropdownOpen && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-[#111] border border-white/10 rounded-lg shadow-xl z-10">
-                  <button
-                    onClick={() => {
-                      setSelectedNetwork("testnet")
-                      setNetworkDropdownOpen(false)
-                    }}
-                    className={`w-full px-3 py-2 text-sm text-left hover:bg-white/5 transition-colors ${
-                      selectedNetwork === "testnet" ? "text-primary" : "text-white"
-                    }`}
-                  >
-                    Mezo Testnet (31611)
-                  </button>
-                  <button
-                    onClick={() => {
-                      setSelectedNetwork("mainnet")
-                      setNetworkDropdownOpen(false)
-                    }}
-                    className={`w-full px-3 py-2 text-sm text-left hover:bg-white/5 transition-colors ${
-                      selectedNetwork === "mainnet" ? "text-primary" : "text-white"
-                    }`}
-                  >
-                    Mezo Mainnet (31612)
-                  </button>
-                </div>
-              )}
+            <Section title="Network">
+              <div className="relative">
+                <button
+                  onClick={() => setNetworkDropdownOpen(!networkDropdownOpen)}
+                  className={`${ide.input} flex items-center justify-between text-left cursor-pointer hover:border-white/20`}
+                >
+                  <span className="text-white">
+                    {selectedNetwork === "testnet" ? "Mezo Testnet (31611)" : "Mezo Mainnet (31612)"}
+                  </span>
+                  <ChevronDown size={14} className="text-white/40" />
+                </button>
+                {networkDropdownOpen && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-dark border border-white/10 shadow-xl z-10">
+                    <button
+                      onClick={() => {
+                        setSelectedNetwork("testnet")
+                        setNetworkDropdownOpen(false)
+                      }}
+                      className={`w-full px-3 py-2 text-sm text-left hover:bg-white/5 transition-colors cursor-pointer ${
+                        selectedNetwork === "testnet" ? "text-primary" : "text-white"
+                      }`}
+                    >
+                      Mezo Testnet (31611)
+                    </button>
+                    <button
+                      onClick={() => {
+                        setSelectedNetwork("mainnet")
+                        setNetworkDropdownOpen(false)
+                      }}
+                      className={`w-full px-3 py-2 text-sm text-left hover:bg-white/5 transition-colors cursor-pointer ${
+                        selectedNetwork === "mainnet" ? "text-primary" : "text-white"
+                      }`}
+                    >
+                      Mezo Mainnet (31612)
+                    </button>
+                  </div>
+                )}
+              </div>
               {!isCorrectNetwork && (
                 <button
                   onClick={handleSwitchNetwork}
-                  className="mt-2 w-full text-xs text-primary hover:underline"
+                  className="w-full text-xs text-primary hover:underline cursor-pointer"
                 >
                   Switch to {MEZO_NETWORKS[selectedNetwork].name}
                 </button>
               )}
-            </div>
+            </Section>
 
             {/* Constructor Arguments */}
             {hasConstructorArgs && constructor && (
-              <div>
-                <label className="text-white/60 text-xs mb-2 block">
-                  Constructor Arguments
-                </label>
-                <div className="space-y-2">
+              <Section title="Constructor Arguments">
+                <div className="space-y-3">
                   {constructor.inputs.map((input) => (
-                    <div key={input.name}>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-white/80 text-xs">{input.name}</span>
-                        <span className="text-white/40 text-xs">({input.type})</span>
-                      </div>
+                    <Field
+                      key={input.name}
+                      label={
+                        <>
+                          <span className="text-white/60 normal-case tracking-normal">{input.name}</span>
+                          <span className="font-mono normal-case tracking-normal">({input.type})</span>
+                        </>
+                      }
+                    >
                       <input
                         type="text"
                         placeholder={`Enter ${input.type}`}
@@ -329,12 +333,12 @@ export default function DeployPanel({
                             [input.name]: e.target.value,
                           }))
                         }
-                        className="w-full bg-[#111] border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-primary/50 placeholder:text-white/30"
+                        className={ide.inputMono}
                       />
-                    </div>
+                    </Field>
                   ))}
                 </div>
-              </div>
+              </Section>
             )}
 
             {/* Gas Estimator */}
@@ -350,30 +354,22 @@ export default function DeployPanel({
             )}
 
             {/* Auto-Verify Toggle */}
-            <div className="flex items-center justify-between p-3 bg-[#111] border border-white/10 rounded-lg">
+            <div className={`${ide.card} flex items-center justify-between p-3`}>
               <div className="flex items-center gap-2">
                 <Shield size={14} className="text-primary" />
-                <span className="text-white/80 text-xs font-medium">Auto-Verify</span>
+                <span className="text-white text-xs font-medium">Auto-Verify</span>
                 <span className="text-white/40 cursor-help" title="Automatically verify source code on Mezo Explorer after deployment">
                   <HelpCircle size={12} />
                 </span>
               </div>
-              <button
-                onClick={() => setAutoVerify(!autoVerify)}
-                className={`w-10 h-5 rounded-full transition-colors relative ${
-                  autoVerify ? "bg-primary" : "bg-white/20"
-                }`}
-              >
-                <span
-                  className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
-                    autoVerify ? "left-5" : "left-0.5"
-                  }`}
-                />
-              </button>
+              <Switch size="small" checked={autoVerify} onChange={() => setAutoVerify(!autoVerify)} />
             </div>
 
             {/* Deploy Button */}
-            <button
+            <IdeButton
+              variant="primary"
+              size="md"
+              block
               onClick={handleDeploy}
               disabled={
                 !isCorrectNetwork ||
@@ -381,31 +377,16 @@ export default function DeployPanel({
                 isDeploying ||
                 !walletClient
               }
-              className="w-full flex items-center justify-center gap-2 bg-primary text-dark py-2 px-4 text-sm font-medium rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              loading={deploymentStatus === "deploying" || isDeploying}
+              icon={<Rocket size={14} />}
             >
-              {deploymentStatus === "deploying" || isDeploying ? (
-                <>
-                  <Loader2 size={14} className="animate-spin" />
-                  <span>Deploying...</span>
-                </>
-              ) : (
-                <>
-                  <Rocket size={14} />
-                  <span>Deploy</span>
-                </>
-              )}
-            </button>
+              {deploymentStatus === "deploying" || isDeploying ? "Deploying..." : "Deploy"}
+            </IdeButton>
 
             {/* Deployment Status */}
             {deploymentStatus === "success" && txHash && (
-              <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  <CheckCircle size={14} className="text-green-500" />
-                  <span className="text-green-400 text-xs font-medium">
-                    Deployed Successfully
-                  </span>
-                </div>
-                <div className="flex items-center gap-3">
+              <Notice tone="success" icon={<CheckCircle size={14} />} title="Deployed Successfully">
+                <div className="flex items-center gap-3 pt-1">
                   <a
                     href={getExplorerUrl(txHash)}
                     target="_blank"
@@ -418,74 +399,57 @@ export default function DeployPanel({
                   {onCreateDApp && (
                     <button
                       onClick={onCreateDApp}
-                      className="flex items-center gap-1 text-xs text-blue-400 hover:underline"
+                      className="flex items-center gap-1 text-xs text-primary hover:underline cursor-pointer"
                     >
                       <Package size={10} />
                       Create dApp
                     </button>
                   )}
                 </div>
-              </div>
+              </Notice>
             )}
 
             {deploymentStatus === "error" && (
-              <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <AlertCircle size={14} className="text-red-500" />
-                  <span className="text-red-400 text-xs font-medium">
-                    Deployment Failed
-                  </span>
-                </div>
-              </div>
+              <Notice tone="error" icon={<AlertCircle size={14} />} title="Deployment Failed" />
             )}
 
             {/* Verification Status */}
             {deploymentStatus === "success" && autoVerify && (
-              <div
-                className={`p-3 border rounded-lg ${
+              <Notice
+                tone={
                   verification.status === "verified"
-                    ? "bg-green-500/10 border-green-500/20"
+                    ? "success"
                     : verification.status === "failed"
-                    ? "bg-red-500/10 border-red-500/20"
-                    : "bg-blue-500/10 border-blue-500/20"
-                }`}
-              >
-                <div className="flex items-center gap-2 mb-2">
-                  {verification.status === "verified" ? (
-                    <>
-                      <ShieldCheck size={14} className="text-green-500" />
-                      <span className="text-green-400 text-xs font-medium">
-                        Contract Verified
-                      </span>
-                    </>
+                    ? "error"
+                    : verification.isVerifying
+                    ? "primary"
+                    : "neutral"
+                }
+                icon={
+                  verification.status === "verified" ? (
+                    <ShieldCheck size={14} />
                   ) : verification.status === "failed" ? (
-                    <>
-                      <ShieldX size={14} className="text-red-500" />
-                      <span className="text-red-400 text-xs font-medium">
-                        Verification Failed
-                      </span>
-                    </>
+                    <ShieldX size={14} />
                   ) : verification.isVerifying ? (
-                    <>
-                      <Loader2 size={14} className="text-blue-400 animate-spin" />
-                      <span className="text-blue-400 text-xs font-medium">
-                        {verification.status === "flattening"
-                          ? "Preparing source..."
-                          : verification.status === "submitting"
-                          ? "Submitting to explorer..."
-                          : "Verifying..."}
-                      </span>
-                    </>
+                    <Spinner size={14} />
                   ) : (
-                    <>
-                      <Shield size={14} className="text-white/40" />
-                      <span className="text-white/40 text-xs font-medium">
-                        Verification pending
-                      </span>
-                    </>
-                  )}
-                </div>
-
+                    <Shield size={14} />
+                  )
+                }
+                title={
+                  verification.status === "verified"
+                    ? "Contract Verified"
+                    : verification.status === "failed"
+                    ? "Verification Failed"
+                    : verification.isVerifying
+                    ? verification.status === "indexing"
+                      ? "Waiting for explorer to index contract..."
+                      : verification.status === "submitting"
+                      ? "Submitting to explorer..."
+                      : "Verifying..."
+                    : "Verification pending"
+                }
+              >
                 {verification.status === "verified" && verification.result?.explorerUrl && (
                   <a
                     href={verification.result.explorerUrl}
@@ -501,7 +465,7 @@ export default function DeployPanel({
                 {verification.status === "failed" && (
                   <>
                     {verification.error && (
-                      <p className="text-red-400/80 text-xs mt-1">{verification.error}</p>
+                      <p className="text-xs break-words">{verification.error}</p>
                     )}
                     {verification.result?.explorerUrl && (
                       <a
@@ -520,7 +484,12 @@ export default function DeployPanel({
                 {/* Manual verify button if auto-verify failed or wasn't enabled */}
                 {(verification.status === "failed" || verification.status === "idle") &&
                   deployedAddress && (
-                    <button
+                    <IdeButton
+                      variant="secondary"
+                      size="xs"
+                      block
+                      className="mt-2"
+                      icon={<Shield size={12} />}
                       onClick={() => {
                         if (selectedContract && sourceCode) {
                           addLog("info", "Retrying verification...")
@@ -535,17 +504,16 @@ export default function DeployPanel({
                             chainId: targetChainId,
                             sources: resolvedSources,
                             mainFileName,
+                            compilerSettings,
                           })
                         }
                       }}
                       disabled={verification.isVerifying}
-                      className="mt-2 w-full flex items-center justify-center gap-2 bg-white/10 text-white/80 py-1.5 px-3 text-xs font-medium hover:bg-white/20 disabled:opacity-50 transition-colors rounded-lg"
                     >
-                      <Shield size={12} />
                       {verification.status === "failed" ? "Retry Verification" : "Verify Now"}
-                    </button>
+                    </IdeButton>
                   )}
-              </div>
+              </Notice>
             )}
           </>
         )}

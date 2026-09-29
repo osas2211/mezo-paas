@@ -1,6 +1,6 @@
 "use client"
 
-import { X } from "lucide-react"
+import { X, FileCode } from "lucide-react"
 import type { OpenFile } from "@/types/ide"
 
 interface EditorTabsProps {
@@ -21,41 +21,38 @@ export default function EditorTabs({
   }
 
   return (
-    <div className="flex items-center bg-[#0d0d0d] border-b border-white/10 overflow-x-auto">
+    <div className="flex items-stretch h-9 border-b border-white/10 overflow-x-auto shrink-0">
       {openFiles.map((file) => {
         const isActive = file.id === activeFileId
         return (
           <div
             key={file.id}
-            className={`
-              group flex items-center gap-2 px-3 py-2 border-r border-white/10 cursor-pointer
-              transition-colors text-sm min-w-[120px] max-w-[200px]
-              ${isActive
-                ? "bg-[#0a0a0a] text-white border-b-2 border-b-primary -mb-px"
-                : "text-white/60 hover:text-white hover:bg-white/5"
-              }
-            `}
+            className={`group relative flex items-center gap-2 px-3 border-r border-white/10 cursor-pointer transition-colors text-xs min-w-[120px] max-w-[200px] ${
+              isActive ? "bg-white/5 text-white" : "text-white/50 hover:text-white hover:bg-white/[0.03]"
+            }`}
             onClick={() => onTabClick(file.id)}
           >
-            <span className="truncate flex-1">
-              {file.isDirty && <span className="text-primary mr-1">*</span>}
-              {file.name}
-            </span>
+            <FileCode size={13} className={isActive ? "text-primary shrink-0" : "text-white/30 shrink-0"} />
+            <span className="truncate flex-1">{file.name}</span>
+            {file.isDirty && (
+              <span
+                className="h-1.5 w-1.5 rounded-full bg-primary shrink-0 group-hover:hidden"
+                title="Unsaved changes"
+              />
+            )}
             <button
               onClick={(e) => {
                 e.stopPropagation()
                 onTabClose(file.id)
               }}
-              className={`
-                p-0.5 rounded transition-colors
-                ${isActive
-                  ? "hover:bg-white/10"
-                  : "opacity-0 group-hover:opacity-100 hover:bg-white/10"
-                }
-              `}
+              aria-label={`Close ${file.name}`}
+              className={`p-0.5 text-white/40 hover:text-white hover:bg-white/10 transition-colors cursor-pointer ${
+                isActive ? "" : "opacity-0 group-hover:opacity-100"
+              } ${file.isDirty ? "hidden group-hover:block" : ""}`}
             >
               <X size={12} />
             </button>
+            {isActive && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-primary" />}
           </div>
         )
       })}

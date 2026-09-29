@@ -156,83 +156,64 @@ export function buildStandardJsonInput(
 
 /**
  * Submit contract for verification to Mezo Explorer
- * Uses internal API route to avoid CORS issues
- * Supports both Standard JSON (for multi-file) and flattened (for single-file) verification
+ * Uses internal API route to avoid CORS issues.
+ * Sends the exact sources + compiler settings used at compile time (Standard
+ * JSON input) so the explorer can reproduce the deployed bytecode exactly.
  */
 export async function submitVerification(
   request: VerificationRequest
 ): Promise<VerificationResult> {
+  const network = request.chainId === 31611 ? "testnet" : "mainnet"
+  const addressUrl = `${MEZO_NETWORKS[network].explorerUrl}/address/${request.contractAddress}`
+
   try {
-    // Determine verification method based on whether we have sources
-    const hasMultipleSources = request.sources && Object.keys(request.sources).length > 1
-
-    const requestBody: Record<string, any> = {
-      contractAddress: request.contractAddress,
-      contractName: request.contractName,
-      compilerVersion: request.compilerVersion,
-      optimizationUsed: request.optimizationUsed,
-      runs: request.runs,
-      constructorArguments: request.constructorArguments || "",
-      chainId: request.chainId,
-    }
-
-    // Use Standard JSON for multi-file contracts (with OpenZeppelin imports)
-    if (hasMultipleSources && request.sources) {
-      requestBody.verificationMethod = "standard-json"
-      requestBody.sources = request.sources
-      requestBody.mainFileName = request.mainFileName || Object.keys(request.sources)[0]
-    } else {
-      // Use flattened source for single-file contracts
-      requestBody.verificationMethod = "flattened"
-      requestBody.sourceCode = request.sourceCode
-    }
-
     const response = await fetch("/api/verify", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(requestBody),
+      body: JSON.stringify({
+        contractAddress: request.contractAddress,
+        contractName: request.contractName,
+        compilerVersion: request.compilerVersion,
+        optimizationUsed: request.optimizationUsed,
+        runs: request.runs,
+        constructorArguments: request.constructorArguments || "",
+        chainId: request.chainId,
+        sources: request.sources,
+        mainFileName: request.mainFileName,
+        compilerSettings: request.compilerSettings,
+        sourceCode: request.sourceCode, // flattened fallback only
+      }),
     })
 
     const data = await response.json()
 
-    const network = request.chainId === 31611 ? "testnet" : "mainnet"
-
-    if (data.success) {
-      if (data.status === "verified") {
-        return {
-          success: true,
-          status: "verified",
-          message: data.message || "Contract verified successfully!",
-          explorerUrl: `${MEZO_NETWORKS[network].explorerUrl}/address/${request.contractAddress}`,
-        }
-      }
-
-      if (data.status === "pending") {
-        return {
-          success: true,
-          status: "pending",
-          message: data.message || "Verification submitted, pending confirmation...",
-          guid: data.guid || request.contractAddress,
-        }
+    if (data.status === "verified") {
+      return {
+        success: true,
+        status: "verified",
+        message: data.message || "Contract verified successfully!",
+        explorerUrl: data.explorerUrl || addressUrl,
       }
     }
 
-    // Handle manual verification fallback
-    if (data.status === "manual") {
+    if (data.status === "pending") {
       return {
-        success: false,
-        status: "failed",
-        message: data.message || "Automatic verification not available.",
-        explorerUrl: data.verifyUrl || `${MEZO_NETWORKS[network].explorerUrl}/address/${request.contractAddress}/contract-verification`,
+        success: true,
+        status: "pending",
+        message: data.message || "Verification submitted, pending confirmation...",
+        guid: data.guid || request.contractAddress,
       }
     }
 
     return {
       success: false,
       status: "failed",
-      message: data.message || "Verification failed",
+      message:
+        data.message ||
+        (data.status === "manual" ? "Automatic verification not available." : "Verification failed"),
+      explorerUrl: data.verifyUrl || `${addressUrl}/contract-verification`,
     }
   } catch (error: any) {
     console.error("Verification error:", error)
@@ -240,22 +221,22 @@ export async function submitVerification(
       success: false,
       status: "failed",
       message: error.message || "Failed to submit verification",
+      explorerUrl: `${addressUrl}/contract-verification`,
     }
   }
 }
 
 /**
  * Check verification status by GUID (for pending verifications)
+ * The guid in our case is the contract address.
  */
 export async function checkVerificationStatus(
   chainId: number,
   guid: string
 ): Promise<VerificationResult> {
-  // For now, just check if the contract is verified
-  // The guid in our case is the contract address
-  const verified = await isContractVerified(chainId, guid)
+  const { isVerified } = await getContractStatus(chainId, guid)
 
-  if (verified) {
+  if (isVerified) {
     const network = chainId === 31611 ? "testnet" : "mainnet"
     return {
       success: true,
@@ -274,25 +255,37 @@ export async function checkVerificationStatus(
 }
 
 /**
+ * Explorer status for an address.
+ * exists = the explorer has indexed it as a smart contract (required before
+ * verification can be submitted).
+ */
+export async function getContractStatus(
+  chainId: number,
+  address: string
+): Promise<{ exists: boolean; isVerified: boolean }> {
+  try {
+    const response = await fetch(
+      `/api/verify?chainId=${chainId}&address=${address}`,
+      { cache: "no-store" }
+    )
+
+    if (!response.ok) return { exists: false, isVerified: false }
+
+    const data = await response.json()
+    return { exists: data.exists === true, isVerified: data.isVerified === true }
+  } catch {
+    return { exists: false, isVerified: false }
+  }
+}
+
+/**
  * Check if a contract is already verified
- * Uses internal API route to avoid CORS issues
  */
 export async function isContractVerified(
   chainId: number,
   address: string
 ): Promise<boolean> {
-  try {
-    const response = await fetch(
-      `/api/verify?chainId=${chainId}&address=${address}`
-    )
-
-    if (!response.ok) return false
-
-    const data = await response.json()
-    return data.isVerified === true
-  } catch {
-    return false
-  }
+  return (await getContractStatus(chainId, address)).isVerified
 }
 
 /**

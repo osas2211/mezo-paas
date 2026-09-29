@@ -30,26 +30,60 @@ export default function CodeEditor({
     (editor, monaco) => {
       editorRef.current = editor
 
-      // Define Mezo dark theme
+      // Mezo theme: matches the app (pure black surface, white/10 hairlines,
+      // lime #b3ec11 accent, neutral text ramp)
       monaco.editor.defineTheme("mezo-dark", {
         base: "vs-dark",
         inherit: true,
         rules: [
-          { token: "comment", foreground: "6a737d", fontStyle: "italic" },
+          { token: "", foreground: "e5e5e5" },
+          { token: "comment", foreground: "5c5c5c", fontStyle: "italic" },
           { token: "keyword", foreground: "b3ec11" },
-          { token: "string", foreground: "9ecbff" },
-          { token: "number", foreground: "79b8ff" },
-          { token: "type", foreground: "b392f0" },
+          { token: "string", foreground: "d4e6a5" },
+          { token: "number", foreground: "e8f7b8" },
+          { token: "type", foreground: "ffffff", fontStyle: "bold" },
+          { token: "identifier", foreground: "e5e5e5" },
+          { token: "delimiter", foreground: "8a8a8a" },
+          { token: "operator", foreground: "a0a0a0" },
         ],
         colors: {
-          "editor.background": "#0a0a0a",
-          "editor.foreground": "#e1e4e8",
-          "editor.lineHighlightBackground": "#161b22",
-          "editor.selectionBackground": "#3392FF44",
+          "editor.background": "#000000",
+          "editor.foreground": "#e5e5e5",
+          "editor.lineHighlightBackground": "#ffffff08",
+          "editor.lineHighlightBorder": "#00000000",
+          "editor.selectionBackground": "#b3ec1133",
+          "editor.inactiveSelectionBackground": "#b3ec111a",
+          "editor.selectionHighlightBackground": "#b3ec1114",
+          "editor.wordHighlightBackground": "#ffffff0f",
+          "editor.findMatchBackground": "#b3ec1155",
+          "editor.findMatchHighlightBackground": "#b3ec1122",
           "editorCursor.foreground": "#b3ec11",
-          "editorLineNumber.foreground": "#484f58",
+          "editorLineNumber.foreground": "#ffffff33",
           "editorLineNumber.activeForeground": "#b3ec11",
-          "editor.inactiveSelectionBackground": "#3392FF22",
+          "editorIndentGuide.background1": "#ffffff0d",
+          "editorIndentGuide.activeBackground1": "#ffffff26",
+          "editorBracketMatch.background": "#b3ec111a",
+          "editorBracketMatch.border": "#b3ec1166",
+          "editorGutter.background": "#000000",
+          "editorWidget.background": "#0a0a0a",
+          "editorWidget.border": "#ffffff1a",
+          "editorSuggestWidget.background": "#0a0a0a",
+          "editorSuggestWidget.border": "#ffffff1a",
+          "editorSuggestWidget.selectedBackground": "#b3ec111a",
+          "editorSuggestWidget.highlightForeground": "#b3ec11",
+          "editorHoverWidget.background": "#0a0a0a",
+          "editorHoverWidget.border": "#ffffff1a",
+          "minimap.background": "#000000",
+          "minimapSlider.background": "#ffffff0d",
+          "minimapSlider.hoverBackground": "#ffffff1a",
+          "scrollbarSlider.background": "#b3ec1133",
+          "scrollbarSlider.hoverBackground": "#b3ec1166",
+          "scrollbarSlider.activeBackground": "#b3ec11",
+          "scrollbar.shadow": "#00000000",
+          "editorError.foreground": "#ef4444",
+          "editorWarning.foreground": "#f59e0b",
+          "editorInfo.foreground": "#b3ec11",
+          "focusBorder": "#b3ec1166",
         },
       })
 
@@ -433,12 +467,15 @@ export default function CodeEditor({
           readOnly,
           padding: { top: 16 },
           scrollbar: {
-            verticalScrollbarSize: 8,
-            horizontalScrollbarSize: 8,
+            verticalScrollbarSize: 6,
+            horizontalScrollbarSize: 6,
+            useShadows: false,
           },
+          overviewRulerBorder: false,
+          hideCursorInOverviewRuler: true,
         }}
         loading={
-          <div className="flex items-center justify-center h-full bg-[#0a0a0a] text-white/60">
+          <div className="flex items-center justify-center h-full text-xs uppercase tracking-wider text-white/40">
             Loading editor...
           </div>
         }

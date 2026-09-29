@@ -2,9 +2,15 @@
 import React from "react"
 import { motion } from "framer-motion"
 
-export const PageLoading = () => {
+export const PageLoading = ({
+  label = "Loading Dashboard",
+  className = "min-h-[60vh]",
+}: {
+  label?: string
+  className?: string
+}) => {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] w-full">
+    <div className={`flex flex-col items-center justify-center w-full ${className}`}>
       <div className="relative flex items-center justify-center">
         {/* Pulsing outer ring */}
         <motion.div
@@ -51,7 +57,7 @@ export const PageLoading = () => {
         transition={{ delay: 0.2 }}
         className="mt-6 text-sm font-medium text-white/40 tracking-widest uppercase"
       >
-        Loading Dashboard
+        {label}
       </motion.p>
     </div>
   )

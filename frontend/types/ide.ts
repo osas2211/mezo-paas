@@ -34,6 +34,14 @@ export interface CompilationResult {
   errors?: CompilationError[]
   warnings?: CompilationWarning[]
   sources?: Record<string, { content: string }> // All resolved sources for verification
+  mainFileName?: string // Source key of the file that was compiled
+  compilerVersion?: string // Full solc version, e.g. v0.8.28+commit.7893614a
+  compilerSettings?: CompilerSettings // Exact settings passed to solc
+}
+
+export interface CompilerSettings {
+  optimizer: { enabled: boolean; runs: number }
+  evmVersion?: string
 }
 
 export interface CompiledContract {
@@ -131,7 +139,7 @@ export const DEFAULT_SETTINGS: IDESettings = {
 // Verification types
 export type VerificationStatus =
   | "idle"
-  | "flattening"
+  | "indexing" // waiting for the explorer to index the new contract
   | "submitting"
   | "pending"
   | "verified"
@@ -156,6 +164,7 @@ export interface VerificationRequest {
   chainId: number
   sources?: Record<string, { content: string }> // All resolved sources for Standard JSON
   mainFileName?: string // The main contract file name
+  compilerSettings?: CompilerSettings // Exact settings used at compile time
 }
 
 // Transaction Simulator types

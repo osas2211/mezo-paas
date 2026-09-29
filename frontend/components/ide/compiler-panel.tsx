@@ -9,10 +9,19 @@ import {
   ChevronDown,
   Copy,
   Check,
-  Loader2,
   Settings,
 } from "lucide-react"
 import type { CompilationResult, CompiledContract, CompilerStatus } from "@/types/ide"
+import {
+  ide,
+  IdeButton,
+  Notice,
+  Section,
+  PanelHeader,
+  EmptyState,
+  Spinner,
+  toneText,
+} from "./ui"
 
 interface CompilerPanelProps {
   status: CompilerStatus
@@ -55,11 +64,11 @@ export default function CompilerPanel({
       case "compiling":
       case "loading":
       case "resolving":
-        return <Loader2 size={14} className="text-primary animate-spin" />
+        return <Spinner size={14} />
       case "success":
-        return <CheckCircle size={14} className="text-green-500" />
+        return <CheckCircle size={14} className={toneText.success} />
       case "error":
-        return <AlertCircle size={14} className="text-red-500" />
+        return <AlertCircle size={14} className={toneText.error} />
       default:
         return null
     }
@@ -81,205 +90,193 @@ export default function CompilerPanel({
   const isCompiling = status === "compiling" || status === "loading" || status === "resolving"
 
   return (
-    <div className="h-full flex flex-col bg-[#0d0d0d]">
+    <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-white/10">
-        <span className="text-white/80 text-sm font-medium">Compiler</span>
-        {getStatusIcon()}
-      </div>
+      <PanelHeader title="Compiler" actions={getStatusIcon()} />
 
-      {/* Compile Button */}
-      <div className="p-3 border-b border-white/10">
-        <button
+      <div className="flex-1 overflow-y-auto p-4 space-y-5">
+        {/* Compile Button */}
+        <IdeButton
+          variant="primary"
+          size="md"
+          block
           onClick={onCompile}
-          disabled={isCompiling}
-          className="w-full flex items-center justify-center gap-2 bg-primary text-dark py-2 px-4 text-sm font-medium rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          loading={isCompiling}
+          icon={<Play size={14} />}
         >
-          {isCompiling ? (
-            <>
-              <Loader2 size={14} className="animate-spin" />
-              <span>{getButtonText()}</span>
-            </>
-          ) : (
-            <>
-              <Play size={14} />
-              <span>Compile</span>
-            </>
-          )}
-        </button>
-      </div>
+          <span>{isCompiling ? getButtonText() : "Compile"}</span>
+        </IdeButton>
 
-      {/* Optimizer Settings */}
-      <div className="border-b border-white/10">
-        <button
-          onClick={() => setShowSettings(!showSettings)}
-          className="w-full flex items-center justify-between px-3 py-2 hover:bg-white/5 transition-colors"
-        >
-          <div className="flex items-center gap-1.5">
-            <Settings size={12} className="text-white/40" />
-            <span className="text-white/60 text-xs">Optimizer Settings</span>
-          </div>
-          <ChevronDown
-            size={14}
-            className={`text-white/40 transition-transform ${showSettings ? "rotate-180" : ""}`}
-          />
-        </button>
-        {showSettings && (
-          <div className="px-3 pb-3 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-white/60 text-xs">Enable Optimizer</span>
-              <button
-                onClick={() => onOptimizerChange(!optimizerEnabled, optimizerRuns)}
-                className={`w-10 h-5 rounded-full transition-colors relative ${
-                  optimizerEnabled ? "bg-primary" : "bg-white/20"
-                }`}
-              >
-                <span
-                  className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
-                    optimizerEnabled ? "left-5" : "left-0.5"
+        {/* Optimizer Settings */}
+        <div className={ide.card}>
+          <button
+            onClick={() => setShowSettings(!showSettings)}
+            className="w-full flex items-center justify-between px-3 py-2 hover:bg-white/[0.07] transition-colors cursor-pointer"
+          >
+            <div className="flex items-center gap-1.5">
+              <Settings size={12} className="text-white/40" />
+              <span className="text-white/60 text-xs">Optimizer Settings</span>
+            </div>
+            <ChevronDown
+              size={14}
+              className={`text-white/40 transition-transform ${showSettings ? "rotate-180" : ""}`}
+            />
+          </button>
+          {showSettings && (
+            <div className="p-3 space-y-3 border-t border-white/10">
+              <div className="flex items-center justify-between">
+                <span className="text-white/60 text-xs">Enable Optimizer</span>
+                <button
+                  onClick={() => onOptimizerChange(!optimizerEnabled, optimizerRuns)}
+                  className={`w-10 h-5 rounded-full transition-colors relative cursor-pointer ${
+                    optimizerEnabled ? "bg-primary" : "bg-white/20"
                   }`}
+                >
+                  <span
+                    className={`absolute top-0.5 w-4 h-4 rounded-full transition-transform ${
+                      optimizerEnabled ? "left-5 bg-black" : "left-0.5 bg-white"
+                    }`}
+                  />
+                </button>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-white/60 text-xs">Runs</span>
+                <input
+                  type="number"
+                  min={1}
+                  max={10000}
+                  value={optimizerRuns}
+                  onChange={(e) => onOptimizerChange(optimizerEnabled, parseInt(e.target.value) || 200)}
+                  disabled={!optimizerEnabled}
+                  className={`${ide.inputMono} !w-24 !py-1 text-right`}
                 />
-              </button>
+              </div>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-white/60 text-xs">Runs</span>
-              <input
-                type="number"
-                min={1}
-                max={10000}
-                value={optimizerRuns}
-                onChange={(e) => onOptimizerChange(optimizerEnabled, parseInt(e.target.value) || 200)}
-                disabled={!optimizerEnabled}
-                className="w-20 bg-[#111] border border-white/10 rounded px-2 py-1 text-white text-xs text-right focus:outline-none focus:border-primary/50 disabled:opacity-50"
-              />
-            </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
 
-      {/* Compilation Results */}
-      <div className="flex-1 overflow-auto">
         {/* Errors */}
         {result?.errors && result.errors.length > 0 && (
-          <div className="p-3 border-b border-white/10">
-            <div className="flex items-center gap-2 mb-2">
-              <AlertCircle size={14} className="text-red-500" />
-              <span className="text-red-400 text-xs font-medium">
+          <Section
+            title={
+              <span className={`flex items-center gap-1.5 ${toneText.error}`}>
+                <AlertCircle size={12} />
                 Errors ({result.errors.length})
               </span>
-            </div>
+            }
+          >
             <div className="space-y-2">
               {result.errors.map((error, i) => (
-                <div
-                  key={i}
-                  className="p-2 bg-red-500/10 border border-red-500/20 rounded-lg text-xs text-red-300 whitespace-pre-wrap font-mono"
-                >
-                  {error.formattedMessage || error.message}
-                </div>
+                <Notice key={i} tone="error">
+                  <div className="whitespace-pre-wrap font-mono break-words">
+                    {error.formattedMessage || error.message}
+                  </div>
+                </Notice>
               ))}
             </div>
-          </div>
+          </Section>
         )}
 
         {/* Warnings */}
         {result?.warnings && result.warnings.length > 0 && (
-          <div className="p-3 border-b border-white/10">
-            <div className="flex items-center gap-2 mb-2">
-              <AlertTriangle size={14} className="text-yellow-500" />
-              <span className="text-yellow-400 text-xs font-medium">
+          <Section
+            title={
+              <span className={`flex items-center gap-1.5 ${toneText.warning}`}>
+                <AlertTriangle size={12} />
                 Warnings ({result.warnings.length})
               </span>
-            </div>
+            }
+          >
             <div className="space-y-2">
               {result.warnings.map((warning, i) => (
-                <div
-                  key={i}
-                  className="p-2 bg-yellow-500/10 border border-yellow-500/20 rounded-lg text-xs text-yellow-300 whitespace-pre-wrap font-mono"
-                >
-                  {warning.formattedMessage || warning.message}
-                </div>
+                <Notice key={i} tone="warning">
+                  <div className="whitespace-pre-wrap font-mono break-words">
+                    {warning.formattedMessage || warning.message}
+                  </div>
+                </Notice>
               ))}
             </div>
-          </div>
+          </Section>
         )}
 
         {/* Compiled Contracts */}
         {result?.contracts && result.contracts.length > 0 && (
-          <div className="p-3">
-            <div className="flex items-center gap-2 mb-2">
-              <CheckCircle size={14} className="text-green-500" />
-              <span className="text-green-400 text-xs font-medium">
+          <Section
+            title={
+              <span className={`flex items-center gap-1.5 ${toneText.success}`}>
+                <CheckCircle size={12} />
                 Compiled ({result.contracts.length})
               </span>
-            </div>
+            }
+          >
             <div className="space-y-2">
               {result.contracts.map((contract) => (
                 <button
                   key={contract.name}
                   onClick={() => onSelectContract(contract)}
-                  className={`w-full p-2 text-left rounded-lg text-sm transition-colors ${
+                  className={`w-full px-3 py-2 text-left text-sm font-medium transition-colors cursor-pointer ${
                     selectedContract?.name === contract.name
-                      ? "bg-primary/20 border border-primary/50 text-primary"
-                      : "bg-[#111] border border-white/10 text-white/80 hover:border-white/20"
+                      ? "border border-primary/40 bg-primary/10 text-primary"
+                      : `${ide.row} text-white`
                   }`}
                 >
                   {contract.name}
                 </button>
               ))}
             </div>
-          </div>
+          </Section>
         )}
 
         {/* Selected Contract Details */}
         {selectedContract && (
-          <div className="p-3 border-t border-white/10">
-            <div className="space-y-3">
-              {/* ABI */}
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-white/60 text-xs">ABI</span>
-                  <button
-                    onClick={() =>
-                      copyToClipboard(JSON.stringify(selectedContract.abi, null, 2), "abi")
-                    }
-                    className="flex items-center gap-1 text-xs text-white/40 hover:text-white/80 transition-colors"
-                  >
-                    {copiedAbi ? <Check size={12} className="text-green-400" /> : <Copy size={12} />}
-                    {copiedAbi ? "Copied!" : "Copy"}
-                  </button>
-                </div>
-                <div className="p-2 bg-[#111] border border-white/10 rounded-lg text-xs text-white/60 font-mono">
-                  {selectedContract.abi.length} functions
-                </div>
+          <div className="space-y-5 pt-5 border-t border-white/10">
+            {/* ABI */}
+            <Section
+              title="ABI"
+              action={
+                <IdeButton
+                  variant="ghost"
+                  size="xs"
+                  onClick={() =>
+                    copyToClipboard(JSON.stringify(selectedContract.abi, null, 2), "abi")
+                  }
+                  icon={copiedAbi ? <Check size={12} className={toneText.success} /> : <Copy size={12} />}
+                >
+                  {copiedAbi ? "Copied!" : "Copy"}
+                </IdeButton>
+              }
+            >
+              <div className={`${ide.codeBlock} text-white/60`}>
+                {selectedContract.abi.length} functions
               </div>
+            </Section>
 
-              {/* Bytecode */}
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-white/60 text-xs">Bytecode</span>
-                  <button
-                    onClick={() => copyToClipboard(selectedContract.bytecode, "bytecode")}
-                    className="flex items-center gap-1 text-xs text-white/40 hover:text-white/80 transition-colors"
-                  >
-                    {copiedBytecode ? <Check size={12} className="text-green-400" /> : <Copy size={12} />}
-                    {copiedBytecode ? "Copied!" : "Copy"}
-                  </button>
-                </div>
-                <div className="p-2 bg-[#111] border border-white/10 rounded-lg text-xs text-white/60 font-mono break-all max-h-16 overflow-auto">
-                  {selectedContract.bytecode.slice(0, 100)}...
-                </div>
+            {/* Bytecode */}
+            <Section
+              title="Bytecode"
+              action={
+                <IdeButton
+                  variant="ghost"
+                  size="xs"
+                  onClick={() => copyToClipboard(selectedContract.bytecode, "bytecode")}
+                  icon={
+                    copiedBytecode ? <Check size={12} className={toneText.success} /> : <Copy size={12} />
+                  }
+                >
+                  {copiedBytecode ? "Copied!" : "Copy"}
+                </IdeButton>
+              }
+            >
+              <div className={`${ide.codeBlock} text-white/60 break-all max-h-16`}>
+                {selectedContract.bytecode.slice(0, 100)}...
               </div>
-            </div>
+            </Section>
           </div>
         )}
 
         {/* Empty State */}
         {!result && status === "idle" && (
-          <div className="p-6 text-center">
-            <p className="text-white/40 text-xs">
-              Click "Compile" to compile your contract
-            </p>
-          </div>
+          <EmptyState icon={<Play size={24} />} title='Click "Compile" to compile your contract' />
         )}
       </div>
     </div>

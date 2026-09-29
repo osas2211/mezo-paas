@@ -5,13 +5,14 @@ import { useUser } from "@/hooks/use-user"
 import { PageLoading } from "@/components/utilities/page-loading"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
+import IdeWalletButton from "@/components/ide/wallet-button"
 
 export default function IDELayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-dark text-white relative font-sans">
       {/* Mobile Blocker */}
       <div className="flex flex-col items-center justify-center min-h-screen px-6 text-center md:hidden">
-        <div className="w-16 h-16 mb-6 flex items-center justify-center bg-white/5 border border-white/10 rounded-2xl">
+        <div className="w-16 h-16 mb-6 flex items-center justify-center bg-white/5 border border-white/10 ">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="24"
@@ -39,7 +40,7 @@ export default function IDELayout({ children }: { children: React.ReactNode }) {
       {/* Desktop IDE - Full Width */}
       <div className="hidden md:flex flex-col h-screen">
         {/* Slim IDE Header */}
-        <div className="h-12 border-b border-white/10 flex items-center justify-between px-4 bg-[#0a0a0a]">
+        <div className="h-14 border-b border-white/10 flex items-center justify-between px-4 shrink-0">
           <div className="flex items-center gap-4">
             <Link
               href="/dashboard"
@@ -49,8 +50,9 @@ export default function IDELayout({ children }: { children: React.ReactNode }) {
               <span>Back to Dashboard</span>
             </Link>
             <div className="h-4 w-px bg-white/10" />
-            <span className="text-primary font-semibold text-sm">Mezo IDE</span>
+            <span className="text-primary font-medium text-sm">Mezo IDE</span>
           </div>
+          <IdeWalletButton />
         </div>
 
         {/* IDE Content - Full Height */}
