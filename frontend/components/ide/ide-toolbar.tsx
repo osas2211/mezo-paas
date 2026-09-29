@@ -1,7 +1,7 @@
 "use client"
 
 import { Tooltip, Dropdown, MenuProps } from "antd"
-import { FilePlus, Save, Play, FileCode, Database, Zap, Share2, ChevronDown, MessageSquareWarning } from "lucide-react"
+import { FilePlus, Save, Play, FileCode, Database, Zap, Share2, ChevronDown, MessageSquareWarning, FolderDown } from "lucide-react"
 import { IconButton, IdeButton } from "./ui"
 
 interface IDEToolbarProps {
@@ -13,6 +13,7 @@ interface IDEToolbarProps {
   onSimulator: () => void
   onShare: () => void
   onReport: () => void
+  onExport: () => void
   isDirty: boolean
   isCompiling: boolean
   hasActiveFile: boolean
@@ -29,6 +30,7 @@ export default function IDEToolbar({
   onSimulator,
   onShare,
   onReport,
+  onExport,
   isDirty,
   isCompiling,
   hasActiveFile,
@@ -53,6 +55,13 @@ export default function IDEToolbar({
       icon: <Save size={14} />,
       onClick: onSave,
       disabled: !isDirty,
+    },
+    { type: "divider" },
+    {
+      key: "export",
+      label: "Export as Hardhat / Foundry project…",
+      icon: <FolderDown size={14} />,
+      onClick: onExport,
     },
   ]
 

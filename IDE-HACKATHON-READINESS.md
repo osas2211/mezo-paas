@@ -288,3 +288,33 @@ Not yet clicked through in a browser — include "send a report" and "deploy wit
 | **BTC Payment Splitter** | Split native BTC between payees by fixed shares; pull payments | 3 BTC split 50/30/20 over two deposits, contract drained to 0, duplicate payees rejected |
 
 All 14 templates compile with solc 0.8.28 + OpenZeppelin 5.0.2 and their constructor hints match the compiled ABI.
+
+---
+
+## 10. Export as Hardhat / Foundry project (2026-09-29)
+
+**Where:** IDE toolbar → File → *Export as Hardhat / Foundry project…* (needs a successful compile; the selected contract gets the deploy script).
+
+**What's in the zip**
+| | Hardhat 3 | Foundry |
+|---|---|---|
+| Sources | all workspace `.sol` files in `contracts/` | all workspace `.sol` files in `src/` |
+| Compiler | same solc version + optimizer as the IDE (default EVM = cancun) | same, in `foundry.toml` |
+| OpenZeppelin | `@openzeppelin/contracts` **5.0.2** (what the IDE compiles against) | `forge install OpenZeppelin/openzeppelin-contracts@v5.0.2` + remapping |
+| Networks | `mezoTestnet` / `mezoMainnet` with Mezo's documented RPCs; key via `hardhat keystore` or `MEZO_PRIVATE_KEY` | `mezo_testnet` / `mezo_mainnet` RPC aliases; key via `cast wallet import` |
+| Deploy | Ignition module + `ignition/parameters.json` (typed placeholders), `npm run deploy:testnet` | `script/Deploy.s.sol` with typed placeholder args (arrays, structs, bytes handled) |
+| Verify | `chainDescriptors` → Mezo Blockscout; `npx hardhat verify blockscout --network mezoTestnet …` | `--verifier blockscout --verifier-url https://api.explorer.test.mezo.org/api/` |
+| README | setup, constructor-args table, deploy, verify | same |
+
+**Verified (with the generated projects, following their READMEs)**
+- Hardhat: `npm install` → compile with solc 0.8.28 / cancun → Ignition deploy on the local network (placeholders fail clearly with `ZeroAddress()`; real values deploy) → `hardhat verify blockscout --network mezoTestnet` reached **Mezo Testnet Explorer** and recognised an already-verified contract.
+- Foundry 1.5.1: `git init` + `forge install` (forge-std, OZ v5.0.2) → `forge build` → `forge script` dry run (placeholders → `ZeroAddress()`) → broadcast to local anvil (deployed, `treasury()` read back) → `forge verify-contract --verifier blockscout` reached Mezo's explorer and recognised the verified contract.
+- Constructor argument generation for `address[]`, `uint256[]`, `address[3]`, structs, `bytes32`, `bool`, `string`, `bytes`: Foundry scripts compile; Hardhat parameters have correct shapes (fixed arrays get N entries).
+
+**Live on Mezo testnet (2026-09-29):** MUSD Checkout deployed and verified from each exported project, following its README.
+| Export | Address | Result |
+|---|---|---|
+| Hardhat 3 (`npm run deploy:testnet` + `hardhat verify blockscout`) | [`0x7005CBE7eC6Ac1f28bEc29F2Bc7f4f96452F5B5a`](https://explorer.test.mezo.org/address/0x7005CBE7eC6Ac1f28bEc29F2Bc7f4f96452F5B5a#code) | Verified |
+| Foundry (`forge script --broadcast --verify --verifier blockscout`) | [`0x6Fa4F8764DEbea7Ae1c57A7b07Ba8e951313B992`](https://explorer.test.mezo.org/address/0x6Fa4F8764DEbea7Ae1c57A7b07Ba8e951313B992#code) | Verified |
+
+**Found by the live run and fixed:** the explorer showed the Foundry deployment compiled for EVM **prague**, while the IDE and Hardhat compile for **cancun** — Foundry 1.x defaults to the newest EVM regardless of solc. Both exports now pin `cancun` explicitly (`evm_version` in `foundry.toml`, `evmVersion` in `hardhat.config.ts`), and rebuilt artifacts confirm cancun for both. The testnet contract above was deployed before this fix; it's verified and works, it just targets prague.

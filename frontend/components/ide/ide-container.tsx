@@ -22,6 +22,7 @@ import ShareModal from "./share-modal"
 import DAppGeneratorModal from "./dapp-generator-modal"
 import IDEToolbar from "./ide-toolbar"
 import ReportProblemModal from "./report-problem-modal"
+import ExportProjectModal from "./export-project-modal"
 import { parseShareFromLocation, clearShareFromUrl, hasShareParams } from "@/lib/ide/share"
 import { PageLoading } from "@/components/utilities/page-loading"
 import { EmptyState, IdeButton, UnderlineTabs } from "./ui"
@@ -36,6 +37,7 @@ export default function IDEContainer() {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false)
   const [isDAppGeneratorOpen, setIsDAppGeneratorOpen] = useState(false)
   const [isReportOpen, setIsReportOpen] = useState(false)
+  const [isExportOpen, setIsExportOpen] = useState(false)
   const [dappGeneratorContract, setDappGeneratorContract] = useState<DeployedContract | null>(null)
   const [deployedContracts, setDeployedContracts] = useState<DeployedContract[]>([])
   const [rightPanelTab, setRightPanelTab] = useState<"compile" | "deploy" | "interact">("compile")
@@ -229,6 +231,7 @@ export const ${name.replace(/[^a-zA-Z0-9]/g, "").toUpperCase()}_ADDRESS = "${add
         onSimulator={() => setIsSimulatorOpen(true)}
         onShare={() => setIsShareModalOpen(true)}
         onReport={() => setIsReportOpen(true)}
+        onExport={() => setIsExportOpen(true)}
         isDirty={ide.activeFile?.isDirty || false}
         isCompiling={compiler.status === "compiling" || compiler.status === "resolving"}
         hasActiveFile={!!ide.activeFile}
@@ -395,6 +398,16 @@ export const ${name.replace(/[^a-zA-Z0-9]/g, "").toUpperCase()}_ADDRESS = "${add
         onClose={() => setIsShareModalOpen(false)}
         fileName={ide.activeFile?.name || "Contract.sol"}
         content={ide.activeFile?.content || ""}
+      />
+
+      {/* Export as Hardhat / Foundry project */}
+      <ExportProjectModal
+        open={isExportOpen}
+        onClose={() => setIsExportOpen(false)}
+        workspaceFiles={ide.contracts}
+        compilation={compiler.result}
+        selectedContract={ide.selectedContract}
+        addLog={ide.addLog}
       />
 
       {/* Report a Problem */}
